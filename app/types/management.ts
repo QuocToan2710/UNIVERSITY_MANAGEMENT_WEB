@@ -5,6 +5,8 @@ export type Teacher = {
   email: string;
   phoneNumber: string;
   specialization: string;
+  degree?: string;       // ThS, TS, GS, PGS
+  department?: string;   // Khoa / Bộ môn
 };
 
 export type TeacherPayload = {
@@ -13,6 +15,8 @@ export type TeacherPayload = {
   email: string;
   phoneNumber: string;
   specialization: string;
+  degree?: string;
+  department?: string;
 };
 
 export const emptyTeacher: TeacherPayload = {
@@ -21,6 +25,8 @@ export const emptyTeacher: TeacherPayload = {
   email: "",
   phoneNumber: "",
   specialization: "",
+  degree: "",
+  department: "",
 };
 
 export type Course = {
@@ -29,6 +35,7 @@ export type Course = {
   courseName: string;
   credit: number;
   semester: string;
+  description?: string;
   teacherId?: string;
   teacherName?: string;
   teacherCode?: string;
@@ -73,4 +80,32 @@ export const emptyUser: UserPayload = {
   email: "",
   fullName: "",
 };
+
+export type ClassGroup = {
+  id: string;
+  classCode: string;
+  className: string;
+  major: string;
+  academicYear: string;
+  homeroomTeacherId: string | null;
+  homeroomTeacherName: string | null;
+  studentCount: number;
+};
+
+export type ClassGroupPayload = {
+  classCode: string;
+  className: string;
+  major?: string;
+  academicYear?: string;
+  homeroomTeacherId?: string;
+};
+
+export const emptyClassGroup: ClassGroupPayload = {
+  classCode: "",
+  className: "",
+  major: "",
+  academicYear: "",
+  homeroomTeacherId: "",
+};
+
 

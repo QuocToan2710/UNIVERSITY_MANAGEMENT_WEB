@@ -2,11 +2,18 @@ import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "re
 import { useNavigate } from "react-router";
 import { gsap } from "gsap";
 import { ApiError, login } from "../lib/api";
+import { isAuthenticated, setToken } from "../lib/auth";
 
 export default function Login() {
   const navigate = useNavigate();
   const pageRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -52,11 +59,11 @@ export default function Login() {
       const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
 
       timeline
-        .from(".login-brand-3d", { autoAlpha: 0, y: -30, scale: 0.9, duration: 0.8 })
-        .from(".login-hero-title", { autoAlpha: 0, y: 25, duration: 0.7 }, "-=0.4")
-        .from(".login-feature-3d", { autoAlpha: 0, z: -50, y: 20, duration: 0.6, stagger: 0.12 }, "-=0.3")
-        .from(".login-panel-3d", { autoAlpha: 0, scale: 0.92, rotateY: 15, duration: 0.85 }, "-=0.7")
-        .from(".login-form-anim", { autoAlpha: 0, y: 14, duration: 0.45, stagger: 0.08 }, "-=0.35");
+        .from(".login-brand-3d", { opacity: 0, y: -30, scale: 0.9, duration: 0.8, clearProps: "all" })
+        .from(".login-hero-title", { opacity: 0, y: 25, duration: 0.7, clearProps: "all" }, "-=0.4")
+        .from(".login-feature-3d", { opacity: 0, y: 20, duration: 0.6, stagger: 0.12, clearProps: "all" }, "-=0.3")
+        .from(".login-panel-3d", { opacity: 0, scale: 0.92, duration: 0.85, clearProps: "all" }, "-=0.7")
+        .from(".login-form-anim", { opacity: 0, y: 14, duration: 0.45, stagger: 0.08, clearProps: "all" }, "-=0.35");
 
       // Continuous 3D Floating Orbs and Elements
       gsap.to(".orb-3d-cyan", {
@@ -98,7 +105,7 @@ export default function Login() {
     try {
       const result = await login(username, password);
       if (!result.authenticated || !result.token) throw new Error("Tên đăng nhập hoặc mật khẩu không đúng.");
-      localStorage.setItem("access_token", result.token);
+      setToken(result.token);
       navigate("/");
     } catch (reason) {
       setError(reason instanceof ApiError || reason instanceof Error ? reason.message : "Đăng nhập thất bại.");
@@ -290,6 +297,7 @@ export default function Login() {
 
             {/* 3D Glossy Neon Submit Button */}
             <button
+              type="submit"
               disabled={isSubmitting}
               className="login-form-anim group relative overflow-hidden flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-4 font-semibold text-white shadow-[0_10px_30px_-5px_rgba(6,182,212,0.4)] transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(6,182,212,0.65)] hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -306,6 +314,36 @@ export default function Login() {
                 </svg>
               )}
             </button>
+            {/* Quick Demo Accounts Helper */}
+            <div className="login-form-anim mt-6 pt-4 border-t border-white/10">
+              <p className="text-xs font-semibold text-slate-300 mb-2.5">Thử nghiệm nhanh với 3 Vai trò (Roles):</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setUsername("admin"); setPassword("admin"); }}
+                  className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-2 py-2 text-[11px] font-semibold text-cyan-300 hover:bg-cyan-500/20 transition-all text-center cursor-pointer"
+                >
+                  👑 Admin
+                  <span className="block text-[9px] text-slate-400 font-mono">admin / admin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUsername("teacher"); setPassword("teacher123"); }}
+                  className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-2 py-2 text-[11px] font-semibold text-violet-300 hover:bg-violet-500/20 transition-all text-center cursor-pointer"
+                >
+                  👨‍🏫 Giảng viên
+                  <span className="block text-[9px] text-slate-400 font-mono">teacher / teacher123</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUsername("student"); setPassword("student123"); }}
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-2 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all text-center cursor-pointer"
+                >
+                  👨‍🎓 Sinh viên
+                  <span className="block text-[9px] text-slate-400 font-mono">student / student123</span>
+                </button>
+              </div>
+            </div>
           </form>
 
           {/* Card Footer */}

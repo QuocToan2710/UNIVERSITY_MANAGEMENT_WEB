@@ -7,9 +7,14 @@ export type Student = {
   dob: string;
   gender: string;
   address: string;
+  major?: string;
+  enrollmentYear?: string;
+  status?: string;
+  classGroupId?: string;
+  classGroupName?: string;
 };
 
-export type StudentPayload = Omit<Student, "id">;
+export type StudentPayload = Omit<Student, "id" | "classGroupName">;
 
 export const emptyStudent: StudentPayload = {
   studentCode: "",
@@ -19,4 +24,9 @@ export const emptyStudent: StudentPayload = {
   dob: "",
   gender: "Nam",
   address: "",
+  major: "",
+  enrollmentYear: "",
+  status: "ACTIVE",
+  classGroupId: "",
 };
+

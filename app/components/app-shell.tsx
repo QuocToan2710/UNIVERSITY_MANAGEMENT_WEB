@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate, type NavLinkRenderProps } from "react-router";
 import { apiRequest } from "../lib/api";
+import { clearToken, getToken } from "../lib/auth";
 import type { User } from "../types/management";
 import {
   BellIcon,
+  ClassGroupIcon,
   CourseIcon,
   DashboardIcon,
   EduManageLogo,
   LogoutIcon,
+  ScheduleIcon,
   StudentIcon,
   TeacherIcon,
   UsersIcon,
@@ -19,13 +22,16 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
-const navigation = [
-  { to: "/", label: "Tổng quan", Icon: DashboardIcon, end: true },
-  { to: "/students", label: "Sinh viên", Icon: StudentIcon },
-  { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon },
-  { to: "/courses", label: "Khóa học", Icon: CourseIcon },
-  { to: "/users", label: "Người dùng", Icon: UsersIcon },
+const allNavigation = [
+  { to: "/", label: "Tổng quan", Icon: DashboardIcon, end: true, allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "USER"] },
+  { to: "/schedule", label: "Lịch học", Icon: ScheduleIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/class-groups", label: "Lớp học", Icon: ClassGroupIcon, allowedRoles: ["ADMIN"] },
+  { to: "/students", label: "Sinh viên", Icon: StudentIcon, allowedRoles: ["ADMIN", "TEACHER"] },
+  { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN", "STUDENT"] },
+  { to: "/courses", label: "Khóa học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/users", label: "Người dùng", Icon: UsersIcon, allowedRoles: ["ADMIN"] },
 ];
+
 
 function navClassName({ isActive }: NavLinkRenderProps) {
   return [
@@ -49,7 +55,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
   }, []);
 
   async function handleLogout() {
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     setLoggingOut(true);
     try {
       if (token) {
@@ -62,13 +68,22 @@ export function AppShell({ title, description, children }: AppShellProps) {
     } catch {
       // Clear token locally
     } finally {
-      localStorage.removeItem("access_token");
+      clearToken();
       setProfileOpen(false);
       navigate("/login");
     }
   }
 
+  const userRoleNames = user?.roles?.map((r) => r.name.toUpperCase()) || [];
+  const isAdmin = userRoleNames.length === 0 || userRoleNames.includes("ADMIN");
+
+  const filteredNavigation = allNavigation.filter((item) => {
+    if (isAdmin) return true;
+    return item.allowedRoles.some((role) => userRoleNames.includes(role));
+  });
+
   const displayName = user?.fullName || "Người dùng";
+  const primaryRole = userRoleNames.length > 0 ? userRoleNames.join(", ") : "ADMIN";
   const initials = displayName.split(" ").filter(Boolean).slice(-2).map((part) => part[0]).join("").toUpperCase() || "U";
 
   return (
@@ -93,7 +108,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
         {/* Navigation Items */}
         <nav className="space-y-1.5" aria-label="Điều hướng chính">
-          {navigation.map((item) => (
+          {filteredNavigation.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={navClassName}>
               {({ isActive }) => (
                 <>
@@ -160,7 +175,10 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 </div>
                 <div className="hidden text-xs sm:block">
                   <p className="font-semibold text-slate-200">{displayName}</p>
-                  <p className="text-[10px] text-cyan-400">{user?.username || "Đang tải..."}</p>
+                  <p className="text-[10px] text-cyan-400 font-mono flex items-center gap-1">
+                    <span>{user?.username || "Đang tải..."}</span>
+                    <span className="rounded bg-cyan-500/20 px-1 py-0.2 text-[9px] font-bold text-cyan-300 border border-cyan-400/30 uppercase">{primaryRole}</span>
+                  </p>
                 </div>
                 <svg viewBox="0 0 24 24" className="hidden size-4 fill-none stroke-slate-400 sm:block" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />

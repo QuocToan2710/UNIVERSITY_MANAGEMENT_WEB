@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
+import { ConfirmModal } from "../components/confirm-modal";
+import { StudentForm } from "../components/forms/student-form";
 import { PlusIcon, SearchIcon, StudentIcon } from "../components/icons";
-import { ApiError, apiRequest } from "../lib/api";
-import { emptyStudent, type Student, type StudentPayload } from "../types/student";
+import { ApiError, apiListRequest, apiRequest } from "../lib/api";
+import type { Student } from "../types/student";
 
 export default function Students() {
   const navigate = useNavigate();
@@ -12,12 +14,14 @@ export default function Students() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Student | null | undefined>(undefined);
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function loadStudents() {
     setLoading(true);
     setError("");
     try {
-      setStudents(await apiRequest<Student[]>("/students"));
+      setStudents(await apiListRequest<Student>("/students"));
     } catch (reason) {
       const apiError = reason as ApiError;
       if (apiError.status === 401) navigate("/login");
@@ -40,13 +44,17 @@ export default function Students() {
       : students;
   }, [students, search]);
 
-  async function deleteStudent(student: Student) {
-    if (!window.confirm(`Xóa sinh viên ${student.fullName}?`)) return;
+  async function confirmDeleteStudent() {
+    if (!deletingStudent) return;
+    setDeleting(true);
     try {
-      await apiRequest<string>(`/students/${student.id}`, { method: "DELETE" });
+      await apiRequest<string>(`/students/${deletingStudent.id}`, { method: "DELETE" });
+      setDeletingStudent(null);
       await loadStudents();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không thể xóa sinh viên.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -138,7 +146,7 @@ export default function Students() {
                         <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />
                         <path d="m13.5 7 3.5 3.5" />
                       </ActionIcon>
-                      <ActionIcon label="Xóa sinh viên" color="red" onClick={() => void deleteStudent(student)}>
+                      <ActionIcon label="Xóa sinh viên" color="red" onClick={() => setDeletingStudent(student)}>
                         <path d="M4 7h16" />
                         <path d="M10 11v5M14 11v5M6 7l1-3h10l1 3M7 7l1 13h8l1-13" />
                       </ActionIcon>
@@ -161,128 +169,18 @@ export default function Students() {
           }}
         />
       )}
+
+      {deletingStudent && (
+        <ConfirmModal
+          title="Xác nhận xóa sinh viên"
+          message={`Bạn có chắc chắn muốn xóa hồ sơ sinh viên ${deletingStudent.fullName} (${deletingStudent.studentCode})? Dữ liệu sẽ không thể hoàn tác.`}
+          loading={deleting}
+          onConfirm={confirmDeleteStudent}
+          onClose={() => setDeletingStudent(null)}
+        />
+      )}
     </AppShell>
   );
-}
-
-function StudentForm({ student, onClose, onSaved }: { student: Student | null; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState<StudentPayload>(student ? { ...student, dob: dateValue(student.dob) } : emptyStudent);
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  function update<K extends keyof StudentPayload>(key: K, value: StudentPayload[K]) {
-    setForm((current) => ({ ...current, [key]: value }));
-  }
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
-    try {
-      await apiRequest<Student>(student ? `/students/${student.id}` : "/students", {
-        method: student ? "PUT" : "POST",
-        body: JSON.stringify(form),
-      });
-      onSaved();
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Không thể lưu sinh viên.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/70 p-4 backdrop-blur-xl">
-      <form
-        onSubmit={submit}
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/15 bg-slate-900 p-6 shadow-2xl text-white"
-      >
-        <div className="flex items-start justify-between border-b border-white/10 pb-4">
-          <div>
-            <h2 className="text-lg font-bold">{student ? "Cập nhật thông tin sinh viên" : "Thêm sinh viên mới"}</h2>
-            <p className="mt-1 text-xs text-slate-400">Điền thông tin hồ sơ theo mẫu StudentRequest.</p>
-          </div>
-          <button type="button" onClick={onClose} className="text-xl text-slate-400 hover:text-white">
-            ✕
-          </button>
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã sinh viên" value={form.studentCode} onChange={(v) => update("studentCode", v)} required />
-          <Field label="Họ và tên" value={form.fullName} onChange={(v) => update("fullName", v)} required />
-          <Field label="Email" type="email" value={form.email} onChange={(v) => update("email", v)} required />
-          <Field label="Số điện thoại" value={form.phoneNumber} onChange={(v) => update("phoneNumber", v)} required />
-          <Field label="Ngày sinh" type="date" value={form.dob} onChange={(v) => update("dob", v)} required />
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-            Giới tính
-            <select
-              value={form.gender}
-              onChange={(e) => update("gender", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-xs text-white outline-none focus:border-cyan-400"
-            >
-              <option value="Nam" className="bg-slate-900 text-white">Nam</option>
-              <option value="Nữ" className="bg-slate-900 text-white">Nữ</option>
-              <option value="Khác" className="bg-slate-900 text-white">Khác</option>
-            </select>
-          </label>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider sm:col-span-2">
-            Địa chỉ
-            <input
-              required
-              value={form.address}
-              onChange={(e) => update("address", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-xs text-white outline-none focus:border-cyan-400"
-            />
-          </label>
-        </div>
-
-        {error && <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">{error}</p>}
-
-        <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-white/10">
-          <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-400 hover:text-white">
-            Hủy
-          </button>
-          <button
-            disabled={saving}
-            className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md disabled:opacity-50"
-          >
-            {saving ? "Đang lưu..." : "Lưu sinh viên"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  type = "text",
-  required = false,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-      {label}
-      <input
-        required={required}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-xs text-white outline-none focus:border-cyan-400"
-      />
-    </label>
-  );
-}
-
-function dateValue(value: string) {
-  return value ? value.slice(0, 10) : "";
 }
 
 function ActionIcon({
@@ -308,4 +206,3 @@ function ActionIcon({
     </button>
   );
 }
-

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Route } from "./+types/home";
 import { Link, useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
-import { ApiError, apiRequest } from "../lib/api";
+import { ApiError, apiListRequest, apiRequest } from "../lib/api";
 import type { Course, Teacher, User } from "../types/management";
 import type { Student } from "../types/student";
 import {
@@ -33,10 +33,10 @@ export default function Home() {
     void (async () => {
       try {
         const [studentData, teacherData, courseData, userData] = await Promise.all([
-          apiRequest<Student[]>("/students"),
-          apiRequest<Teacher[]>("/teachers"),
-          apiRequest<Course[]>("/courses"),
-          apiRequest<User[]>("/users").catch((reason: ApiError) => {
+          apiListRequest<Student>("/students"),
+          apiListRequest<Teacher>("/teachers"),
+          apiListRequest<Course>("/courses"),
+          apiListRequest<User>("/users").catch((reason: ApiError) => {
             if (reason.status === 403) return null;
             throw reason;
           }),
