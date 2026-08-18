@@ -3,15 +3,24 @@ import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
 import { TeacherForm } from "../components/forms/teacher-form";
-import { PlusIcon, SearchIcon, TeacherIcon } from "../components/icons";
+import { PlusIcon, TeacherIcon } from "../components/icons";
+import { Pagination } from "../components/pagination";
+import { SearchExportBar, type FilterField } from "../components/search-export-bar";
 import { ApiError, apiListRequest, apiRequest } from "../lib/api";
+import { exportToExcel } from "../lib/excel";
 import type { Teacher } from "../types/management";
 
 export default function Teachers() {
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Record<string, any>>({
+    teacherCode: "",
+    fullName: "",
+    degree: "",
+  });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Teacher | null | undefined>(undefined);
   const [deletingTeacher, setDeletingTeacher] = useState<Teacher | null>(null);
@@ -21,7 +30,9 @@ export default function Teachers() {
     setLoading(true);
     setError("");
     try {
-      setTeachers(await apiListRequest<Teacher>("/teachers"));
+      setTeachers(
+        await apiListRequest<Teacher>("/teachers?size=1000").catch(async () => apiListRequest<Teacher>("/teachers/all"))
+      );
     } catch (reason) {
       const err = reason as ApiError;
       if (err.status === 401) navigate("/login");
@@ -35,14 +46,75 @@ export default function Teachers() {
     void loadTeachers();
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const visibleTeachers = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return term
-      ? teachers.filter((t) =>
-          `${t.teacherCode} ${t.fullName} ${t.email} ${t.specialization}`.toLowerCase().includes(term)
-        )
-      : teachers;
-  }, [teachers, search]);
+    const code = (filters.teacherCode || "").trim().toLowerCase();
+    const name = (filters.fullName || "").trim().toLowerCase();
+    const deg = (filters.degree || "").trim().toLowerCase();
+
+    return teachers.filter((t) => {
+      if (term && !`${t.teacherCode} ${t.fullName} ${t.email} ${t.degree || ""} ${t.departmentName || ""}`.toLowerCase().includes(term)) {
+        return false;
+      }
+      if (code && !(t.teacherCode || "").toLowerCase().includes(code)) return false;
+      if (name && !(t.fullName || "").toLowerCase().includes(name)) return false;
+      if (deg && !(t.degree || "").toLowerCase().includes(deg)) return false;
+      return true;
+    });
+  }, [teachers, search, filters]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filters]);
+
+  const totalItems = visibleTeachers.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const paginatedTeachers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return visibleTeachers.slice(start, start + pageSize);
+  }, [visibleTeachers, currentPage, pageSize]);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      let exportData: Teacher[] = [];
+      try {
+        exportData = await apiRequest<Teacher[]>("/teachers/export", {
+          method: "POST",
+          body: JSON.stringify({ keyword: search, ...filters }),
+        });
+      } catch {
+        exportData = visibleTeachers;
+      }
+
+      exportToExcel(
+        exportData,
+        "Danh_Sach_Giang_Vien",
+        "GiangVien",
+        [
+          { key: "teacherCode", header: "Mã Giảng Viên" },
+          { key: "fullName", header: "Họ và Tên" },
+          { key: "degree", header: "Học vị" },
+          { key: "email", header: "Email" },
+          { key: "phoneNumber", header: "Số điện thoại" },
+          { key: "departmentName", header: "Khoa/Bộ môn" },
+        ]
+      );
+    } catch {
+      alert("Không thể xuất danh sách giảng viên.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const filterFields: FilterField[] = [
+    { key: "teacherCode", label: "Mã Giảng viên", placeholder: "Ví dụ: GV01..." },
+    { key: "fullName", label: "Họ và Tên", placeholder: "Ví dụ: Nguyễn Văn..." },
+    { key: "degree", label: "Học vị", placeholder: "Ví dụ: Tiến sĩ..." },
+  ];
 
   async function confirmDeleteTeacher() {
     if (!deletingTeacher) return;
@@ -59,85 +131,88 @@ export default function Teachers() {
   }
 
   return (
-    <AppShell title="Quản lý Giảng viên" description="Danh sách cán bộ giảng dạy và bộ môn trong hệ thống EduManage.">
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+    <AppShell title="Quản lý Giảng viên" description="Danh sách cán bộ giảng dạy, bằng cấp và Khoa trực thuộc trong hệ thống.">
+      <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Header Controls */}
-        <div className="flex flex-col gap-4 border-b border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <div className="grid size-9 place-items-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300">
                 <TeacherIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-white">Danh sách giảng viên</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách giảng viên</h2>
             </div>
-            <p className="mt-1 text-xs text-slate-400">{teachers.length} giảng viên đã đồng bộ dữ liệu</p>
+            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{teachers.length} giảng viên đã đồng bộ dữ liệu</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(167,139,250,0.3)] hover:brightness-110 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(167,139,250,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
             <span>Thêm giảng viên mới</span>
           </button>
         </div>
 
-        {/* Search */}
-        <div className="border-b border-white/5 p-4 bg-slate-950/40">
-          <div className="relative flex items-center sm:max-w-md">
-            <span className="pointer-events-none absolute left-4 text-slate-400">
-              <SearchIcon size={16} />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-900/80 pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20"
-              placeholder="Tìm theo mã giảng viên, tên, email hoặc chuyên môn..."
-            />
-          </div>
-        </div>
+        {/* Search & Export Controls Bar */}
+        <SearchExportBar
+          keyword={search}
+          onKeywordChange={setSearch}
+          filterFields={filterFields}
+          filterValues={filters}
+          onFilterChange={(key, val) => setFilters((prev) => ({ ...prev, [key]: val }))}
+          onResetFilters={() => setFilters({ teacherCode: "", fullName: "", degree: "" })}
+          onExport={handleExport}
+          exporting={exporting}
+        />
 
         {error && <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300">{error}</div>}
 
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-violet-300 border-b border-white/10">
+            <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
                 <th className="px-6 py-4">Giảng viên</th>
-                <th className="px-6 py-4">Chuyên môn</th>
+                <th className="px-6 py-4">Bằng cấp</th>
+                <th className="px-6 py-4">Khoa trực thuộc</th>
                 <th className="px-6 py-4">Liên hệ</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
                     Đang tải dữ liệu giảng viên…
                   </td>
                 </tr>
-              ) : visibleTeachers.length === 0 ? (
+              ) : paginatedTeachers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
                     Chưa có giảng viên nào phù hợp.
                   </td>
                 </tr>
               ) : (
-                visibleTeachers.map((teacher) => (
-                  <tr key={teacher.id} className="hover:bg-slate-800/40 transition-colors">
+                paginatedTeachers.map((teacher) => (
+                  <tr key={teacher.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-semibold text-slate-100">{teacher.fullName}</p>
-                      <p className="mt-0.5 text-[11px] text-violet-300 font-mono">{teacher.teacherCode}</p>
+                      <p className="font-bold text-slate-900 dark:text-slate-100">{teacher.fullName}</p>
+                      <p className="mt-0.5 text-[11px] text-purple-700 dark:text-violet-300 font-bold font-mono">{teacher.teacherCode}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-[11px] font-medium text-violet-300">
-                        {teacher.specialization}
+                      <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-[11px] font-semibold text-violet-300 shadow-[0_0_10px_rgba(167,139,250,0.15)]">
+                        {teacher.degree || "Thạc sĩ"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-slate-200">{teacher.email}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">{teacher.phoneNumber}</p>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        {teacher.departmentName || "Chưa phân Khoa"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-slate-800 dark:text-slate-200">{teacher.email}</p>
+                      <p className="mt-0.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">{teacher.phoneNumber}</p>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <ActionIcon label="Sửa thông tin" color="blue" onClick={() => setEditing(teacher)}>
@@ -155,6 +230,19 @@ export default function Teachers() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {editing !== undefined && (
@@ -172,8 +260,10 @@ export default function Teachers() {
         <ConfirmModal
           title="Xác nhận xóa giảng viên"
           message={`Bạn có chắc chắn muốn xóa hồ sơ giảng viên ${deletingTeacher.fullName} (${deletingTeacher.teacherCode})? Dữ liệu sẽ không thể hoàn tác.`}
-          loading={deleting}
-          onConfirm={confirmDeleteTeacher}
+          confirmText="Xóa giảng viên"
+          confirmVariant="danger"
+          isSubmitting={deleting}
+          onConfirm={() => void confirmDeleteTeacher()}
           onClose={() => setDeletingTeacher(null)}
         />
       )}
@@ -195,9 +285,9 @@ function ActionIcon({
   const tones =
     color === "blue"
       ? "text-violet-400 hover:bg-violet-500/10 hover:text-violet-300"
-      : "text-red-400 hover:bg-red-500/10 hover:text-red-300";
+      : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300";
   return (
-    <button type="button" title={label} aria-label={label} onClick={onClick} className={`mr-1 rounded-xl p-2 transition-colors ${tones}`}>
+    <button type="button" title={label} aria-label={label} onClick={onClick} className={`mr-1 rounded-xl p-2 transition-colors cursor-pointer ${tones}`}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4">
         {children}
       </svg>

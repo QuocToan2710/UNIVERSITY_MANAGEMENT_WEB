@@ -3,8 +3,11 @@ import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
 import { CourseForm } from "../components/forms/course-form";
-import { CourseIcon, PlusIcon, SearchIcon } from "../components/icons";
+import { CourseIcon, PlusIcon } from "../components/icons";
+import { Pagination } from "../components/pagination";
+import { SearchExportBar, type FilterField } from "../components/search-export-bar";
 import { ApiError, apiListRequest, apiRequest } from "../lib/api";
+import { exportToExcel } from "../lib/excel";
 import type { Course, Teacher } from "../types/management";
 
 export default function Courses() {
@@ -12,7 +15,13 @@ export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Record<string, any>>({
+    courseCode: "",
+    courseName: "",
+    semester: "",
+  });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Course | null | undefined>(undefined);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
@@ -23,15 +32,15 @@ export default function Courses() {
     setError("");
     try {
       const [courseData, teacherData] = await Promise.all([
-        apiListRequest<Course>("/courses"),
-        apiListRequest<Teacher>("/teachers"),
+        apiListRequest<Course>("/courses?size=1000").catch(async () => apiListRequest<Course>("/courses")),
+        apiListRequest<Teacher>("/teachers?size=1000").catch(async () => apiListRequest<Teacher>("/teachers")),
       ]);
       setCourses(courseData);
       setTeachers(teacherData);
     } catch (reason) {
       const err = reason as ApiError;
       if (err.status === 401) navigate("/login");
-      else setError(err.message || "Không thể tải dữ liệu khóa học.");
+      else setError(err.message || "Không thể tải dữ liệu môn học.");
     } finally {
       setLoading(false);
     }
@@ -41,19 +50,67 @@ export default function Courses() {
     void loadData();
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const teacherMap = useMemo(() => {
     return new Map(teachers.map((t) => [t.id, t]));
   }, [teachers]);
 
   const visibleCourses = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return term
-      ? courses.filter((c) => {
-          const teacherName = c.teacherId ? teacherMap.get(c.teacherId)?.fullName || "" : "";
-          return `${c.courseCode} ${c.courseName} ${c.semester} ${teacherName}`.toLowerCase().includes(term);
-        })
-      : courses;
-  }, [courses, search, teacherMap]);
+    const code = (filters.courseCode || "").trim().toLowerCase();
+    const name = (filters.courseName || "").trim().toLowerCase();
+    const sem = (filters.semester || "").trim().toLowerCase();
+
+    return courses.filter((c) => {
+      const teacherName = c.teacherId ? teacherMap.get(c.teacherId)?.fullName || "" : "";
+      if (term && !`${c.courseCode} ${c.courseName} ${c.semester} ${teacherName}`.toLowerCase().includes(term)) {
+        return false;
+      }
+      if (code && !(c.courseCode || "").toLowerCase().includes(code)) return false;
+      if (name && !(c.courseName || "").toLowerCase().includes(name)) return false;
+      if (sem && !(c.semester || "").toLowerCase().includes(sem)) return false;
+      return true;
+    });
+  }, [courses, search, filters, teacherMap]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filters]);
+
+  const totalItems = visibleCourses.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const paginatedCourses = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return visibleCourses.slice(start, start + pageSize);
+  }, [visibleCourses, currentPage, pageSize]);
+
+  function handleExport() {
+    const exportData = visibleCourses.map((c) => ({
+      ...c,
+      teacherName: c.teacherId ? teacherMap.get(c.teacherId)?.fullName || "Chưa phân công" : "Chưa phân công",
+    }));
+
+    exportToExcel(
+      exportData,
+      "Danh_Sach_Mon_Hoc",
+      "MonHoc",
+      [
+        { key: "courseCode", header: "Mã Môn Học" },
+        { key: "courseName", header: "Tên Môn Học" },
+        { key: "credit", header: "Số Tín Chỉ" },
+        { key: "semester", header: "Học Kỳ" },
+        { key: "teacherName", header: "Giảng Viên Phụ Trách" },
+      ]
+    );
+  }
+
+  const filterFields: FilterField[] = [
+    { key: "courseCode", label: "Mã Môn học", placeholder: "Ví dụ: CS101..." },
+    { key: "courseName", label: "Tên Môn học", placeholder: "Ví dụ: Lập trình Java..." },
+    { key: "semester", label: "Học kỳ", placeholder: "Ví dụ: HK1 2024-2025..." },
+  ];
 
   async function confirmDeleteCourse() {
     if (!deletingCourse) return;
@@ -63,109 +120,106 @@ export default function Courses() {
       setDeletingCourse(null);
       await loadData();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Không thể xóa khóa học.");
+      setError(reason instanceof Error ? reason.message : "Không thể xóa môn học.");
     } finally {
       setDeleting(false);
     }
   }
 
   return (
-    <AppShell title="Quản lý Khóa học" description="Danh sách học phần, số tín chỉ và phân công giảng viên.">
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+    <AppShell title="Quản lý Môn học" description="Danh sách môn học, lớp học phần, số tín chỉ và phân công giảng viên.">
+      <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Header Controls */}
-        <div className="flex flex-col gap-4 border-b border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <div className="grid size-9 place-items-center rounded-xl border border-amber-400/30 bg-amber-500/10 text-amber-300">
                 <CourseIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-white">Danh sách khóa học</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách môn học</h2>
             </div>
-            <p className="mt-1 text-xs text-slate-400">{courses.length} môn học đã được đăng ký</p>
+            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{courses.length} môn học đã được đăng ký</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-600 to-amber-700 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:brightness-110 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-600 to-amber-700 px-5 py-3 text-xs font-semibold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
-            <span>Tạo khóa học mới</span>
+            <span>Thêm môn học mới</span>
           </button>
         </div>
 
-        {/* Search */}
-        <div className="border-b border-white/5 p-4 bg-slate-950/40">
-          <div className="relative flex items-center sm:max-w-md">
-            <span className="pointer-events-none absolute left-4 text-slate-400">
-              <SearchIcon size={16} />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-900/80 pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20"
-              placeholder="Tìm theo mã học phần, tên khóa học, giảng viên..."
-            />
-          </div>
-        </div>
+        {/* Search & Export Controls Bar */}
+        <SearchExportBar
+          keyword={search}
+          onKeywordChange={setSearch}
+          filterFields={filterFields}
+          filterValues={filters}
+          onFilterChange={(key, val) => setFilters((prev) => ({ ...prev, [key]: val }))}
+          onResetFilters={() => setFilters({ courseCode: "", courseName: "", semester: "" })}
+          onExport={handleExport}
+          exporting={exporting}
+        />
 
         {error && <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300">{error}</div>}
 
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-amber-300 border-b border-white/10">
+            <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th className="px-6 py-4">Học phần</th>
+                <th className="px-6 py-4">Môn học / Học phần</th>
                 <th className="px-6 py-4">Tín chỉ</th>
                 <th className="px-6 py-4">Học kỳ</th>
                 <th className="px-6 py-4">Giảng viên phụ trách</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
-                    Đang tải dữ liệu khóa học…
+                    Đang tải dữ liệu môn học…
                   </td>
                 </tr>
-              ) : visibleCourses.length === 0 ? (
+              ) : paginatedCourses.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
-                    Chưa có khóa học nào phù hợp.
+                    Chưa có môn học nào phù hợp.
                   </td>
                 </tr>
               ) : (
-                visibleCourses.map((course) => {
+                paginatedCourses.map((course) => {
                   const teacher = course.teacherId ? teacherMap.get(course.teacherId) : null;
                   return (
-                    <tr key={course.id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={course.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-slate-100">{course.courseName}</p>
-                        <p className="mt-0.5 text-[11px] text-amber-300 font-mono">{course.courseCode}</p>
+                        <p className="font-bold text-slate-900 dark:text-slate-100">{course.courseName}</p>
+                        <p className="mt-0.5 text-[11px] text-amber-700 dark:text-amber-300 font-bold font-mono">{course.courseCode}</p>
                       </td>
                       <td className="px-6 py-4">
                         <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-bold text-amber-300">
                           {course.credit} Tín chỉ
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-300">{course.semester}</td>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{course.semester}</td>
                       <td className="px-6 py-4">
                         {teacher ? (
                           <div>
-                            <p className="font-medium text-slate-200">{teacher.fullName}</p>
-                            <p className="text-[10px] text-slate-400">{teacher.specialization}</p>
+                            <p className="font-medium text-slate-800 dark:text-slate-200">{teacher.fullName}</p>
+                            <p className="text-[10px] text-slate-400">{teacher.degree}</p>
                           </div>
                         ) : (
                           <span className="italic text-slate-500">Chưa phân công</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <ActionIcon label="Sửa khóa học" color="blue" onClick={() => setEditing(course)}>
+                        <ActionIcon label="Sửa môn học" color="amber" onClick={() => setEditing(course)}>
                           <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />
                           <path d="m13.5 7 3.5 3.5" />
                         </ActionIcon>
-                        <ActionIcon label="Xóa khóa học" color="red" onClick={() => setDeletingCourse(course)}>
+                        <ActionIcon label="Xóa môn học" color="red" onClick={() => setDeletingCourse(course)}>
                           <path d="M4 7h16" />
                           <path d="M10 11v5M14 11v5M6 7l1-3h10l1 3M7 7l1 13h8l1-13" />
                         </ActionIcon>
@@ -177,6 +231,19 @@ export default function Courses() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {editing !== undefined && (
@@ -193,8 +260,8 @@ export default function Courses() {
 
       {deletingCourse && (
         <ConfirmModal
-          title="Xác nhận xóa khóa học"
-          message={`Bạn có chắc chắn muốn xóa khóa học ${deletingCourse.courseName} (${deletingCourse.courseCode})? Dữ liệu sẽ không thể hoàn tác.`}
+          title="Xác nhận xóa môn học"
+          message={`Bạn có chắc chắn muốn xóa môn học ${deletingCourse.courseName} (${deletingCourse.courseCode})? Dữ liệu sẽ không thể hoàn tác.`}
           loading={deleting}
           onConfirm={confirmDeleteCourse}
           onClose={() => setDeletingCourse(null)}
@@ -211,14 +278,14 @@ function ActionIcon({
   children,
 }: {
   label: string;
-  color: "blue" | "red";
+  color: "blue" | "red" | "amber";
   onClick: () => void;
   children: React.ReactNode;
 }) {
   const tones =
-    color === "blue"
+    color === "amber" || color === "blue"
       ? "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
-      : "text-red-400 hover:bg-red-500/10 hover:text-red-300";
+      : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300";
   return (
     <button type="button" title={label} aria-label={label} onClick={onClick} className={`mr-1 rounded-xl p-2 transition-colors ${tones}`}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4">

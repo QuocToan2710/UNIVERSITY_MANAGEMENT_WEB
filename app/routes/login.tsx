@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { gsap } from "gsap";
 import { ApiError, login } from "../lib/api";
@@ -7,7 +7,6 @@ import { isAuthenticated, setToken } from "../lib/auth";
 export default function Login() {
   const navigate = useNavigate();
   const pageRef = useRef<HTMLElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -21,36 +20,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mouse move handler for 3D Tilt effect on the card
-  const handleMouseMove = (e: MouseEvent<HTMLElement>) => {
-    if (!cardRef.current) return;
-    const card = cardRef.current;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-
-    const rotateX = (-y / (rect.height / 2)) * 8; // Max 8 deg rotation
-    const rotateY = (x / (rect.width / 2)) * 8;
-
-    gsap.to(card, {
-      rotateX: rotateX,
-      rotateY: rotateY,
-      duration: 0.5,
-      ease: "power2.out",
-      transformPerspective: 1000,
-    });
-  };
-
-  const handleMouseLeave = () => {
-    if (!cardRef.current) return;
-    gsap.to(cardRef.current, {
-      rotateX: 0,
-      rotateY: 0,
-      duration: 0.8,
-      ease: "elastic.out(1, 0.4)",
-    });
-  };
-
   useEffect(() => {
     const context = gsap.context(() => {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -59,40 +28,11 @@ export default function Login() {
       const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
 
       timeline
-        .from(".login-brand-3d", { opacity: 0, y: -30, scale: 0.9, duration: 0.8, clearProps: "all" })
-        .from(".login-hero-title", { opacity: 0, y: 25, duration: 0.7, clearProps: "all" }, "-=0.4")
-        .from(".login-feature-3d", { opacity: 0, y: 20, duration: 0.6, stagger: 0.12, clearProps: "all" }, "-=0.3")
-        .from(".login-panel-3d", { opacity: 0, scale: 0.92, duration: 0.85, clearProps: "all" }, "-=0.7")
-        .from(".login-form-anim", { opacity: 0, y: 14, duration: 0.45, stagger: 0.08, clearProps: "all" }, "-=0.35");
-
-      // Continuous 3D Floating Orbs and Elements
-      gsap.to(".orb-3d-cyan", {
-        y: "-=25",
-        x: "+=15",
-        rotation: 12,
-        duration: 5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-
-      gsap.to(".orb-3d-indigo", {
-        y: "+=30",
-        x: "-=20",
-        rotation: -15,
-        duration: 6.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-
-      gsap.to(".cube-3d-element", {
-        rotationX: 360,
-        rotationY: 360,
-        duration: 20,
-        repeat: -1,
-        ease: "none",
-      });
+        .from(".login-brand-3d", { opacity: 0, y: -20, duration: 0.8, clearProps: "all" })
+        .from(".login-hero-title", { opacity: 0, y: 20, duration: 0.7, clearProps: "all" }, "-=0.4")
+        .from(".login-feature-3d", { opacity: 0, y: 15, duration: 0.6, stagger: 0.1, clearProps: "all" }, "-=0.3")
+        .from(".login-panel-3d", { opacity: 0, y: 15, duration: 0.85, clearProps: "all" }, "-=0.7")
+        .from(".login-form-anim", { opacity: 0, y: 10, duration: 0.45, stagger: 0.08, clearProps: "all" }, "-=0.35");
     }, pageRef);
 
     return () => context.revert();
@@ -106,7 +46,7 @@ export default function Login() {
       const result = await login(username, password);
       if (!result.authenticated || !result.token) throw new Error("Tên đăng nhập hoặc mật khẩu không đúng.");
       setToken(result.token);
-      navigate("/");
+      window.location.href = "/";
     } catch (reason) {
       setError(reason instanceof ApiError || reason instanceof Error ? reason.message : "Đăng nhập thất bại.");
     } finally {
@@ -117,116 +57,133 @@ export default function Login() {
   return (
     <main
       ref={pageRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="relative isolate min-h-screen overflow-hidden bg-[#050b18] text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans"
-      style={{ perspective: "1200px" }}
+      data-theme="dark"
+      className="login-page relative isolate min-h-screen overflow-hidden bg-[#070e1e] text-white antialiased selection:bg-cyan-500 selection:text-slate-950 font-sans"
     >
-      {/* Dynamic Ambient 3D Glow Backgrounds */}
-      <div className="orb-3d-cyan pointer-events-none absolute -left-32 top-10 size-[30rem] rounded-full bg-cyan-500/15 blur-[120px] will-change-transform" />
-      <div className="orb-3d-indigo pointer-events-none absolute -bottom-40 right-[-10%] size-[36rem] rounded-full bg-indigo-600/20 blur-[140px] will-change-transform" />
-      <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 size-[25rem] rounded-full bg-blue-500/10 blur-[100px]" />
+      {/* Real 4K Ultra-HD University Campus Background - 100% Full Clarity */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 scale-100"
+        style={{
+          backgroundImage: `url('/images/university-campus-bg.jpg')`,
+        }}
+      />
 
-      {/* 3D Wireframe Grid Floor Effect */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      {/* Ultra-Light Transparent Vignette: lets full 4K background shine through everywhere */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/40 via-black/10 to-black/35" />
+      <div className="pointer-events-none absolute inset-0 bg-black/15" />
 
-      {/* Floating 3D Geometric Accents */}
-      <div className="cube-3d-element pointer-events-none absolute top-20 right-1/4 size-16 rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 to-transparent backdrop-blur-md hidden lg:block" />
-      <div className="orb-3d-cyan pointer-events-none absolute bottom-24 left-1/4 size-20 rounded-full border border-indigo-400/30 bg-gradient-to-tr from-indigo-500/15 to-purple-500/5 backdrop-blur-md hidden lg:block" />
+      {/* Ambient Lighting Orbs */}
+      <div className="pointer-events-none absolute -left-20 top-10 size-[32rem] rounded-full bg-cyan-400/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-32 right-[-5%] size-[36rem] rounded-full bg-blue-500/15 blur-[140px]" />
 
       {/* Main Content Layout */}
       <div className="relative mx-auto grid min-h-screen max-w-7xl items-center gap-12 px-6 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:px-12">
-        {/* Left Side: 3D Branding & Hero Info */}
-        <section className="mx-auto w-full max-w-xl lg:mx-0">
+        {/* Left Side: Branding & Hero Info - Floating Naturally Over 4K Background */}
+        <section className="mx-auto w-full max-w-2xl lg:mx-0">
           <div className="login-brand-3d flex items-center gap-4">
-            {/* 3D Glass Box Logo */}
-            <div className="relative group grid size-14 place-items-center rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-cyan-400/20 via-blue-600/30 to-indigo-900/40 p-0.5 shadow-[0_0_25px_rgba(34,211,238,0.25)] backdrop-blur-xl transition-transform duration-300 group-hover:scale-105">
-              <div className="grid size-full place-items-center rounded-[14px] bg-slate-950/80 text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-200">
+            {/* Transparent Glass Logo Box */}
+            <div className="relative group grid size-13 place-items-center rounded-2xl border border-white/35 bg-black/25 p-0.5 shadow-lg backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
+              <div className="grid size-full place-items-center rounded-[14px] bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 text-2xl font-black text-white shadow-md">
                 E
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-xl font-bold tracking-tight text-white">EduManage</p>
-                <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-cyan-300 tracking-wider uppercase">
-                  3D Engine v2.4
+                <p className="text-2xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                  EduManage
+                </p>
+                <span className="rounded-full border border-cyan-300/50 bg-black/30 px-2.5 py-0.5 text-[10px] font-bold text-cyan-200 tracking-wider uppercase backdrop-blur-[2px]">
+                  Portal v2.4
                 </span>
               </div>
-              <p className="text-xs font-medium tracking-[0.2em] text-slate-400 uppercase">Hệ thống Đào tạo Thông minh</p>
+              <p className="text-xs font-bold tracking-[0.2em] text-cyan-200 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                Hệ thống Đào tạo Thông minh
+              </p>
             </div>
           </div>
 
-          <div className="login-hero-title mt-12">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-slate-900/60 px-3.5 py-1.5 backdrop-blur-md">
-              <span className="size-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-xs font-medium text-cyan-300">Giao diện Độc quyền & Trải nghiệm 3D</span>
+          {/* Giant Cascading Left-to-Right Animated Color Wave Title */}
+          <div className="login-hero-title mt-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/30 px-3.5 py-1.5 backdrop-blur-[2px] shadow-sm mb-4">
+              <span className="size-2 rounded-full bg-cyan-300 animate-pulse shadow-[0_0_8px_#67e8f9]" />
+              <span className="text-xs font-bold text-cyan-100">
+                Cổng Quản Trị Đào Tạo Thông Minh
+              </span>
             </div>
-            <h1 className="mt-6 text-4xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl text-slate-100">
-              Quản trị đào tạo <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-400">
-                Trực quan & Hiện đại.
+
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.65rem] xl:text-[4.15rem] font-black leading-[1.12] tracking-tight">
+              <span className="block animate-wave-line1 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] pr-2">
+                Quản trị đào tạo
+              </span>
+              <span className="block mt-1.5 sm:mt-2 animate-wave-line2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] pr-3">
+                Trực quan & Hiện đại
               </span>
             </h1>
-            <p className="mt-6 max-w-lg text-base leading-7 text-slate-300">
-              Quản lý danh sách sinh viên, giảng viên và các khóa học trên giao diện kính 3D với hiệu ứng mượt mà và bảo mật tối đa.
-            </p>
           </div>
 
-          {/* 3D Glass Feature Badges */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {/* 100% See-Through Glass Feature Badges (01, 02, 03) */}
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
-              { num: "01", title: "Quản lý tập trung", desc: "Đồng bộ đa nền tảng" },
-              { num: "02", title: "Bảo mật 3 lớp", desc: "Mã hóa Token JWT" },
-              { num: "03", title: "Vận hành liền mạch", desc: "Tối ưu hiệu năng GSAP" },
+              { num: "01", title: "Quản lý tập trung", desc: "Đồng bộ dữ liệu đa nền tảng" },
+              { num: "02", title: "Bảo mật an toàn", desc: "Mã hóa Token JWT xác thực" },
+              { num: "03", title: "Vận hành thông minh", desc: "Tối ưu hóa thời khóa biểu" },
             ].map((item) => (
               <div
                 key={item.num}
-                className="login-feature-3d group relative rounded-2xl border border-white/10 bg-slate-900/40 p-4.5 backdrop-blur-xl shadow-lg transition-all duration-300 hover:border-cyan-400/40 hover:bg-slate-900/60 hover:-translate-y-1"
+                className="login-feature-3d group relative rounded-2xl border border-white/30 bg-black/20 p-4.5 backdrop-blur-[2px] shadow-lg transition-all duration-300 hover:border-cyan-300 hover:bg-black/35 hover:-translate-y-0.5"
               >
-                <div className="text-xs font-bold tracking-widest text-cyan-400">{item.num}</div>
-                <p className="mt-3 text-sm font-semibold text-slate-100">{item.title}</p>
-                <p className="mt-1 text-xs text-slate-400">{item.desc}</p>
+                <div className="text-xs font-black tracking-widest text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                  {item.num}
+                </div>
+                <p className="mt-2 text-sm font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                  {item.title}
+                </p>
+                <p className="mt-1 text-xs font-medium text-slate-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Right Side: Floating 3D Glass Form Card */}
+        {/* Right Side: 100% See-Through Transparent Glass Form Card */}
         <section
-          ref={cardRef}
-          className="login-panel-3d relative mx-auto w-full max-w-md rounded-[2.5rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-slate-900/90 to-slate-950/95 p-8 text-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_40px_rgba(6,182,212,0.15)] backdrop-blur-2xl transition-shadow duration-500 hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.9),0_0_50px_rgba(6,182,212,0.25)] sm:p-10"
-          style={{ transformStyle: "preserve-3d" }}
+          className="login-panel-3d relative mx-auto w-full max-w-md rounded-[2.5rem] border border-white/35 bg-black/20 p-8 text-white shadow-[0_20px_50px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.4)] backdrop-blur-[3px] transition-all duration-300 hover:border-cyan-300/70 hover:bg-black/30 sm:p-10"
         >
           {/* Top Edge Glossy Highlight Line */}
-          <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_8px_#67e8f9]" />
 
           {/* Form Header */}
           <div className="login-form-anim flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold tracking-wider text-cyan-400 uppercase">EduManage Portal</p>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-white">Cổng Đăng Nhập</h2>
+              <p className="text-xs font-bold tracking-wider text-cyan-300 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                EduManage Portal
+              </p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+                Cổng Đăng Nhập
+              </h2>
             </div>
-            {/* 3D Shield Icon */}
-            <div className="grid size-12 place-items-center rounded-2xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 shadow-[inset_0_0_15px_rgba(34,211,238,0.2)]">
-              <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-current" strokeWidth="1.8">
+            {/* Shield Icon */}
+            <div className="grid size-11 place-items-center rounded-xl border border-white/35 bg-white/10 text-cyan-200 shadow-sm backdrop-blur-[2px]">
+              <svg viewBox="0 0 24 24" className="size-5.5 fill-none stroke-current" strokeWidth="2.2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
           </div>
-          <p className="login-form-anim mt-3 text-xs leading-5 text-slate-400">
+          <p className="login-form-anim mt-2.5 text-xs font-semibold leading-5 text-slate-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
             Vui lòng nhập thông tin xác thực để truy cập hệ thống quản lý.
           </p>
 
           {/* Login Form */}
-          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-            {/* Username Input */}
+          <form className="mt-7 space-y-4.5" onSubmit={handleSubmit}>
+            {/* Username Input - Transparent Glass */}
             <div className="login-form-anim">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-white mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 Tên đăng nhập
               </label>
               <div className="relative flex items-center">
-                <span className="pointer-events-none absolute left-4 text-slate-400">
-                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="1.8">
+                <span className="pointer-events-none absolute left-4 text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
@@ -236,20 +193,20 @@ export default function Login() {
                   autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/60 pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition duration-200 focus:border-cyan-400 focus:bg-slate-950/90 focus:ring-4 focus:ring-cyan-500/20 shadow-inner"
+                  className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-4 py-3 text-sm font-semibold text-white placeholder-slate-200 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
                   placeholder="Nhập tên tài khoản"
                 />
               </div>
             </div>
 
-            {/* Password Input */}
+            {/* Password Input - Transparent Glass */}
             <div className="login-form-anim">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-white mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 Mật khẩu
               </label>
               <div className="relative flex items-center">
-                <span className="pointer-events-none absolute left-4 text-slate-400">
-                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="1.8">
+                <span className="pointer-events-none absolute left-4 text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
@@ -260,16 +217,16 @@ export default function Login() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950/60 pl-11 pr-11 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition duration-200 focus:border-cyan-400 focus:bg-slate-950/90 focus:ring-4 focus:ring-cyan-500/20 shadow-inner"
+                  className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-11 py-3 text-sm font-semibold text-white placeholder-slate-200 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-slate-400 hover:text-slate-200 focus:outline-none"
+                  className="absolute right-4 text-slate-200 hover:text-white focus:outline-none cursor-pointer"
                   aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="1.8">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.2">
                     {showPassword ? (
                       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />
                     ) : (
@@ -285,8 +242,8 @@ export default function Login() {
 
             {/* Error Message */}
             {error && (
-              <div role="alert" className="login-form-anim flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
-                <svg viewBox="0 0 24 24" className="size-4 shrink-0 fill-none stroke-current" strokeWidth="2">
+              <div role="alert" className="login-form-anim flex items-center gap-2 rounded-lg border border-red-400/50 bg-red-950/70 p-3 text-xs font-semibold text-red-100 backdrop-blur-sm shadow-md">
+                <svg viewBox="0 0 24 24" className="size-4 shrink-0 fill-none stroke-current" strokeWidth="2.2">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -295,59 +252,59 @@ export default function Login() {
               </div>
             )}
 
-            {/* 3D Glossy Neon Submit Button */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="login-form-anim group relative overflow-hidden flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-4 font-semibold text-white shadow-[0_10px_30px_-5px_rgba(6,182,212,0.4)] transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(6,182,212,0.65)] hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="login-form-anim group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-4 py-3.5 font-bold text-white shadow-lg transition-all duration-200 hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             >
-              {/* Button Sheen Light Sweep Animation */}
-              <div className="pointer-events-none absolute -inset-full top-0 block h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-pulse" />
-
               <span className="relative z-10 text-sm tracking-wide">
                 {isSubmitting ? "Đang xác thực dữ liệu..." : "Đăng Nhập Vào Hệ Thống"}
               </span>
 
               {!isSubmitting && (
-                <svg viewBox="0 0 24 24" className="relative z-10 size-4 fill-none stroke-current transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth="2.2">
+                <svg viewBox="0 0 24 24" className="relative z-10 size-4 fill-none stroke-current transition-transform duration-200 group-hover:translate-x-1" strokeWidth="2.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               )}
             </button>
+
             {/* Quick Demo Accounts Helper */}
-            <div className="login-form-anim mt-6 pt-4 border-t border-white/10">
-              <p className="text-xs font-semibold text-slate-300 mb-2.5">Thử nghiệm nhanh với 3 Vai trò (Roles):</p>
+            <div className="login-form-anim mt-5 pt-3.5 border-t border-white/20">
+              <p className="text-xs font-bold text-white mb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                Thử nghiệm nhanh với 3 Vai trò (Roles):
+              </p>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => { setUsername("admin"); setPassword("admin"); }}
-                  className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-2 py-2 text-[11px] font-semibold text-cyan-300 hover:bg-cyan-500/20 transition-all text-center cursor-pointer"
+                  className="rounded-lg border border-white/30 bg-black/25 px-2 py-2 text-[11px] font-bold text-cyan-200 hover:bg-black/45 hover:border-cyan-300 backdrop-blur-[2px] transition-all text-center cursor-pointer shadow-sm"
                 >
-                  👑 Admin
-                  <span className="block text-[9px] text-slate-400 font-mono">admin / admin</span>
+                  Admin
+                  <span className="block text-[9px] text-slate-200 font-mono font-medium">admin / admin</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => { setUsername("teacher"); setPassword("teacher123"); }}
-                  className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-2 py-2 text-[11px] font-semibold text-violet-300 hover:bg-violet-500/20 transition-all text-center cursor-pointer"
+                  className="rounded-lg border border-white/30 bg-black/25 px-2 py-2 text-[11px] font-bold text-violet-200 hover:bg-black/45 hover:border-violet-300 backdrop-blur-[2px] transition-all text-center cursor-pointer shadow-sm"
                 >
-                  👨‍🏫 Giảng viên
-                  <span className="block text-[9px] text-slate-400 font-mono">teacher / teacher123</span>
+                  Giảng viên
+                  <span className="block text-[9px] text-slate-200 font-mono font-medium">teacher / teacher123</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => { setUsername("student"); setPassword("student123"); }}
-                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-2 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all text-center cursor-pointer"
+                  className="rounded-lg border border-white/30 bg-black/25 px-2 py-2 text-[11px] font-bold text-emerald-200 hover:bg-black/45 hover:border-emerald-300 backdrop-blur-[2px] transition-all text-center cursor-pointer shadow-sm"
                 >
-                  👨‍🎓 Sinh viên
-                  <span className="block text-[9px] text-slate-400 font-mono">student / student123</span>
+                  Sinh viên
+                  <span className="block text-[9px] text-slate-200 font-mono font-medium">student / student123</span>
                 </button>
               </div>
             </div>
           </form>
 
           {/* Card Footer */}
-          <div className="login-form-anim mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+          <div className="login-form-anim mt-6 pt-4 border-t border-white/20 flex items-center justify-between text-[11px] font-semibold text-slate-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
             <span>EduManage Portal</span>
             <span className="flex items-center gap-1.5 text-cyan-300">
               <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
@@ -359,4 +316,3 @@ export default function Login() {
     </main>
   );
 }
-

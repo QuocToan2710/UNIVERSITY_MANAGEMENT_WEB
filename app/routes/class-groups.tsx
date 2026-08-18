@@ -3,15 +3,24 @@ import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
 import { ClassGroupForm } from "../components/forms/class-group-form";
-import { ClassGroupIcon, PlusIcon, SearchIcon } from "../components/icons";
+import { ClassGroupIcon, PlusIcon } from "../components/icons";
+import { Pagination } from "../components/pagination";
+import { SearchExportBar, type FilterField } from "../components/search-export-bar";
 import { ApiError, apiListRequest, apiRequest } from "../lib/api";
+import { exportToExcel } from "../lib/excel";
 import type { ClassGroup } from "../types/management";
 
 export default function ClassGroups() {
   const navigate = useNavigate();
   const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<Record<string, any>>({
+    classCode: "",
+    className: "",
+    academicYear: "",
+  });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<ClassGroup | null | undefined>(undefined);
   const [deletingGroup, setDeletingGroup] = useState<ClassGroup | null>(null);
@@ -35,16 +44,58 @@ export default function ClassGroups() {
     void loadClassGroups();
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const visibleClassGroups = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
-    return term
-      ? classGroups.filter((cg) =>
-          `${cg.classCode} ${cg.className} ${cg.major || ""} ${cg.homeroomTeacherName || ""}`
-            .toLocaleLowerCase()
-            .includes(term)
-        )
-      : classGroups;
-  }, [classGroups, search]);
+    const code = (filters.classCode || "").trim().toLowerCase();
+    const name = (filters.className || "").trim().toLowerCase();
+    const year = (filters.academicYear || "").trim().toLowerCase();
+
+    return classGroups.filter((cg) => {
+      if (term && !`${cg.classCode} ${cg.className} ${cg.major || ""} ${cg.homeroomTeacherName || ""}`.toLocaleLowerCase().includes(term)) {
+        return false;
+      }
+      if (code && !(cg.classCode || "").toLowerCase().includes(code)) return false;
+      if (name && !(cg.className || "").toLowerCase().includes(name)) return false;
+      if (year && !(cg.academicYear || "").toLowerCase().includes(year)) return false;
+      return true;
+    });
+  }, [classGroups, search, filters]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filters]);
+
+  const totalItems = visibleClassGroups.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const paginatedClassGroups = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return visibleClassGroups.slice(start, start + pageSize);
+  }, [visibleClassGroups, currentPage, pageSize]);
+
+  function handleExport() {
+    exportToExcel(
+      visibleClassGroups,
+      "Danh_Sach_Lop_Hoc",
+      "LopHoc",
+      [
+        { key: "classCode", header: "Mã Lớp" },
+        { key: "className", header: "Tên Lớp" },
+        { key: "major", header: "Ngành đào tạo" },
+        { key: "academicYear", header: "Niên khóa" },
+        { key: "homeroomTeacherName", header: "GV Chủ Nhiệm" },
+        { key: "studentCount", header: "Sĩ số Sinh viên" },
+      ]
+    );
+  }
+
+  const filterFields: FilterField[] = [
+    { key: "classCode", label: "Mã Lớp", placeholder: "Ví dụ: DPM22..." },
+    { key: "className", label: "Tên Lớp", placeholder: "Ví dụ: KTPM 01..." },
+    { key: "academicYear", label: "Niên khóa", placeholder: "Ví dụ: 2024-2028..." },
+  ];
 
   async function confirmDelete() {
     if (!deletingGroup) return;
@@ -62,49 +113,46 @@ export default function ClassGroups() {
 
   return (
     <AppShell title="Quản lý Lớp học" description="Danh sách các lớp hành chính, gán giáo viên chủ nhiệm và ngành đào tạo.">
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Table Header Controls */}
-        <div className="flex flex-col gap-4 border-b border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <div className="grid size-9 place-items-center rounded-xl border border-teal-400/30 bg-teal-500/10 text-teal-300">
                 <ClassGroupIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-white">Danh sách lớp học</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách lớp học</h2>
             </div>
-            <p className="mt-1 text-xs text-slate-400">{classGroups.length} lớp học trong hệ thống</p>
+            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{classGroups.length} lớp học trong hệ thống</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-600 to-green-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:brightness-110 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-600 to-green-600 px-5 py-3 text-xs font-semibold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
             <span>Tạo lớp học mới</span>
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="border-b border-white/5 p-4 bg-slate-950/40">
-          <div className="relative flex items-center sm:max-w-md">
-            <span className="pointer-events-none absolute left-4 text-slate-400">
-              <SearchIcon size={16} />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-900/80 pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
-              placeholder="Tìm theo mã lớp, tên lớp, ngành hoặc GVCN..."
-            />
-          </div>
-        </div>
+        {/* Search & Export Bar */}
+        <SearchExportBar
+          keyword={search}
+          onKeywordChange={setSearch}
+          filterFields={filterFields}
+          filterValues={filters}
+          onFilterChange={(key, val) => setFilters((prev) => ({ ...prev, [key]: val }))}
+          onResetFilters={() => setFilters({ classCode: "", className: "", academicYear: "" })}
+          onExport={handleExport}
+          exporting={exporting}
+        />
 
         {error && <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300">{error}</div>}
 
         {/* Data Table */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-teal-300 border-b border-white/10">
+            <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
                 <th className="px-6 py-4">Mã & Tên Lớp</th>
                 <th className="px-6 py-4">Ngành học</th>
@@ -114,31 +162,31 @@ export default function ClassGroups() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
                     Đang tải dữ liệu lớp học…
                   </td>
                 </tr>
-              ) : visibleClassGroups.length === 0 ? (
+              ) : paginatedClassGroups.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
                     Chưa có lớp học nào phù hợp.
                   </td>
                 </tr>
               ) : (
-                visibleClassGroups.map((cg) => (
-                  <tr key={cg.id} className="hover:bg-slate-800/40 transition-colors">
+                paginatedClassGroups.map((cg) => (
+                  <tr key={cg.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-semibold text-slate-100">{cg.className}</p>
+                      <p className="font-bold text-slate-900 dark:text-slate-100">{cg.className}</p>
                       <p className="mt-0.5 text-[11px] text-teal-300 font-mono">{cg.classCode}</p>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">{cg.major || "Chưa phân ngành"}</td>
-                    <td className="px-6 py-4 text-slate-400 font-mono">{cg.academicYear || "N/A"}</td>
+                    <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{cg.major || "Chưa phân ngành"}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-400 font-mono">{cg.academicYear || "N/A"}</td>
                     <td className="px-6 py-4">
                       {cg.homeroomTeacherName ? (
-                        <span className="font-medium text-slate-200">{cg.homeroomTeacherName}</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">{cg.homeroomTeacherName}</span>
                       ) : (
                         <span className="text-slate-500 italic">Chưa gán</span>
                       )}
@@ -164,6 +212,19 @@ export default function ClassGroups() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {editing !== undefined && (
@@ -204,7 +265,7 @@ function ActionIcon({
   const tones =
     color === "teal"
       ? "text-teal-400 hover:bg-teal-500/10 hover:text-teal-300"
-      : "text-red-400 hover:bg-red-500/10 hover:text-red-300";
+      : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300";
   return (
     <button type="button" title={label} aria-label={label} onClick={onClick} className={`mr-1 rounded-xl p-2 transition-colors ${tones}`}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4">

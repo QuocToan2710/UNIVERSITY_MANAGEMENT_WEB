@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
-import { NavLink, useNavigate, type NavLinkRenderProps } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
 import { apiRequest } from "../lib/api";
 import { clearToken, getToken } from "../lib/auth";
 import type { User } from "../types/management";
+import { useTheme } from "../lib/theme";
 import {
+  ArrowRightIcon,
   BellIcon,
   ClassGroupIcon,
   CourseIcon,
   DashboardIcon,
   EduManageLogo,
   LogoutIcon,
+  MajorIcon,
+  MoonIcon,
   ScheduleIcon,
+  RoomIcon,
   StudentIcon,
+  SunIcon,
   TeacherIcon,
   UsersIcon,
 } from "./icons";
@@ -22,37 +28,113 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
-const allNavigation = [
+type SubNavItem = {
+  to: string;
+  label: string;
+  allowedRoles: string[];
+};
+
+type NavItem = {
+  to?: string;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+  end?: boolean;
+  allowedRoles: string[];
+  subItems?: SubNavItem[];
+};
+
+const allNavigation: NavItem[] = [
   { to: "/", label: "Tổng quan", Icon: DashboardIcon, end: true, allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "USER"] },
-  { to: "/schedule", label: "Lịch học", Icon: ScheduleIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  {
+    label: "Lịch",
+    Icon: ScheduleIcon,
+    allowedRoles: ["ADMIN", "TEACHER", "STUDENT"],
+    subItems: [
+      { to: "/schedule/timetable", label: "Thời khóa biểu", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+      { to: "/schedule/class", label: "Lịch học", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+      { to: "/schedule/exam", label: "Lịch thi", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+      { to: "/schedule/teaching", label: "Lịch dạy", allowedRoles: ["ADMIN", "TEACHER"] },
+    ],
+  },
   { to: "/class-groups", label: "Lớp học", Icon: ClassGroupIcon, allowedRoles: ["ADMIN"] },
   { to: "/students", label: "Sinh viên", Icon: StudentIcon, allowedRoles: ["ADMIN", "TEACHER"] },
   { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN", "STUDENT"] },
-  { to: "/courses", label: "Khóa học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/courses", label: "Môn học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/majors", label: "Ngành học", Icon: MajorIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  {
+    label: "Quản trị danh mục",
+    Icon: RoomIcon,
+    allowedRoles: ["ADMIN"],
+    subItems: [
+      { to: "/categories/buildings", label: "Tòa nhà", allowedRoles: ["ADMIN"] },
+      { to: "/categories/floors", label: "Tầng", allowedRoles: ["ADMIN"] },
+      { to: "/categories/rooms", label: "Phòng học", allowedRoles: ["ADMIN"] },
+    ],
+  },
   { to: "/users", label: "Người dùng", Icon: UsersIcon, allowedRoles: ["ADMIN"] },
 ];
 
-
 function navClassName({ isActive }: NavLinkRenderProps) {
   return [
-    "group flex items-center gap-3.5 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200",
+    "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200",
     isActive
-      ? "bg-gradient-to-r from-cyan-500/20 via-blue-600/20 to-indigo-600/20 text-cyan-300 border border-cyan-400/30 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-      : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 hover:border hover:border-white/10",
+      ? "bg-sky-100 text-sky-950 font-extrabold border border-sky-400 shadow-2xs dark:bg-gradient-to-r dark:from-cyan-500/20 dark:via-blue-600/20 dark:to-indigo-600/20 dark:text-cyan-300 dark:border-cyan-400/30 dark:shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+      : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200",
+  ].join(" ");
+}
+
+function subNavClassName({ isActive }: NavLinkRenderProps) {
+  return [
+    "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs transition-all duration-200 pl-9",
+    isActive
+      ? "bg-sky-100 text-sky-950 font-extrabold border-l-4 border-sky-600 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-400"
+      : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200",
   ].join(" ");
 }
 
 export function AppShell({ title, description, children }: AppShellProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [scheduleExpanded, setScheduleExpanded] = useState(true);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   useEffect(() => {
     void apiRequest<User>("/users/myInfo")
       .then(setUser)
       .catch(() => setUser(null));
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileOpen]);
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/schedule")) {
+      setScheduleExpanded(true);
+    }
+    if (location.pathname.startsWith("/categories")) {
+      setCategoriesExpanded(true);
+    }
+  }, [location.pathname]);
 
   async function handleLogout() {
     const token = getToken();
@@ -74,133 +156,404 @@ export function AppShell({ title, description, children }: AppShellProps) {
     }
   }
 
-  const userRoleNames = user?.roles?.map((r) => r.name.toUpperCase()) || [];
-  const isAdmin = userRoleNames.length === 0 || userRoleNames.includes("ADMIN");
+  const rawRoleNames = (user?.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
+  const userRoleNames = rawRoleNames.flatMap((r) => [r, r.replace(/^ROLE_/, "")]);
+  const isAdmin = userRoleNames.includes("ADMIN") || userRoleNames.includes("ROLE_ADMIN");
 
   const filteredNavigation = allNavigation.filter((item) => {
+    if (user === null) return true; // Show all while user profile is loading
     if (isAdmin) return true;
     return item.allowedRoles.some((role) => userRoleNames.includes(role));
   });
 
   const displayName = user?.fullName || "Người dùng";
-  const primaryRole = userRoleNames.length > 0 ? userRoleNames.join(", ") : "ADMIN";
+  const primaryRoleCode = (userRoleNames[0] || "ADMIN").toUpperCase();
+
+  const roleStyles = useMemo(() => {
+    if (primaryRoleCode.includes("ADMIN")) {
+      return {
+        badge: "border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300",
+        avatar: "from-violet-500 via-purple-600 to-indigo-700",
+        glow: "shadow-[0_0_15px_rgba(168,85,247,0.3)]",
+        label: "Quản trị viên",
+      };
+    }
+    if (primaryRoleCode.includes("TEACHER")) {
+      return {
+        badge: "border-emerald-300 dark:border-emerald-400/40 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+        avatar: "from-emerald-400 via-teal-500 to-cyan-600",
+        glow: "shadow-[0_0_15px_rgba(16,185,129,0.3)]",
+        label: "Giảng viên",
+      };
+    }
+    if (primaryRoleCode.includes("STUDENT")) {
+      return {
+        badge: "border-cyan-300 dark:border-cyan-400/40 bg-cyan-50 dark:bg-cyan-500/15 text-cyan-800 dark:text-cyan-300",
+        avatar: "from-cyan-400 via-sky-500 to-blue-600",
+        glow: "shadow-[0_0_15px_rgba(6,182,212,0.3)]",
+        label: "Sinh viên",
+      };
+    }
+    return {
+      badge: "border-blue-300 dark:border-blue-400/40 bg-blue-50 dark:bg-blue-500/15 text-blue-800 dark:text-blue-300",
+      avatar: "from-blue-500 via-indigo-600 to-slate-700",
+      glow: "shadow-[0_0_15px_rgba(59,130,246,0.3)]",
+      label: "Người dùng",
+    };
+  }, [primaryRoleCode]);
+
   const initials = displayName.split(" ").filter(Boolean).slice(-2).map((part) => part[0]).join("").toUpperCase() || "U";
 
+  const { theme, setTheme, isDark, toggleTheme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-[#070e1e] text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070e1e] text-slate-900 dark:text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans transition-colors duration-200">
       {/* Dynamic Ambient Background Glows */}
-      <div className="pointer-events-none fixed -left-40 top-0 size-[32rem] rounded-full bg-cyan-500/10 blur-[130px]" />
-      <div className="pointer-events-none fixed -bottom-40 right-0 size-[36rem] rounded-full bg-indigo-600/15 blur-[150px]" />
+      <div className="pointer-events-none fixed -left-40 top-0 size-[32rem] rounded-full bg-cyan-500/10 dark:bg-cyan-500/10 blur-[130px] opacity-20 dark:opacity-100" />
+      <div className="pointer-events-none fixed -bottom-40 right-0 size-[36rem] rounded-full bg-indigo-600/10 dark:bg-indigo-600/15 blur-[150px] opacity-20 dark:opacity-100" />
 
       {/* Sidebar Navigation */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-800/80 bg-slate-950/80 p-4.5 backdrop-blur-2xl md:flex md:flex-col">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-100 dark:bg-slate-950/80 p-4.5 backdrop-blur-2xl md:flex md:flex-col shadow-xs">
         {/* Brand Header */}
-        <div className="mb-8 flex items-center gap-3.5 px-2 pt-2">
+        <div className="mb-6 flex items-center gap-3.5 px-2 pt-2">
           <EduManageLogo size={42} />
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="font-bold tracking-tight text-white text-base">EduManage</p>
+              <p className="font-bold tracking-tight text-slate-900 dark:text-white text-base">EduManage</p>
               <span className="size-2 rounded-full bg-cyan-400 animate-pulse" />
             </div>
-            <p className="text-[11px] font-medium tracking-wider text-cyan-400 uppercase">3D Engine Portal</p>
+            <p className="text-[11px] font-bold tracking-wider text-cyan-600 dark:text-cyan-400 uppercase">3D Engine Portal</p>
           </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="space-y-1.5" aria-label="Điều hướng chính">
-          {filteredNavigation.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.end} className={navClassName}>
-              {({ isActive }) => (
-                <>
-                  <span
-                    className={`grid size-7 place-items-center rounded-lg transition-transform group-hover:scale-110 ${
-                      isActive ? "text-cyan-300" : "text-slate-400 group-hover:text-slate-200"
+        <nav className="space-y-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" aria-label="Điều hướng chính">
+          {filteredNavigation.map((item) => {
+            if (item.subItems) {
+              const isSchedule = item.label === "Lịch";
+              const isChildActive = isSchedule
+                ? location.pathname.startsWith("/schedule")
+                : location.pathname.startsWith("/categories");
+
+              const isExpanded = isSchedule ? scheduleExpanded : categoriesExpanded;
+              const toggleExpanded = () => {
+                if (isSchedule) setScheduleExpanded((open) => !open);
+                else setCategoriesExpanded((open) => !open);
+              };
+
+              const filteredSubItems = item.subItems.filter((sub) => {
+                if (user === null || isAdmin) return true;
+                return sub.allowedRoles.some((role) => userRoleNames.includes(role));
+              });
+
+              return (
+                <div key={item.label} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={toggleExpanded}
+                    className={`group flex w-full items-center justify-between gap-3.5 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer ${
+                      isChildActive
+                        ? "bg-sky-100 dark:bg-gradient-to-r dark:from-cyan-500/20 dark:via-blue-600/20 dark:to-indigo-600/20 text-sky-950 dark:text-cyan-300 font-extrabold border border-sky-400 dark:border-cyan-400/30 shadow-2xs"
+                        : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
                     }`}
                   >
-                    <item.Icon size={19} />
-                  </span>
-                  <span className="tracking-wide">{item.label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+                    <div className="flex items-center gap-3.5">
+                      <span className={`grid size-7 place-items-center rounded-lg transition-transform group-hover:scale-110 ${isChildActive ? "text-sky-800 dark:text-cyan-300" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200"}`}>
+                        <item.Icon size={19} />
+                      </span>
+                      <span className="tracking-wide">{item.label}</span>
+                    </div>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180 text-sky-800 dark:text-cyan-300" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
 
-        {/* Sidebar Footer Widget */}
-        <div className="mt-auto rounded-2xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-md">
-          <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
-            <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
-            Hệ thống Hoạt động
-          </div>
-          <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
-            EduManage v2.4 • Kết nối API bảo mật.
-          </p>
-        </div>
+                  {/* Sub-menu Dropdown Items right underneath */}
+                  {isExpanded && (
+                    <div className="space-y-1 pt-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                      {filteredSubItems.map((sub) => (
+                        <NavLink key={sub.to} to={sub.to} className={subNavClassName}>
+                          {({ isActive }) => (
+                            <>
+                              <span className={`size-1.5 rounded-full ${isActive ? "bg-sky-700 dark:bg-cyan-400" : "bg-slate-400 dark:bg-slate-600 group-hover:bg-sky-600 dark:group-hover:bg-cyan-300"}`} />
+                              <span>{sub.label}</span>
+                            </>
+                          )}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <NavLink key={item.to} to={item.to!} end={item.end} className={navClassName}>
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={`grid size-7 place-items-center rounded-lg transition-transform group-hover:scale-110 ${
+                        isActive ? "text-sky-800 dark:text-cyan-300" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200"
+                      }`}
+                    >
+                      <item.Icon size={19} />
+                    </span>
+                    <span className="tracking-wide">{item.label}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
       </aside>
 
       {/* Main Container */}
       <main className="md:ml-64 relative min-h-screen">
-        {/* Top Header */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-800/80 bg-slate-950/70 px-6 backdrop-blur-xl md:px-8">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-50 dark:bg-slate-950/70 px-6 backdrop-blur-xl md:px-8 transition-colors shadow-xs">
           <div className="flex items-center gap-3 md:hidden">
             <EduManageLogo size={32} />
-            <span className="font-bold text-white text-base">EduManage</span>
+            <span className="font-bold text-slate-900 dark:text-white text-base">EduManage</span>
           </div>
 
-          <div className="hidden text-xs font-medium tracking-wider text-slate-400 uppercase md:block">
-            Cổng Quản lý Đào tạo Thông minh 3D
+          <div className="hidden text-xs font-semibold tracking-wider text-slate-600 dark:text-slate-400 uppercase md:block">
+            Cổng Quản lý Đào tạo Thông minh
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle Button (Light / Dark) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="relative grid size-10 place-items-center rounded-xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:border-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+              title={isDark ? "Chuyển sang chế độ Sáng" : "Chuyển sang chế độ Tối"}
+              aria-label="Đổi giao diện sáng/tối"
+            >
+              {isDark ? (
+                <SunIcon size={18} className="text-amber-400 animate-in spin-in-90 duration-300" />
+              ) : (
+                <MoonIcon size={18} className="text-indigo-600 animate-in spin-in-90 duration-300" />
+              )}
+            </button>
+
             {/* Notification Bell */}
             <button
-              className="relative grid size-10 place-items-center rounded-xl border border-white/10 bg-slate-900/60 text-slate-300 hover:border-cyan-400/40 hover:text-cyan-300 transition-colors"
+              className="relative grid size-10 place-items-center rounded-xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:border-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors shadow-sm cursor-pointer"
               aria-label="Thông báo"
             >
               <BellIcon size={18} />
-              <span className="absolute top-2 right-2 size-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
+              <span className="absolute top-2 right-2 size-2 rounded-full bg-cyan-500 shadow-[0_0_8px_#22d3ee]" />
             </button>
 
-            {/* Profile Dropdown */}
-            <div className="relative border-l border-slate-800 pl-4">
+            {/* Cyberpunk Glass Capsule Profile Widget */}
+            <div ref={profileRef} className="relative border-l border-slate-200 dark:border-white/10 pl-3">
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
                 aria-expanded={profileOpen}
                 aria-haspopup="menu"
-                className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/60 p-1.5 pr-3 text-left hover:border-cyan-400/30 transition-all"
+                className={`group relative flex items-center gap-3 rounded-2xl border p-1.5 pr-3.5 text-left transition-all duration-300 cursor-pointer backdrop-blur-xl ${
+                  profileOpen
+                    ? "border-cyan-500 dark:border-cyan-400/60 bg-cyan-50/80 dark:bg-slate-900/95 shadow-[0_0_20px_rgba(34,211,238,0.25)] ring-2 ring-cyan-400/20"
+                    : "border-slate-200 dark:border-white/15 bg-white/80 dark:bg-slate-900/70 hover:border-cyan-500 hover:bg-slate-100 dark:hover:border-cyan-400/50 dark:hover:bg-white dark:bg-slate-900/90 shadow-sm"
+                }`}
               >
-                <div className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 text-xs font-black text-slate-950 shadow-md">
-                  {initials}
+                {/* 3D Gradient Avatar with Pulsing Status Indicator */}
+                <div className="relative">
+                  <div
+                    className={`grid size-9 place-items-center rounded-xl bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-slate-900 dark:text-white ${roleStyles.glow} transition-transform duration-300 group-hover:scale-105`}
+                  >
+                    {initials}
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-slate-950 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                 </div>
+
+                {/* User Identity Info */}
                 <div className="hidden text-xs sm:block">
-                  <p className="font-semibold text-slate-200">{displayName}</p>
-                  <p className="text-[10px] text-cyan-400 font-mono flex items-center gap-1">
-                    <span>{user?.username || "Đang tải..."}</span>
-                    <span className="rounded bg-cyan-500/20 px-1 py-0.2 text-[9px] font-bold text-cyan-300 border border-cyan-400/30 uppercase">{primaryRole}</span>
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-white transition-colors">
+                      {displayName}
+                    </p>
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <span
+                      className={`rounded-md border px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider ${roleStyles.badge}`}
+                    >
+                      {roleStyles.label}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                      @{user?.username || "..."}
+                    </span>
+                  </div>
                 </div>
-                <svg viewBox="0 0 24 24" className="hidden size-4 fill-none stroke-slate-400 sm:block" strokeWidth="2">
+
+                {/* Animated Chevron */}
+                <svg
+                  viewBox="0 0 24 24"
+                  className={`hidden size-4 transition-transform duration-300 sm:block ${
+                    profileOpen ? "rotate-180 text-cyan-600 dark:text-cyan-300" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                >
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
 
+              {/* Rich Profile Dropdown Menu */}
               {profileOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-[calc(100%+0.75rem)] z-30 w-52 rounded-2xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-2xl"
+                  className="user-profile-menu absolute right-0 top-[calc(100%+0.75rem)] z-30 w-72 sm:w-80 rounded-3xl border border-slate-200 dark:border-white/20 bg-white dark:bg-slate-950 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65),0_0_20px_rgba(34,211,238,0.1)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200"
                 >
-                  <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Tài khoản</p>
-                  <button
-                    role="menuitem"
-                    type="button"
-                    onClick={() => void handleLogout()}
-                    disabled={loggingOut}
-                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50 transition-colors"
-                  >
-                    <LogoutIcon size={16} />
-                    {loggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
-                  </button>
+                  {/* Top Profile Card Banner */}
+                  <div className="user-profile-banner relative overflow-hidden rounded-2xl border border-sky-200 dark:border-white/10 bg-gradient-to-br from-sky-50 via-blue-50/60 to-slate-50 dark:from-slate-900/90 dark:via-slate-900/60 dark:to-slate-950 p-3.5 mb-3.5">
+                    <div className="absolute top-0 right-0 h-16 w-24 bg-cyan-500/10 blur-xl pointer-events-none" />
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`grid size-12 place-items-center rounded-2xl bg-gradient-to-br ${roleStyles.avatar} text-sm font-black text-white ${roleStyles.glow}`}
+                      >
+                        {initials}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-bold text-slate-900 dark:text-white text-sm">
+                          {displayName}
+                        </p>
+                        <p className="truncate text-[11px] text-slate-600 dark:text-slate-400 font-mono font-semibold">
+                          {user?.email || `@${user?.username || "user"}`}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider ${roleStyles.badge}`}
+                          >
+                            <span className="size-1 rounded-full bg-current" />
+                            {roleStyles.label}
+                          </span>
+                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
+                            <span className="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+                            Online
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Action Navigation Links */}
+                  <div className="space-y-1 mb-3.5 border-t border-b border-slate-200 dark:border-white/10 py-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        setShowProfileModal(true);
+                      }}
+                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-700 dark:hover:text-cyan-300 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="grid size-6 place-items-center rounded-lg bg-slate-100 dark:bg-slate-800 text-cyan-700 dark:text-cyan-400 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                          <UsersIcon size={13} />
+                        </span>
+                        <span className="text-slate-800 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">Thông tin tài khoản</span>
+                      </div>
+                      <ArrowRightIcon size={12} className="text-slate-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        setPasswordMsg(null);
+                        setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                        setShowPasswordModal(true);
+                      }}
+                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-700 dark:hover:text-cyan-300 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="grid size-6 place-items-center rounded-lg bg-slate-100 dark:bg-slate-800 text-cyan-700 dark:text-cyan-400 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                          <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0110 0v4" />
+                          </svg>
+                        </span>
+                        <span className="text-slate-800 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">Đổi mật khẩu & Bảo mật</span>
+                      </div>
+                      <ArrowRightIcon size={12} className="text-slate-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors" />
+                    </button>
+                  </div>
+
+                  {/* Theme Switcher Header */}
+                  <div className="mb-3.5 space-y-1.5">
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                      Chế độ hiển thị
+                    </p>
+                    <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => setTheme("light")}
+                        className={`flex flex-col items-center justify-center py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                          theme === "light"
+                            ? "bg-white text-cyan-800 border border-cyan-300 shadow-xs dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-400/40"
+                            : "text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/50"
+                        }`}
+                      >
+                        <SunIcon size={14} className="mb-0.5 text-amber-500" />
+                        <span>Sáng</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTheme("dark")}
+                        className={`flex flex-col items-center justify-center py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                          theme === "dark"
+                            ? "bg-white text-cyan-800 border border-cyan-300 shadow-xs dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-400/40"
+                            : "text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/50"
+                        }`}
+                      >
+                        <MoonIcon size={14} className="mb-0.5 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tối</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTheme("system")}
+                        className={`flex flex-col items-center justify-center py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                          theme === "system"
+                            ? "bg-white text-cyan-800 border border-cyan-300 shadow-xs dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-400/40"
+                            : "text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/50"
+                        }`}
+                      >
+                        <span className="text-xs mb-0.5">💻</span>
+                        <span>Tự động</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* System Version Meta */}
+                  <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-900/40 px-3 py-2 text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between mb-3.5 font-medium">
+                    <span className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                      <span className="size-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400" />
+                      <span>EduManage Portal</span>
+                    </span>
+                    <span className="font-mono text-cyan-700 dark:text-cyan-300 font-bold text-[10px] bg-cyan-50 dark:bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-300 dark:border-cyan-400/20">v2.4.0</span>
+                  </div>
+
+                  {/* Logout Button */}
+                  <div className="border-t border-slate-200 dark:border-white/10 pt-2">
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={() => void handleLogout()}
+                      disabled={loggingOut}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-300 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 px-3 py-2.5 text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 hover:border-red-400 dark:hover:border-red-500/40 hover:text-red-800 dark:hover:text-red-300 disabled:opacity-50 transition-all cursor-pointer shadow-2xs active:scale-95"
+                    >
+                      <LogoutIcon size={16} />
+                      <span>{loggingOut ? "Đang đăng xuất..." : "Đăng xuất khỏi hệ thống"}</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -210,13 +563,212 @@ export function AppShell({ title, description, children }: AppShellProps) {
         {/* Page Content View */}
         <section className="mx-auto max-w-7xl px-6 py-8 md:px-8">
           <div className="mb-8">
-            <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{title}</h1>
-            <p className="mt-1.5 text-sm text-slate-400">{description}</p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">{title}</h1>
+            <p className="mt-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">{description}</p>
           </div>
           {children}
         </section>
       </main>
+
+      {/* Modal 1: Thông tin chi tiết tài khoản */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/70 p-4 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-3xl border border-slate-200 dark:border-white/20 bg-white dark:bg-slate-900/95 p-6 shadow-2xl backdrop-blur-2xl text-slate-800 dark:text-white">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className={`grid size-10 place-items-center rounded-xl bg-gradient-to-br ${roleStyles.avatar} text-white font-black text-sm ${roleStyles.glow}`}>
+                  {initials}
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">Thông tin tài khoản</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Chi tiết hồ sơ định danh người dùng</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(false)}
+                className="grid size-8 place-items-center rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/20 transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content List */}
+            <div className="mt-5 space-y-3.5 text-xs">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+                <span className="text-slate-500 dark:text-slate-400">Họ và tên</span>
+                <span className="font-bold text-slate-900 dark:text-white">{displayName}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+                <span className="text-slate-500 dark:text-slate-400">Tên đăng nhập (Username)</span>
+                <span className="font-mono font-bold text-cyan-600 dark:text-cyan-300">@{user?.username || "..."}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+                <span className="text-slate-500 dark:text-slate-400">Email</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{user?.email || "Chưa cập nhật"}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+                <span className="text-slate-500 dark:text-slate-400">Mã định danh ID</span>
+                <span className="font-mono font-bold text-slate-700 dark:text-slate-300">#{user?.id ?? "1"}</span>
+              </div>
+              <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3 space-y-2">
+                <span className="text-slate-500 dark:text-slate-400 block">Quyền hạn hệ thống (Roles)</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(userRoleNames.length > 0 ? userRoleNames : ["ADMIN"]).map((r) => (
+                    <span
+                      key={r}
+                      className="rounded-lg border border-cyan-300 dark:border-cyan-400/30 bg-cyan-50 dark:bg-cyan-500/10 px-2.5 py-1 font-mono text-[10px] font-bold text-cyan-700 dark:text-cyan-300 uppercase"
+                    >
+                      ROLE_{r}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-emerald-300 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 p-3">
+                <span className="text-emerald-700 dark:text-emerald-300 font-medium">Trạng thái phiên</span>
+                <span className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-300">
+                  <span className="size-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+                  Đang hoạt động (Authenticated)
+                </span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(false)}
+                className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white hover:brightness-110 transition cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 2: Đổi mật khẩu */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/70 p-4 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-3xl border border-slate-200 dark:border-white/20 bg-white dark:bg-slate-900/95 p-6 shadow-2xl backdrop-blur-2xl text-slate-800 dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-white font-black text-sm shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                  🔒
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">Đổi mật khẩu</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Bảo mật tài khoản của bạn</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPasswordModal(false)}
+                className="grid size-8 place-items-center rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/20 transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
+                  setPasswordMsg({ text: "Vui lòng nhập đầy đủ các trường mật khẩu.", type: "error" });
+                  return;
+                }
+                if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                  setPasswordMsg({ text: "Mật khẩu xác nhận không khớp.", type: "error" });
+                  return;
+                }
+                if (passwordForm.newPassword.length < 6) {
+                  setPasswordMsg({ text: "Mật khẩu mới phải có ít nhất 6 ký tự.", type: "error" });
+                  return;
+                }
+                setChangingPassword(true);
+                setPasswordMsg(null);
+                try {
+                  if (user?.id) {
+                    await apiRequest<User>("/users/update", {
+                      method: "PUT",
+                      body: JSON.stringify({
+                        id: user.id,
+                        username: user.username,
+                        fullName: user.fullName,
+                        email: user.email,
+                        password: passwordForm.newPassword,
+                      }),
+                    });
+                  }
+                  setPasswordMsg({ text: "Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.", type: "success" });
+                  setTimeout(() => {
+                    setShowPasswordModal(false);
+                  }, 1500);
+                } catch (err) {
+                  setPasswordMsg({ text: err instanceof Error ? err.message : "Không thể cập nhật mật khẩu.", type: "error" });
+                } finally {
+                  setChangingPassword(false);
+                }
+              }}
+              className="mt-5 space-y-4 text-xs"
+            >
+              {passwordMsg && (
+                <div
+                  className={`rounded-xl border p-3 ${
+                    passwordMsg.type === "success"
+                      ? "border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      : "border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300"
+                  }`}
+                >
+                  {passwordMsg.text}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300">Mật khẩu mới</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)..."
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300">Xác nhận mật khẩu mới</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Nhập lại mật khẩu mới..."
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-xs font-bold text-slate-900 dark:text-white hover:brightness-110 disabled:opacity-50 transition cursor-pointer"
+                >
+                  {changingPassword ? "Đang lưu..." : "Cập nhật mật khẩu"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

@@ -4,6 +4,7 @@ import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
 import { UserForm } from "../components/forms/user-form";
 import { PlusIcon, SearchIcon, UsersIcon } from "../components/icons";
+import { Pagination } from "../components/pagination";
 import { ApiError, apiListRequest, apiRequest } from "../lib/api";
 import type { User } from "../types/management";
 
@@ -21,7 +22,7 @@ export default function Users() {
     setLoading(true);
     setError("");
     try {
-      setUsers(await apiListRequest<User>("/users"));
+      setUsers(await apiListRequest<User>("/users?size=1000").catch(async () => apiListRequest<User>("/users")));
     } catch (reason) {
       const err = reason as ApiError;
       if (err.status === 401) navigate("/login");
@@ -36,12 +37,26 @@ export default function Users() {
     void loadUsers();
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const visibleUsers = useMemo(() => {
     const term = search.trim().toLowerCase();
     return term
       ? users.filter((u) => `${u.username} ${u.fullName} ${u.email}`.toLowerCase().includes(term))
       : users;
   }, [users, search]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  const totalItems = visibleUsers.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return visibleUsers.slice(start, start + pageSize);
+  }, [visibleUsers, currentPage, pageSize]);
 
   async function confirmDeleteUser() {
     if (!deletingUser) return;
@@ -59,22 +74,22 @@ export default function Users() {
 
   return (
     <AppShell title="Quản lý Tài khoản" description="Phân quyền quản trị viên và người dùng hệ thống EduManage.">
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Header Controls */}
-        <div className="flex flex-col gap-4 border-b border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <div className="grid size-9 place-items-center rounded-xl border border-emerald-400/30 bg-emerald-500/10 text-emerald-300">
                 <UsersIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-white">Danh sách tài khoản hệ thống</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách tài khoản hệ thống</h2>
             </div>
-            <p className="mt-1 text-xs text-slate-400">{users.length} tài khoản người dùng đã đăng ký</p>
+            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{users.length} tài khoản người dùng đã đăng ký</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 px-5 py-3 text-xs font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:brightness-110 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 px-5 py-3 text-xs font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
             <span>Tạo tài khoản mới</span>
@@ -82,7 +97,7 @@ export default function Users() {
         </div>
 
         {/* Search */}
-        <div className="border-b border-white/5 p-4 bg-slate-950/40">
+        <div className="border-b border-white/5 p-4 bg-slate-50 dark:bg-slate-950/40">
           <div className="relative flex items-center sm:max-w-md">
             <span className="pointer-events-none absolute left-4 text-slate-400">
               <SearchIcon size={16} />
@@ -90,7 +105,7 @@ export default function Users() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-900/80 pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-2xl border border-white/10 bg-white dark:bg-slate-900/80 pl-11 pr-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
               placeholder="Tìm theo username, tên người dùng, email..."
             />
           </div>
@@ -101,7 +116,7 @@ export default function Users() {
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-emerald-300 border-b border-white/10">
+            <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
                 <th className="px-6 py-4">Tài khoản (Username)</th>
                 <th className="px-6 py-4">Họ và tên</th>
@@ -110,27 +125,27 @@ export default function Users() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-300">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 font-medium">
                     Đang tải dữ liệu tài khoản…
                   </td>
                 </tr>
-              ) : visibleUsers.length === 0 ? (
+              ) : paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 font-medium">
                     Chưa có tài khoản nào phù hợp.
                   </td>
                 </tr>
               ) : (
-                visibleUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-800/40 transition-colors">
+                paginatedUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-semibold text-slate-100 font-mono text-cyan-300">{user.username}</p>
+                      <p className="font-bold text-cyan-700 dark:text-cyan-300 font-mono">{user.username}</p>
                     </td>
-                    <td className="px-6 py-4 text-slate-200 font-medium">{user.fullName}</td>
-                    <td className="px-6 py-4 text-slate-400">{user.email}</td>
+                    <td className="px-6 py-4 text-slate-800 dark:text-slate-200 font-medium">{user.fullName}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-400">{user.email}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {user.roles && user.roles.length > 0 ? (
@@ -169,6 +184,19 @@ export default function Users() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {editing !== undefined && (
@@ -208,8 +236,8 @@ function ActionIcon({
 }) {
   const tones =
     color === "blue"
-      ? "text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
-      : "text-red-400 hover:bg-red-500/10 hover:text-red-300";
+      ? "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300"
+      : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300";
   return (
     <button type="button" title={label} aria-label={label} onClick={onClick} className={`mr-1 rounded-xl p-2 transition-colors ${tones}`}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4">

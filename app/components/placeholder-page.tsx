@@ -16,7 +16,7 @@ export function PlaceholderPage({ title, description, apiName }: PlaceholderPage
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
           Giao diện chính đã sẵn sàng. Ở bước tiếp theo, trang này sẽ kết nối API <code className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700">{apiName}</code> để hiển thị và quản lý dữ liệu.
         </p>
-        <Link className="mt-5 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700" to="/">
+        <Link className="mt-5 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-blue-700" to="/">
           Quay về tổng quan
         </Link>
       </div>

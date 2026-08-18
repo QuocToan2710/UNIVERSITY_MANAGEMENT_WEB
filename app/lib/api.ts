@@ -1,23 +1,16 @@
 import { clearToken, getToken } from "./auth";
+import type {
+  ApiResponse,
+  PageResponse,
+  SelectOption,
+  ComboType,
+  AuthenticationResponse,
+} from "../types/response";
+import type { LoginRequest } from "../types/request";
 
-const API_URL = "http://localhost:8080";
+export type { ApiResponse, PageResponse, SelectOption, ComboType };
 
-export type ApiResponse<T> = {
-  code: number;
-  message?: string;
-  result: T;
-};
-
-/** Cấu trúc Spring Page object mà backend trả về cho các list endpoint */
-export type PageResponse<T> = {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;   // current page (0-indexed)
-  size: number;
-  first: boolean;
-  last: boolean;
-};
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://localhost:8080";
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
@@ -60,11 +53,24 @@ export async function apiListRequest<T>(path: string, options: ApiOptions = {}):
   return (result as PageResponse<T>).content ?? [];
 }
 
-export async function login(username: string, password: string) {
-  return apiRequest<{ token: string; authenticated: boolean }>("/auth/token", {
+export async function login(username: string, password: string): Promise<AuthenticationResponse> {
+  const payload: LoginRequest = { username, password };
+  return apiRequest<AuthenticationResponse>("/auth/token", {
     method: "POST",
     authenticated: false,
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify(payload),
   });
+}
+
+export async function fetchMasterData(
+  type: ComboType,
+  options?: { cascader?: string; codeSystem?: string; isCodeIsId?: boolean }
+): Promise<SelectOption[]> {
+  const params = new URLSearchParams({ type });
+  if (options?.cascader) params.set("cascader", options.cascader);
+  if (options?.codeSystem) params.set("codeSystem", options.codeSystem);
+  if (options?.isCodeIsId) params.set("isCodeIsId", String(options.isCodeIsId));
+
+  return apiRequest<SelectOption[]>(`/master-data?${params.toString()}`);
 }
 
