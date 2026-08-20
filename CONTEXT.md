@@ -1,60 +1,68 @@
 # Context Phiên Làm Việc (Work Session Context)
 
-*Thời gian cập nhật: 19/08/2026*
+*Thời gian cập nhật: 20/08/2026*
 
 ---
 
 ## 1. Tổng quan hệ thống (System Overview)
 
 - **Frontend Techstack:** React 19, React Router v8, Vite, TypeScript, Tailwind CSS v4.
-- **Backend Techstack:** Java Spring Boot, MySQL/PostgreSQL, JWT Authentication.
+- **Backend Techstack:** Java Spring Boot 3, Spring Security, JWT, JPA / Hibernate, MySQL.
 - **Thư mục Frontend chính:** `D:\My Project\UNIVERSITY_MANAGEMENT\react_tutorial\`
-- **Kiến trúc phân tầng Frontend:**
-  - `app/routes/`: 16 màn hình chức năng (Tổng quan, Sinh viên, Giảng viên, Môn học, Ngành học, Lớp học phần, Tài khoản, Danh mục Tòa/Tầng/Phòng, Lịch học/Lịch thi/Lịch dạy/Thời khóa biểu matrix).
-  - `app/components/`: Khung ứng dụng `app-shell.tsx`, thanh tìm kiếm & lọc `search-export-bar.tsx`, phân trang `pagination.tsx`, ma trận `timetable.tsx`, v.v.
+- **Thư mục Backend chính:** `D:\My Project\UNIVERSITY_MANAGEMENT\university-management\`
+- **Kiến trúc phân tầng:**
+  - `app/routes/`: 16 màn hình chức năng (Tổng quan, Sinh viên, Giảng viên, Môn học, Ngành học, Lớp học phần, Tài khoản, Thông báo, Danh mục Tòa/Tầng/Phòng/Địa giới, Lịch học/Lịch thi/Lịch dạy/Thời khóa biểu matrix, Đăng nhập).
+  - `app/components/`: Khung ứng dụng `app-shell.tsx`, `icons.tsx`, thanh tìm kiếm & lọc `search-export-bar.tsx`, phân trang `pagination.tsx`, ma trận `timetable.tsx`, v.v.
   - `app/components/forms/`: 12 Modal Forms tạo mới/chỉnh sửa thực thể.
-  - `app/services/`: 12 Domain API services chuẩn hóa (`student.service.ts`, `teacher.service.ts`, `schedule.service.ts`, v.v.).
+  - `app/services/`: 13 Domain API services chuẩn hóa (`student.service.ts`, `teacher.service.ts`, `schedule.service.ts`, `notification.service.ts`, v.v.).
   - `app/contexts/`: `theme-context.tsx` quản lý Dark/Light/System theme.
-  - `app/app.css`: Design System & CSS Typography Rules.
+  - `app/app.css`: Design System, CSS Typography & GPU Animation Rules.
 
 ---
 
-## 2. Các công việc đã hoàn thành trong phiên làm việc (Completed Work)
+## 2. Các công việc đã hoàn thành trong phiên làm việc ngày 20/08/2026 (Completed Work)
 
-### A. Chuẩn hóa cấu trúc thư mục & Services Layer
-- Dọn dẹp các thư mục rác cũ (`react_tutorial/app/welcome/`, file trùng lặp `app/routes/rooms.tsx`).
-- Tách tầng gọi API thành 12 module service chuẩn hóa trong `app/services/`.
+### A. Kiểm thử & Sửa lỗi Backend (Spring Boot Stability & Tests)
+- **Sửa lỗi UserRepository:** Bổ sung phương thức truy vấn `findAllByDeletedFalse()` trong `UserRepository.java` để lọc người dùng còn hiệu lực.
+- **Sửa lỗi Unit Test SecurityContext:** Cập nhật `NotificationServiceTest.java` khởi tạo `UsernamePasswordAuthenticationToken` kèm `GrantedAuthority` chuẩn xác theo Spring Security.
+- **Kết quả Build & Test:**
+  - Chạy `mvn clean test` $\rightarrow$ **7/7 tests PASS (BUILD SUCCESS)**.
+  - Chạy `mvn package -DskipTests` $\rightarrow$ **BUILD SUCCESS**.
 
-### B. Giải quyết tận gốc lỗi Theme & Màu sắc trên Tailwind CSS v4
-- **Kích hoạt Class-based Dark Mode:** Đã cấu hình `@custom-variant dark (&:where(.dark, .dark *));` trong `app.css`. Nhờ đó khi người dùng chọn Chế độ Sáng (`html.light`), toàn bộ các class `dark:*` bị vô hiệu hóa ngay lập tức và đồng bộ 100% trên toàn màn hình (không còn bị hệ điều hành ép dark mode).
-- **Chuẩn hóa hệ màu nền (Surface Hierarchy):**
-  - **Level 0 (Canvas):** Nền toàn trang sử dụng duy nhất `bg-slate-50` (Sáng) và `bg-[#070e1e]` (Tối).
-  - **Level 1 (Cards, Sidebar, Header, Tables, Modals):** Nền trắng sạch `bg-white` với viền `border-slate-200` ở Chế độ Sáng và `bg-slate-900` viền `border-white/10` ở Chế độ Tối.
-  - **Level 2 (Sub-containers, Search bars, Table Headers):** Nền `bg-white` / `bg-slate-100` viền `border-slate-200`.
+### B. Nâng cấp Hệ thống Thông báo Thời gian thực (Live Notifications System)
+- **Phát sự kiện cập nhật tức thì (`notifications-updated`):** Cơ chế Custom Event đồng bộ trạng thái số lượng thông báo chưa đọc ngay khi gửi thông báo mới hoặc đánh dấu đã đọc.
+- **Bộ lọc quyền người nhận thông báo:** Hỗ trợ gửi theo từng nhóm quyền cụ thể: `Tất cả (ALL)`, `Quản trị viên (ADMIN)`, `Giảng viên (TEACHER)`, `Sinh viên (STUDENT)`.
+- **Hiệu ứng Chuông thông báo:** Radar ping phát quang đỏ (`animate-ping`) và hoạt ảnh rung chuông (`animate-bounce`) khi có thông báo chưa đọc.
 
-### C. Khắc phục triệt để lỗi Chữ trắng trên Nền sáng (High Contrast Typography)
-- Rà soát và chuyển đổi toàn bộ `text-white` không có tiền tố `dark:` trên tất cả 16 màn hình và 12 Modal Forms sang `text-slate-900 dark:text-white` hoặc `text-slate-800 dark:text-slate-200`.
-- Xóa bỏ bộ chọn CSS tổng quát đè màu `[class*="bg-gradient-to"] > span` trong `app.css`.
-- Nút bấm Gradient (`button[class*="bg-gradient"]`, `a[class*="bg-gradient"]`) được bảo toàn chữ trắng tinh khiết `text-white` trên cả hai chế độ.
+### C. Nâng cấp Giao diện Thời khóa biểu (High-Contrast Timetable Typography)
+- Chuyển đổi toàn bộ mốc thời gian, tiết học, ca học trong `timetable.tsx` sang màu đen tuyền đậm nét (`font-mono font-black text-slate-950`), đảm bảo độ tương phản cao và rõ nét tuyệt đối trên bảng lịch.
 
-### D. Nâng cấp Menu Điều hướng & Popup Tài khoản
-- **Trạng thái Active/Focus của Menu Sidebar (Tổng quan, Lịch học, Lớp học phần, v.v.):** Khi chọn, hiển thị nền `bg-sky-100` với viền `border-sky-400`, chữ **`text-sky-950 font-extrabold`** và icon `text-sky-800` sắc nét, dễ nhìn.
-- **Popup Tài khoản:** Chữ "Thông tin tài khoản" và "Đổi mật khẩu & Bảo mật" sử dụng `text-slate-800 dark:text-slate-200`, khi hover chuyển `text-cyan-700`.
-- **Nút "Bộ lọc nâng cao":** Xóa lỗi gán class `dark:bg-white`, hỗ trợ đổi màu chính xác giữa Sáng và Tối.
+### D. Nâng cấp Giao diện Đăng nhập & Hiệu ứng Đồ họa (Login Experience & Visuals)
+- **Tiêu đề lướt sóng màu sắc:** Hoạt ảnh gradient sweep mượt mà liên tục từ dòng trên (*Quản trị đào tạo*) xuống dòng dưới (*Trực quan & Hiện đại*) với tốc độ êm ái.
+- **Hình nền 4K Ultra-HD Masterpiece:** Cập nhật ảnh chụp khuôn viên đại học hiện đại mùa hoa anh đào nở rộ với hồ nước phản chiếu và kiến trúc kính sang trọng (`university-campus-cherry-blossom.jpg`).
+- **Hiệu ứng Cánh hoa đào rơi (Sakura Falling Petals):** 12 cánh hoa đào chuyển sắc hồng phấn rơi tản đều tự nhiên trên toàn màn hình với chu kỳ êm dịu (`14s ~ 22s`), thay thế pháo hoa giấy theo yêu cầu.
+
+### E. Thiết kế Logo 3D Mô hình Nguyên tử Khoa học (3D Quantum Atom Model)
+- **Hạt nhân trung tâm (`atom-nucleus`):** Khối thủy tinh 3D phát quang với chữ **E** nổi bật, có nhịp thở năng lượng (*nuclear energy pulse*).
+- **4 Quỹ đạo Electron 3D quay chéo quanh hạt nhân (`atom-orbital-ring`):** 4 quỹ đạo nét đứt đối xứng hình học hoàn hảo ở các góc $0^\circ, 45^\circ, 90^\circ, 135^\circ$ bao quanh hạt nhân.
+- **4 Hạt Electron phát quang (`atom-electron`):** Mang các sắc màu neon (*Cyan, Purple, Sky, Emerald*) chuyển động tuần hoàn liên tục trong không gian 3D.
+- Đồng bộ hoàn toàn trên cả **Logo trang Login** và **Logo Sidebar/Header** (`icons.tsx`).
+
+### F. Tối ưu hóa Hiệu năng Đồ họa Toàn diện (Zero-Lag 60 FPS)
+- Cách ly phần cứng đồ họa GPU qua `transform: translate3d(...)`, `backface-visibility: hidden` và `contain: strict`.
+- Loại bỏ các bộ lọc nặng gây giọt khung hình, đảm bảo ứng dụng load tức thì và chạy siêu mượt mà.
+- Hỗ trợ chế độ tiết kiệm tài nguyên `@media (prefers-reduced-motion: reduce)`.
 
 ---
 
 ## 3. Trạng thái kiểm tra (Verification Status)
 
-- **TypeScript (`npm run typecheck`):** Passed (0 errors).
-- **Vite Build (`npm run build`):** Built client & SSR server successfully (165 modules transformed, 0 errors).
+- **Backend Tests:** 7/7 tests passed (BUILD SUCCESS).
+- **Frontend Build (`npm run build`):** Built client & SSR server successfully in 1.17s (0 errors).
 
 ---
 
 ## 4. Hướng dẫn tiếp tục phát triển (Next Steps)
 
-1. Mọi component mới cần tuân thủ Design Token:
-   - Thẻ Card/Bảng: `bg-white dark:bg-slate-900/80 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white`.
-   - Ô nhập liệu: `bg-white dark:bg-slate-950 text-slate-900 dark:text-white border-slate-300 dark:border-white/10`.
-   - Nút gradient: Giữ `text-white`.
-2. Kiểm tra lại bằng lệnh `npm run typecheck` sau mỗi lần cập nhật code.
+1. Giữ vững chuẩn Design System và token màu sắc nhất quán giữa chế độ Sáng và Tối.
+2. Kiểm tra lại bằng lệnh `npm run build` và `mvn test` sau mỗi lần nâng cấp tính năng mới.

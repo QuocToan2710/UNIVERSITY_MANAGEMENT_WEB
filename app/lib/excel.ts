@@ -7,7 +7,7 @@ import * as XLSX from "xlsx";
  * @param sheetName Name of the sheet inside Excel
  * @param columns Optional mapping of field keys to display column headers
  */
-export function exportToExcel<T extends Record<string, any>>(
+export function exportToExcel<T extends Record<string, unknown>>(
   data: T[],
   fileName: string = "export_data",
   sheetName: string = "Sheet1",
@@ -18,11 +18,11 @@ export function exportToExcel<T extends Record<string, any>>(
     return;
   }
 
-  let formattedData: Record<string, any>[] = [];
+  let formattedData: Record<string, unknown>[] = [];
 
   if (columns && columns.length > 0) {
     formattedData = data.map((item) => {
-      const row: Record<string, any> = {};
+      const row: Record<string, unknown> = {};
       columns.forEach((col) => {
         row[col.header] = item[col.key] !== undefined && item[col.key] !== null ? item[col.key] : "";
       });

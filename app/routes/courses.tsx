@@ -15,7 +15,7 @@ export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, any>>({
+  const [filters, setFilters] = useState<Record<string, string>>({
     courseCode: "",
     courseName: "",
     semester: "",
@@ -86,24 +86,29 @@ export default function Courses() {
     return visibleCourses.slice(start, start + pageSize);
   }, [visibleCourses, currentPage, pageSize]);
 
-  function handleExport() {
-    const exportData = visibleCourses.map((c) => ({
-      ...c,
-      teacherName: c.teacherId ? teacherMap.get(c.teacherId)?.fullName || "Chưa phân công" : "Chưa phân công",
-    }));
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const exportData = visibleCourses.map((c) => ({
+        ...c,
+        teacherName: c.teacherId ? teacherMap.get(c.teacherId)?.fullName || "Chưa phân công" : "Chưa phân công",
+      }));
 
-    exportToExcel(
-      exportData,
-      "Danh_Sach_Mon_Hoc",
-      "MonHoc",
-      [
-        { key: "courseCode", header: "Mã Môn Học" },
-        { key: "courseName", header: "Tên Môn Học" },
-        { key: "credit", header: "Số Tín Chỉ" },
-        { key: "semester", header: "Học Kỳ" },
-        { key: "teacherName", header: "Giảng Viên Phụ Trách" },
-      ]
-    );
+      exportToExcel(
+        exportData,
+        "Danh_Sach_Mon_Hoc",
+        "MonHoc",
+        [
+          { key: "courseCode", header: "Mã Môn Học" },
+          { key: "courseName", header: "Tên Môn Học" },
+          { key: "credit", header: "Số Tín Chỉ" },
+          { key: "semester", header: "Học Kỳ" },
+          { key: "teacherName", header: "Giảng Viên Phụ Trách" },
+        ]
+      );
+    } finally {
+      setExporting(false);
+    }
   }
 
   const filterFields: FilterField[] = [
@@ -133,17 +138,16 @@ export default function Courses() {
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="grid size-9 place-items-center rounded-xl border border-amber-400/30 bg-amber-500/10 text-amber-300">
+              <div className="grid size-9 place-items-center rounded-xl border border-amber-400/30 bg-amber-500/10 text-amber-800 dark:text-amber-300">
                 <CourseIcon size={18} />
               </div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách môn học</h2>
             </div>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{courses.length} môn học đã được đăng ký</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-600 to-amber-700 px-5 py-3 text-xs font-semibold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-600 to-amber-700 px-5 py-3 text-xs font-bold text-white shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
             <span>Thêm môn học mới</span>
@@ -176,7 +180,7 @@ export default function Courses() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-300">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
@@ -199,7 +203,7 @@ export default function Courses() {
                         <p className="mt-0.5 text-[11px] text-amber-700 dark:text-amber-300 font-bold font-mono">{course.courseCode}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-bold text-amber-300">
+                        <span className="rounded-full border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 text-[11px] font-bold text-amber-800 dark:text-amber-300">
                           {course.credit} Tín chỉ
                         </span>
                       </td>

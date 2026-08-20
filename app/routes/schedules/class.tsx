@@ -6,6 +6,7 @@ import { ConfirmModal } from "../../components/confirm-modal";
 import { ApiError, apiListRequest, apiRequest } from "../../lib/api";
 import type { User } from "../../types/management";
 import type { ClassSchedule } from "../../types/schedule";
+import { ActionDropdown } from "./timetable";
 
 export default function ClassSchedulePage() {
   const navigate = useNavigate();
@@ -130,7 +131,7 @@ export default function ClassSchedulePage() {
                 <th className="px-6 py-4">Phòng học</th>
                 <th className="px-6 py-4">Giảng viên phụ trách</th>
                 <th className="px-6 py-4">Học kỳ / Năm</th>
-                {isAdmin && <th className="px-6 py-4 text-right">Thao tác</th>}
+                {isAdmin && <th className="px-6 py-4 text-center">Hành động</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -151,7 +152,7 @@ export default function ClassSchedulePage() {
                   <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
                       <div>{item.courseClassId || "HP_DEFAULT"}</div>
-                      <div className="text-xs text-cyan-700 dark:text-cyan-700 dark:text-cyan-300 font-bold font-mono font-normal">Mã: {item.scheduleCode}</div>
+                      <div className="text-xs text-cyan-700 dark:text-cyan-300 font-mono font-medium">Mã: {item.scheduleCode}</div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-block rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300">
@@ -163,27 +164,16 @@ export default function ClassSchedulePage() {
                       <div>{item.teacherName || "Giảng viên bộ môn"}</div>
                       <div className="text-xs text-slate-600 dark:text-slate-400 font-mono font-medium">{item.teacherId || "—"}</div>
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-400">
+                    <td className="px-6 py-4 text-xs text-slate-600 dark:text-slate-400">
                       HK{item.semester} ({item.academicYear})
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setEditing(item)}
-                            className="rounded-lg border border-white/10 bg-slate-800 px-2.5 py-1.5 text-xs text-cyan-700 dark:text-cyan-300 hover:border-cyan-400/40 transition-colors cursor-pointer"
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeletingSchedule(item)}
-                            className="rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-300 hover:bg-red-500/20 transition-colors cursor-pointer"
-                          >
-                            Xóa
-                          </button>
-                        </div>
+                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <ActionDropdown
+                          onEdit={() => setEditing(item)}
+                          onDelete={() => setDeletingSchedule(item)}
+                          canEdit={isAdmin}
+                        />
                       </td>
                     )}
                   </tr>

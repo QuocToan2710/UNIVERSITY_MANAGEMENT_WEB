@@ -87,7 +87,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-50 dark:bg-slate-950/70 p-4 backdrop-blur-xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-950/70 p-4 backdrop-blur-xl animate-in fade-in duration-200">
       <form
         onSubmit={submit}
         className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-slate-200 dark:border-white/15 bg-white dark:bg-slate-900 p-6 shadow-2xl text-slate-900 dark:text-white"
@@ -113,7 +113,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
               <select
                 value={form.subjectId || ""}
                 onChange={(e) => update("subjectId", e.target.value)}
-                className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+                className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
                 <option value="">-- Chọn môn học --</option>
                 {subjects.map((s) => (
@@ -134,7 +134,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
                 required
                 value={form.room || ""}
                 onChange={(e) => update("room", e.target.value)}
-                className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+                className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
                 <option value="">-- Chọn phòng thi --</option>
                 {rooms.map((r) => (
@@ -158,7 +158,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
               required
               value={form.examFormat}
               onChange={(e) => update("examFormat", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
               {examFormats.map((fmt) => (
                 <option key={fmt} value={fmt}>
@@ -174,7 +174,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
             <select
               value={form.proctorName || ""}
               onChange={(e) => update("proctorName", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
               <option value="">-- Chọn cán bộ coi thi --</option>
               {teachers.map((t) => (
@@ -194,7 +194,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
           </button>
           <button
             disabled={saving}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white shadow-md disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md disabled:opacity-50 cursor-pointer"
           >
             {saving && <span className="size-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
             <span>{saving ? "Đang lưu..." : "Lưu ca thi"}</span>
@@ -229,7 +229,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs placeholder-slate-500 outline-none focus:border-cyan-400"
+        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs placeholder-slate-500 outline-none focus:border-cyan-400"
       />
     </label>
   );

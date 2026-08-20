@@ -3,20 +3,88 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Geist", "Inter", "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Enterprise UI Typography Scale */
+  --text-2xs: 0.75rem; /* 12px */
+  --text-xs: 0.8125rem; /* 13px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
 }
 
-html,
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1, "calt" 1, "kern" 1;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================================================
+   RAZOR-SHARP SMALL TEXT & VIETNAMESE ACCENT LEGIBILITY OPTIMIZATIONS
+   ========================================================================== */
+
+/* Prevent thin stroke fading on small text */
+.text-xs,
+.text-2xs,
+[class*="text-\[10px\]"],
+[class*="text-\[11px\]"],
+[class*="text-\[12px\]"] {
+  font-weight: 500;
+  letter-spacing: 0.012em;
+}
+
+/* Tabular numbers for dates, IDs, phone numbers, codes and table metrics */
+table,
+.font-mono,
+input[type="number"],
+input[type="date"],
+[class*="tabular-nums"] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1;
+}
+
+/* High-clarity Base Typography Sizing */
+table thead th {
+  font-size: 0.8125rem !important; /* 13px */
+  letter-spacing: 0.04em !important;
+  font-weight: 700 !important;
+}
+
+table tbody td {
+  font-size: 0.905rem !important; /* 14.5px readable table text */
+  line-height: 1.55 !important;
+}
+
+input, select, textarea {
+  font-size: 0.905rem !important; /* 14.5px */
+  letter-spacing: -0.005em !important;
+}
+
+aside nav a, 
+aside nav button {
+  font-size: 0.905rem !important;
 }
 
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.005em;
 }
 
 /* ==========================================================================
@@ -24,24 +92,16 @@ a {
    Always retain crystal clear pure white text across BOTH themes
    ========================================================================== */
 
-button[class*="bg-gradient"],
-button[class*="from-cyan-500"],
-button[class*="from-blue-600"],
-button[class*="from-emerald-500"],
-button[class*="from-teal-500"],
-button[class*="from-violet-500"],
-button[class*="from-indigo-600"],
-button[class*="bg-blue-600"],
-button[class*="bg-cyan-500"],
-a[class*="bg-gradient"],
-a[class*="from-cyan-500"],
-.btn-primary,
+button:not(aside nav *)[class*="bg-gradient-to-r"],
+a:not(aside nav *)[class*="bg-gradient-to-r"],
+button.btn-primary,
+a.btn-primary,
 .avatar-gradient,
-button[class*="bg-gradient"] > span,
-button[class*="bg-gradient"] > svg,
-button[class*="bg-gradient"] > p,
-a[class*="bg-gradient"] > span,
-a[class*="bg-gradient"] > svg {
+button:not(aside nav *)[class*="bg-gradient-to-r"] > span,
+button:not(aside nav *)[class*="bg-gradient-to-r"] > svg,
+button:not(aside nav *)[class*="bg-gradient-to-r"] > p,
+a:not(aside nav *)[class*="bg-gradient-to-r"] > span,
+a:not(aside nav *)[class*="bg-gradient-to-r"] > svg {
   color: #ffffff !important;
 }
 
@@ -58,7 +118,8 @@ html[data-theme="light"] {
 html.light body,
 html[data-theme="light"] body {
   background-color: #f8fafc;
-  color: #0f172a;
+  color: #020617;
+  font-weight: 450;
 }
 
 /* Unified Page Canvas */
@@ -69,7 +130,7 @@ html[data-theme="light"] .bg-\[\#070e1e\],
 html[data-theme="light"] .bg-\[\#f1f5f9\],
 html[data-theme="light"] .bg-slate-100 {
   background-color: #f8fafc !important;
-  color: #0f172a !important;
+  color: #020617 !important;
 }
 
 /* Unified Sidebar & Header */
@@ -137,7 +198,7 @@ html[data-theme="light"] .bg-slate-800\/60,
 html[data-theme="light"] .bg-slate-800\/40,
 html[data-theme="light"] .bg-slate-700 {
   background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
 }
 
 /* Unified Borders in Light Mode */
@@ -157,7 +218,7 @@ html[data-theme="light"] .border-slate-800\/80,
 html[data-theme="light"] .border-slate-700,
 html[data-theme="light"] .border-slate-700\/80,
 html[data-theme="light"] .border-white\/20 {
-  border-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
 }
 
 html.light .divide-white\/10 > :not([hidden]) ~ :not([hidden]),
@@ -168,38 +229,56 @@ html[data-theme="light"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
 }
 
 /* ==========================================================================
-   DIRECT LIGHT THEME TYPOGRAPHY SYSTEM
-   High contrast, accessible, readable text in Light Mode
+   DIRECT LIGHT THEME TYPOGRAPHY SYSTEM - ULTRA HIGH CONTRAST & LEGIBILITY
    ========================================================================== */
 
 /* 1. White text elements on light background */
 html.light .text-white:not(button[class*="bg-gradient"]):not(button[class*="from-"]):not(a[class*="bg-gradient"]):not(a[class*="from-"]):not(.btn-primary):not([class*="bg-cyan-500"]):not([class*="bg-blue-600"]):not([class*="bg-indigo-600"]):not([class*="bg-emerald-600"]):not([class*="bg-violet-600"]):not([class*="bg-purple-600"]):not([class*="bg-red-600"]):not(.avatar-gradient),
 html[data-theme="light"] .text-white:not(button[class*="bg-gradient"]):not(button[class*="from-"]):not(a[class*="bg-gradient"]):not(a[class*="from-"]):not(.btn-primary):not([class*="bg-cyan-500"]):not([class*="bg-blue-600"]):not([class*="bg-indigo-600"]):not([class*="bg-emerald-600"]):not([class*="bg-violet-600"]):not([class*="bg-purple-600"]):not([class*="bg-red-600"]):not(.avatar-gradient) {
-  color: #0f172a !important; /* Deep Rich Slate 900 */
+  color: #020617 !important; /* Pure Dark Slate 950 */
 }
 
-/* 2. Slate shades (Light grays -> Dark, sharp slate tones) */
+/* 2. Slate shades (Light grays -> Dark, sharp, crisp black/slate tones) */
 html.light .text-slate-100,
 html.light .text-slate-200,
 html[data-theme="light"] .text-slate-100,
 html[data-theme="light"] .text-slate-200 {
-  color: #0f172a !important; /* Slate 900 */
+  color: #020617 !important; /* Deep Rich Black/Slate 950 */
+  font-weight: 600;
 }
 
 html.light .text-slate-300,
 html[data-theme="light"] .text-slate-300 {
-  color: #1e293b !important; /* Slate 800 */
+  color: #0f172a !important; /* Slate 900 */
 }
 
 html.light .text-slate-400,
 html[data-theme="light"] .text-slate-400 {
-  color: #475569 !important; /* Slate 600 - sharp, clear subtitle */
+  color: #1e293b !important; /* Slate 800 - Crisp, clear, solid contrast */
   font-weight: 500;
 }
 
 html.light .text-slate-500,
 html[data-theme="light"] .text-slate-500 {
-  color: #64748b !important; /* Slate 500 */
+  color: #334155 !important; /* Slate 700 - Deep readable subtitle */
+  font-weight: 500;
+}
+
+html.light .text-slate-600,
+html[data-theme="light"] .text-slate-600 {
+  color: #1e293b !important; /* Slate 800 */
+}
+
+html.light .text-slate-700,
+html[data-theme="light"] .text-slate-700 {
+  color: #0f172a !important; /* Slate 900 */
+}
+
+html.light .text-slate-800,
+html.light .text-slate-900,
+html[data-theme="light"] .text-slate-800,
+html[data-theme="light"] .text-slate-900 {
+  color: #020617 !important; /* Jet Slate 950 */
 }
 
 /* 3. Neon color accents -> Deep, rich, accessible colored text */
@@ -443,29 +522,43 @@ html[data-theme="light"] thead {
 
 html.light thead th,
 html[data-theme="light"] thead th {
-  color: #0f172a !important;
-  font-weight: 700 !important;
+  color: #020617 !important;
+  font-weight: 800 !important;
 }
 
 html.light tbody tr,
 html[data-theme="light"] tbody tr {
-  border-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
 }
 
 html.light tbody tr:hover,
 html[data-theme="light"] tbody tr:hover {
-  background-color: #f8fafc !important;
+  background-color: #f1f5f9 !important;
 }
 
 html.light tbody td,
 html[data-theme="light"] tbody td {
-  color: #1e293b !important;
+  color: #020617 !important;
+  font-weight: 500 !important;
+}
+
+html.light tbody td p,
+html[data-theme="light"] tbody td p {
+  color: #020617 !important;
+}
+
+html.light tbody td span.font-medium,
+html.light tbody td span.font-bold,
+html[data-theme="light"] tbody td span.font-medium,
+html[data-theme="light"] tbody td span.font-bold {
+  color: #020617 !important;
 }
 
 /* ==========================================================================
-   SIDEBAR & NAV LINKS IN LIGHT MODE
+   SIDEBAR & NAV LINKS (LIGHT & DARK THEMES)
    ========================================================================== */
 
+/* 1. Light Mode Navigation */
 html.light aside nav a,
 html.light aside nav button,
 html[data-theme="light"] aside nav a,
@@ -478,8 +571,88 @@ html.light aside nav a:hover,
 html.light aside nav button:hover,
 html[data-theme="light"] aside nav a:hover,
 html[data-theme="light"] aside nav button:hover {
-  background-color: #f8fafc !important;
+  background-color: #f1f5f9 !important;
   color: #0f172a !important;
+}
+
+html.light aside nav a.active,
+html.light aside nav a.active span,
+html.light aside nav a.active svg,
+html.light aside nav a[class*="bg-cyan-50"],
+html.light aside nav a[class*="bg-cyan-50"] span,
+html.light aside nav a[class*="bg-cyan-50"] svg,
+html.light aside nav a[class*="bg-sky-100"],
+html.light aside nav a[class*="bg-sky-100"] span,
+html.light aside nav a[class*="bg-sky-100"] svg,
+html.light aside nav button[class*="bg-cyan-50"],
+html.light aside nav button[class*="bg-cyan-50"] span,
+html.light aside nav button[class*="bg-cyan-50"] svg,
+html.light aside nav button[class*="bg-sky-100"],
+html.light aside nav button[class*="bg-sky-100"] span,
+html.light aside nav button[class*="bg-sky-100"] svg,
+html[data-theme="light"] aside nav a.active,
+html[data-theme="light"] aside nav a.active span,
+html[data-theme="light"] aside nav a.active svg,
+html[data-theme="light"] aside nav a[class*="bg-cyan-50"],
+html[data-theme="light"] aside nav a[class*="bg-cyan-50"] span,
+html[data-theme="light"] aside nav a[class*="bg-cyan-50"] svg,
+html[data-theme="light"] aside nav a[class*="bg-sky-100"],
+html[data-theme="light"] aside nav a[class*="bg-sky-100"] span,
+html[data-theme="light"] aside nav a[class*="bg-sky-100"] svg,
+html[data-theme="light"] aside nav button[class*="bg-cyan-50"],
+html[data-theme="light"] aside nav button[class*="bg-cyan-50"] span,
+html[data-theme="light"] aside nav button[class*="bg-cyan-50"] svg,
+html[data-theme="light"] aside nav button[class*="bg-sky-100"],
+html[data-theme="light"] aside nav button[class*="bg-sky-100"] span,
+html[data-theme="light"] aside nav button[class*="bg-sky-100"] svg {
+  background-color: #e0f2fe !important;
+  color: #0c4a6e !important; /* Deep Rich Slate/Navy in Light Mode */
+  border-color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+/* 2. Dark Mode Navigation */
+html.dark aside nav a,
+html.dark aside nav button,
+html[data-theme="dark"] aside nav a,
+html[data-theme="dark"] aside nav button {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+}
+
+html.dark aside nav a:hover,
+html.dark aside nav button:hover,
+html[data-theme="dark"] aside nav a:hover,
+html[data-theme="dark"] aside nav button:hover {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+  color: #ffffff !important;
+}
+
+html.dark aside nav a.active,
+html.dark aside nav a.active span,
+html.dark aside nav a.active svg,
+html.dark aside nav button[class*="bg-cyan-50"],
+html.dark aside nav button[class*="bg-cyan-50"] span,
+html.dark aside nav button[class*="bg-cyan-50"] svg,
+html[data-theme="dark"] aside nav a.active,
+html[data-theme="dark"] aside nav a.active span,
+html[data-theme="dark"] aside nav a.active svg,
+html[data-theme="dark"] aside nav button[class*="bg-cyan-50"],
+html[data-theme="dark"] aside nav button[class*="bg-cyan-50"] span,
+html[data-theme="dark"] aside nav button[class*="bg-cyan-50"] svg {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+  background-image: linear-gradient(to right, rgba(6, 182, 212, 0.22), rgba(37, 99, 235, 0.18)) !important;
+  color: #ffffff !important; /* Pure White in Dark Mode */
+  border-color: rgba(34, 211, 238, 0.35) !important;
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.2) !important;
+  font-weight: 700 !important;
+}
+
+html.dark aside nav a.active svg,
+html[data-theme="dark"] aside nav a.active svg,
+html.dark aside nav button[class*="bg-cyan-50"] svg,
+html[data-theme="dark"] aside nav button[class*="bg-cyan-50"] svg {
+  color: #22d3ee !important; /* Radiant Electric Cyan Icon in Dark Mode */
 }
 
 /* Ambient glow in light mode */
@@ -717,27 +890,12 @@ html[data-theme="light"] .login-page .blur-\[100px\] {
    CASCADING LEFT-TO-RIGHT COLOR WAVE GRADIENT TEXT ANIMATION
    ========================================================================== */
 
-@keyframes waveSweepLine1 {
+@keyframes continuousWaveSweep {
   0% {
-    background-position: 100% 50%;
+    background-position: 200% 50%;
   }
-  42% {
-    background-position: 0% 50%;
-  }
-  42.01%, 100% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes waveSweepLine2 {
-  0%, 38% {
-    background-position: 100% 50%;
-  }
-  80% {
-    background-position: 0% 50%;
-  }
-  80.01%, 100% {
-    background-position: 100% 50%;
+  100% {
+    background-position: -200% 50%;
   }
 }
 
@@ -747,20 +905,19 @@ html[data-theme="light"] .login-page .blur-\[100px\] {
     #ffffff 0%,
     #cbd5e1 15%,
     #38bdf8 30%,
-    #818cf8 38%,
-    #f472b6 44%,
-    #ffffff 50%,
-    #38bdf8 56%,
-    #34d399 64%,
-    #fde047 72%,
-    #cbd5e1 85%,
+    #818cf8 40%,
+    #f472b6 50%,
+    #38bdf8 60%,
+    #34d399 70%,
+    #fde047 80%,
+    #cbd5e1 90%,
     #ffffff 100%
   );
-  background-size: 320% 100%;
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: waveSweepLine1 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: continuousWaveSweep 10s linear infinite;
   display: inline-block;
   padding-right: 0.35em;
   padding-bottom: 0.1em;
@@ -775,20 +932,20 @@ html[data-theme="light"] .login-page .blur-\[100px\] {
     #ffffff 0%,
     #cbd5e1 15%,
     #38bdf8 30%,
-    #818cf8 38%,
-    #f472b6 44%,
-    #ffffff 50%,
-    #38bdf8 56%,
-    #34d399 64%,
-    #fde047 72%,
-    #cbd5e1 85%,
+    #818cf8 40%,
+    #f472b6 50%,
+    #38bdf8 60%,
+    #34d399 70%,
+    #fde047 80%,
+    #cbd5e1 90%,
     #ffffff 100%
   );
-  background-size: 320% 100%;
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: waveSweepLine2 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: continuousWaveSweep 10s linear infinite;
+  animation-delay: -2.5s;
   display: inline-block;
   padding-right: 0.35em;
   padding-bottom: 0.1em;
@@ -810,4 +967,244 @@ html[data-theme="light"] .login-page .blur-\[100px\] {
   background-size: 200% auto;
   animation: gradientSweepLtr 3.5s linear infinite;
   display: inline-block;
+}
+
+/* ==========================================================================
+   AUTHENTIC RUTHERFORD-BOHR 3D ATOMIC QUANTUM MODEL
+   ========================================================================== */
+
+@keyframes atomSpin1 {
+  0% {
+    transform: rotateZ(0deg) rotateX(70deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(0deg) rotateX(70deg) rotateZ(360deg);
+  }
+}
+
+@keyframes atomSpin2 {
+  0% {
+    transform: rotateZ(45deg) rotateX(70deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(45deg) rotateX(70deg) rotateZ(360deg);
+  }
+}
+
+@keyframes atomSpin3 {
+  0% {
+    transform: rotateZ(90deg) rotateX(70deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(90deg) rotateX(70deg) rotateZ(360deg);
+  }
+}
+
+@keyframes atomSpin4 {
+  0% {
+    transform: rotateZ(135deg) rotateX(70deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(135deg) rotateX(70deg) rotateZ(360deg);
+  }
+}
+
+@keyframes nucleusPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.8), inset 0 1px 2px rgba(255, 255, 255, 1);
+  }
+}
+
+.atom-model-container {
+  position: relative;
+  display: grid;
+  place-items: center;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* 4-Axis Atomic Orbitals Crossing at 0, 45, 90, 135 deg */
+.atom-orbital-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.atom-orbital-1 {
+  border: 1.5px dashed rgba(34, 211, 238, 0.85);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.25);
+  animation: atomSpin1 5s linear infinite;
+}
+
+.atom-orbital-2 {
+  border: 1.5px dashed rgba(168, 85, 247, 0.85);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+  animation: atomSpin2 6s linear infinite;
+}
+
+.atom-orbital-3 {
+  border: 1.5px dashed rgba(56, 189, 248, 0.85);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+  animation: atomSpin3 5.5s linear infinite;
+}
+
+.atom-orbital-4 {
+  border: 1.5px dashed rgba(52, 211, 153, 0.85);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.25);
+  animation: atomSpin4 6.5s linear infinite;
+}
+
+/* Orbiting Electrons */
+.atom-electron {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+.atom-electron-cyan {
+  width: 8px;
+  height: 8px;
+  background: #67e8f9;
+  box-shadow: 0 0 8px #22d3ee, 0 0 16px #06b6d4;
+}
+
+.atom-electron-purple {
+  width: 8px;
+  height: 8px;
+  background: #c084fc;
+  box-shadow: 0 0 8px #a855f7, 0 0 16px #7c3aed;
+}
+
+.atom-electron-sky {
+  width: 8px;
+  height: 8px;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #0284c7, 0 0 14px #0369a1;
+}
+
+.atom-electron-emerald {
+  width: 8px;
+  height: 8px;
+  background: #6ee7b7;
+  box-shadow: 0 0 8px #34d399, 0 0 14px #10b981;
+}
+
+/* Central Atomic Nucleus (Hạt nhân 3D) */
+.atom-nucleus {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.5) 0%, rgba(59, 130, 246, 0.65) 50%, rgba(99, 102, 241, 0.8) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  animation: nucleusPulse 3.5s ease-in-out infinite;
+  z-index: 5;
+}
+
+.atom-nucleus::after {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.35) 0%, rgba(0, 0, 0, 0.4) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   GENTLE FALLING CHERRY BLOSSOM PETALS (SAKURA / HOA ĐÀO)
+   ========================================================================== */
+
+@keyframes petalSwayFall1 {
+  0% {
+    transform: translate3d(0, -30px, 0) rotate(0deg) rotateX(0deg) rotateY(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  45% {
+    transform: translate3d(45px, 45vh, 0) rotate(160deg) rotateX(120deg) rotateY(180deg);
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(20px, 105vh, 0) rotate(360deg) rotateX(360deg) rotateY(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes petalSwayFall2 {
+  0% {
+    transform: translate3d(0, -30px, 0) rotate(45deg) rotateX(0deg) rotateY(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(-50px, 52vh, 0) rotate(220deg) rotateX(180deg) rotateY(120deg);
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-15px, 105vh, 0) rotate(400deg) rotateX(360deg) rotateY(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes petalSwayFall3 {
+  0% {
+    transform: translate3d(0, -30px, 0) rotate(-30deg) rotateX(0deg) rotateY(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  48% {
+    transform: translate3d(38px, 48vh, 0) rotate(140deg) rotateX(160deg) rotateY(200deg);
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-25px, 105vh, 0) rotate(320deg) rotateX(360deg) rotateY(360deg);
+    opacity: 0;
+  }
+}
+
+.sakura-petal {
+  position: absolute;
+  top: -25px;
+  pointer-events: none;
+  border-radius: 60% 10% 60% 60%;
+  background: linear-gradient(135deg, #ffd3e2 0%, #ffa5c0 55%, #f472b6 100%);
+  filter: drop-shadow(0 2px 4px rgba(244, 114, 182, 0.35));
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  contain: strict;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sakura-petal,
+  .atom-orbital-ring {
+    animation: none !important;
+    opacity: 0.6;
+  }
 }

@@ -14,10 +14,10 @@ export default function Students() {
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, any>>({
+  const [filters, setFilters] = useState<Record<string, string>>({
     studentCode: "",
     fullName: "",
-    email: "",
+    gender: "",
   });
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -145,7 +145,6 @@ export default function Students() {
               </div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách sinh viên</h2>
             </div>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{students.length} sinh viên đã đăng ký dữ liệu</p>
           </div>
 
           <button
@@ -183,7 +182,7 @@ export default function Students() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-300">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
@@ -208,11 +207,22 @@ export default function Students() {
                       <p className="mt-0.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">{student.phoneNumber}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="rounded-full border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[10px] font-medium text-slate-700 dark:text-slate-300">
+                      <span className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 text-[10px] font-bold text-slate-700 dark:text-slate-300">
                         {student.gender}
                       </span>
                     </td>
-                    <td className="max-w-48 truncate px-6 py-4 font-medium text-slate-600 dark:text-slate-400">{student.address}</td>
+                    <td className="max-w-[280px] px-6 py-4">
+                      {student.fullAddress || student.address ? (
+                        <div className="flex items-start gap-1.5" title={student.fullAddress || student.address}>
+                          <span className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0 text-xs">📍</span>
+                          <span className="font-medium text-slate-700 dark:text-slate-300 line-clamp-2 text-xs leading-relaxed">
+                            {student.fullAddress || student.address}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 dark:text-slate-500 italic text-xs">Chưa cập nhật</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <ActionIcon label="Sửa sinh viên" color="blue" onClick={() => setEditing(student)}>
                         <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />

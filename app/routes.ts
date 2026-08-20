@@ -10,6 +10,9 @@ export default [
   route("categories/buildings", "routes/categories/buildings.tsx"),
   route("categories/floors", "routes/categories/floors.tsx"),
   route("categories/rooms", "routes/categories/rooms.tsx"),
+  route("categories/provinces", "routes/categories/provinces.tsx"),
+  route("categories/districts", "routes/categories/districts.tsx"),
+  route("categories/wards", "routes/categories/wards.tsx"),
   route("class-groups", "routes/class-groups.tsx"),
   route("schedule", "routes/schedule.tsx"),
   route("schedule/timetable", "routes/schedules/timetable.tsx"),
@@ -17,4 +20,5 @@ export default [
   route("schedule/exam", "routes/schedules/exam.tsx"),
   route("schedule/teaching", "routes/schedules/teaching.tsx"),
   route("users", "routes/users.tsx"),
+  route("notifications", "routes/notifications.tsx"),
 ] satisfies RouteConfig;

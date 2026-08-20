@@ -5,6 +5,7 @@ export type ClassGroupRequest = {
   major?: string;
   academicYear?: string;
   homeroomTeacherId?: number | string;
+  maxStudents?: number | string;
 };
 
 export type ClassGroupPayload = ClassGroupRequest;
@@ -15,4 +16,5 @@ export const emptyClassGroup: ClassGroupPayload = {
   majorId: '',
   academicYear: '2024-2025',
   homeroomTeacherId: '',
+  maxStudents: 50,
 };

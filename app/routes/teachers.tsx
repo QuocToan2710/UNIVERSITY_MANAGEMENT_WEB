@@ -14,7 +14,7 @@ export default function Teachers() {
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, any>>({
+  const [filters, setFilters] = useState<Record<string, string>>({
     teacherCode: "",
     fullName: "",
     degree: "",
@@ -36,6 +36,7 @@ export default function Teachers() {
     } catch (reason) {
       const err = reason as ApiError;
       if (err.status === 401) navigate("/login");
+      else if (err.status === 403) setError("Bạn cần quyền quản trị viên (ADMIN) để truy cập chức năng này.");
       else setError(err.message || "Không thể tải danh sách giảng viên.");
     } finally {
       setLoading(false);
@@ -101,6 +102,7 @@ export default function Teachers() {
           { key: "email", header: "Email" },
           { key: "phoneNumber", header: "Số điện thoại" },
           { key: "departmentName", header: "Khoa/Bộ môn" },
+          { key: "fullAddress", header: "Địa chỉ thường trú" },
         ]
       );
     } catch {
@@ -131,23 +133,22 @@ export default function Teachers() {
   }
 
   return (
-    <AppShell title="Quản lý Giảng viên" description="Danh sách cán bộ giảng dạy, bằng cấp và Khoa trực thuộc trong hệ thống.">
+    <AppShell title="Quản lý Giảng viên" description="Hồ sơ danh sách cán bộ, giảng viên cơ hữu và thỉnh giảng.">
       <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
-        {/* Header Controls */}
+        {/* Table Header Controls */}
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="grid size-9 place-items-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300">
+              <div className="grid size-9 place-items-center rounded-xl border border-purple-400/30 bg-purple-500/10 text-purple-700 dark:text-purple-300">
                 <TeacherIcon size={18} />
               </div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách giảng viên</h2>
             </div>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{teachers.length} giảng viên đã đồng bộ dữ liệu</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(167,139,250,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-violet-500/25 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
             <span>Thêm giảng viên mới</span>
@@ -177,19 +178,20 @@ export default function Teachers() {
                 <th className="px-6 py-4">Bằng cấp</th>
                 <th className="px-6 py-4">Khoa trực thuộc</th>
                 <th className="px-6 py-4">Liên hệ</th>
+                <th className="px-6 py-4">Địa chỉ</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-300">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
                     Đang tải dữ liệu giảng viên…
                   </td>
                 </tr>
               ) : paginatedTeachers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
                     Chưa có giảng viên nào phù hợp.
                   </td>
                 </tr>
@@ -201,7 +203,7 @@ export default function Teachers() {
                       <p className="mt-0.5 text-[11px] text-purple-700 dark:text-violet-300 font-bold font-mono">{teacher.teacherCode}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-[11px] font-semibold text-violet-300 shadow-[0_0_10px_rgba(167,139,250,0.15)]">
+                      <span className="rounded-full border border-purple-300 dark:border-violet-500/30 bg-purple-50 dark:bg-violet-500/10 px-3 py-1 text-[11px] font-semibold text-purple-800 dark:text-violet-300 shadow-xs">
                         {teacher.degree || "Thạc sĩ"}
                       </span>
                     </td>
@@ -213,6 +215,9 @@ export default function Teachers() {
                     <td className="px-6 py-4">
                       <p className="text-slate-800 dark:text-slate-200">{teacher.email}</p>
                       <p className="mt-0.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">{teacher.phoneNumber}</p>
+                    </td>
+                    <td className="max-w-xs truncate px-6 py-4 font-medium text-slate-700 dark:text-slate-300" title={teacher.fullAddress || teacher.address}>
+                      {teacher.fullAddress || teacher.address || "—"}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <ActionIcon label="Sửa thông tin" color="blue" onClick={() => setEditing(teacher)}>

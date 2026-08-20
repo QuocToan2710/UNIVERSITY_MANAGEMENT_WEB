@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import type { Route } from "./+types/home";
 import { Link, useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
-import { ApiError, apiListRequest, apiRequest } from "../lib/api";
+import { ApiError, apiListRequest } from "../lib/api";
 import type { Course, Teacher, User } from "../types/management";
 import type { Student } from "../types/student";
 import {
@@ -13,7 +12,7 @@ import {
   UsersIcon,
 } from "../components/icons";
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "EduManage | Tổng quan" },
     { name: "description", content: "Hệ thống quản lý đào tạo thông minh 3D" },
@@ -118,9 +117,9 @@ export default function Home() {
 
           <div className="mt-6 space-y-3.5">
             {loading ? (
-              <p className="py-6 text-center text-xs font-medium text-slate-500 dark:text-slate-500 dark:text-slate-400 font-medium">Đang tải dữ liệu hệ thống…</p>
+              <p className="py-6 text-center text-xs font-medium text-slate-500 dark:text-slate-400">Đang tải dữ liệu hệ thống…</p>
             ) : students.length === 0 ? (
-              <p className="py-6 text-center text-xs font-medium text-slate-500 dark:text-slate-500 dark:text-slate-400 font-medium">Chưa có sinh viên nào trong hệ thống.</p>
+              <p className="py-6 text-center text-xs font-medium text-slate-500 dark:text-slate-400">Chưa có sinh viên nào trong hệ thống.</p>
             ) : (
               students.slice(0, 4).map((student) => <StudentPreview key={student.id} student={student} />)
             )}
@@ -241,7 +240,7 @@ function QuickLink({
   return (
     <Link
       to={to}
-      className="group flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/40 p-4 transition-all duration-200 hover:border-cyan-400 hover:bg-white dark:hover:bg-white dark:bg-slate-900/80 shadow-2xs dark:shadow-lg"
+      className="group flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/40 p-4 transition-all duration-200 hover:border-cyan-400 hover:bg-white dark:hover:bg-slate-800/80 dark:bg-slate-900/80 shadow-2xs dark:shadow-lg"
     >
       <div className="flex items-center gap-3.5">
         <div className={`grid size-11 shrink-0 place-items-center rounded-xl border ${badgeColors[color]}`}>

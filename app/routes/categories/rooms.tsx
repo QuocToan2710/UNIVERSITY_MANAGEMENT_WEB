@@ -93,30 +93,30 @@ export default function RoomsCategoryPage() {
       case "ACTIVE":
       case "HOẠT ĐỘNG":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-300">
-            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+            <span className="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
             Hoạt động
           </span>
         );
       case "MAINTENANCE":
       case "ĐANG BẢO TRÌ":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-bold text-amber-300">
-            <span className="size-1.5 rounded-full bg-amber-400" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 text-[11px] font-bold text-amber-800 dark:text-amber-300">
+            <span className="size-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
             Đang bảo trì
           </span>
         );
       case "INACTIVE":
       case "TẠM KHÓA":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-bold text-red-300">
-            <span className="size-1.5 rounded-full bg-red-400" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3 py-1 text-[11px] font-bold text-red-800 dark:text-red-300">
+            <span className="size-1.5 rounded-full bg-red-500 dark:bg-red-400" />
             Tạm khóa
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-500/30 bg-slate-500/10 px-3 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 dark:border-slate-500/30 bg-slate-100 dark:bg-slate-500/10 px-3 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
             {status}
           </span>
         );
@@ -130,18 +130,17 @@ export default function RoomsCategoryPage() {
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="grid size-9 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-300">
+              <div className="grid size-9 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <RoomIcon size={18} />
               </div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Phòng học</h2>
             </div>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{rooms.length} phòng học khả dụng trong khuôn viên trường</p>
           </div>
 
           {isAdmin && (
             <button
               onClick={() => setEditing(null)}
-              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
             >
               <PlusIcon size={16} />
               <span>Thêm phòng học mới</span>
@@ -194,7 +193,7 @@ export default function RoomsCategoryPage() {
                 {isAdmin && <th className="px-6 py-4 text-right">Thao tác</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-300">
               {loading ? (
                 <tr>
                   <td colSpan={isAdmin ? 7 : 6} className="px-6 py-10 text-center text-slate-400">
@@ -211,7 +210,7 @@ export default function RoomsCategoryPage() {
                 paginatedRooms.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-mono font-bold text-cyan-300">
+                      <span className="rounded-full border border-cyan-300 dark:border-cyan-500/30 bg-cyan-50 dark:bg-cyan-500/10 px-3 py-1 text-[11px] font-mono font-bold text-cyan-800 dark:text-cyan-300">
                         {r.roomCode}
                       </span>
                     </td>
@@ -292,7 +291,7 @@ function ActionIcon({
 }) {
   const tones =
     color === "blue"
-      ? "text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300"
+      ? "text-cyan-700 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-800 dark:hover:text-cyan-300"
       : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300";
   return (
     <button type="button" title={label} aria-label={label} onClick={onClick} className={`mr-1 rounded-xl p-2 transition-colors cursor-pointer ${tones}`}>

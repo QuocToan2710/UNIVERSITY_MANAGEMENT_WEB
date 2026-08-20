@@ -8,7 +8,9 @@ export type ClassGroupResponse = {
   academicYear: string;
   homeroomTeacherId: number | string | null;
   homeroomTeacherName: string | null;
-  studentCount: number;
+  studentCount?: number;
+  currentStudents?: number;
+  maxStudents?: number;
 };
 
 export type ClassGroup = ClassGroupResponse;

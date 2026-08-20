@@ -4,15 +4,32 @@ export type IconProps = SVGProps<SVGSVGElement> & {
   size?: number;
 };
 
-// Logo EduManage 3D Icon
-export function EduManageLogo({ size = 36, className = "" }: IconProps) {
+// Logo EduManage Authentic 3D Atomic Quantum Model
+export function EduManageLogo({ size = 42, className = "" }: IconProps) {
   return (
     <div
       style={{ width: size, height: size }}
-      className={`relative grid place-items-center rounded-xl border border-cyan-400/40 bg-gradient-to-br from-cyan-400/20 via-blue-600/30 to-indigo-900/40 p-0.5 shadow-[0_0_15px_rgba(34,211,238,0.3)] backdrop-blur-md shrink-0 ${className}`}
+      className={`atom-model-container shrink-0 group select-none relative ${className}`}
     >
-      <div className="grid size-full place-items-center rounded-[10px] bg-slate-100 dark:bg-slate-950/80 text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-200">
-        E
+      {/* 4 Elliptical Orbitals Crossing at 0, 45, 90, 135 deg */}
+      <div className="atom-orbital-ring atom-orbital-1">
+        <div className="atom-electron atom-electron-cyan" />
+      </div>
+      <div className="atom-orbital-ring atom-orbital-2">
+        <div className="atom-electron atom-electron-purple" />
+      </div>
+      <div className="atom-orbital-ring atom-orbital-3">
+        <div className="atom-electron atom-electron-sky" />
+      </div>
+      <div className="atom-orbital-ring atom-orbital-4">
+        <div className="atom-electron atom-electron-emerald" />
+      </div>
+
+      {/* Central Atomic Nucleus with Letter E */}
+      <div className="atom-nucleus size-6">
+        <span className="relative z-10 font-black text-xs text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+          E
+        </span>
       </div>
     </div>
   );

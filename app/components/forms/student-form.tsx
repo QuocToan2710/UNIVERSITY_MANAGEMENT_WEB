@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { apiListRequest, apiRequest, fetchMasterData } from "../../lib/api";
 import type { ClassGroup, Major } from "../../types/management";
 import { emptyStudent, type Student, type StudentPayload } from "../../types/student";
+import { AddressSelector } from "../address-selector";
 
 type StudentFormProps = {
   student: Student | null;
@@ -19,7 +20,11 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
           phoneNumber: student.phoneNumber || "",
           dob: dateValue(student.dob),
           gender: student.gender || "Nam",
-          address: student.address || "",
+          address: student.fullAddress || student.address || "",
+          provinceId: student.provinceId ?? "",
+          districtId: student.districtId ?? "",
+          wardId: student.wardId ?? "",
+          specificAddress: student.specificAddress || (!student.provinceId ? (student.address || student.fullAddress || "") : ""),
           majorId: student.majorId ?? "",
           enrollmentYear: student.enrollmentYear || "",
           status: student.status || "ACTIVE",
@@ -29,11 +34,48 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
       : emptyStudent
   );
 
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [classGroups, setClassGroups] = useState<{ id: string | number; name: string }[]>([]);
   const [majors, setMajors] = useState<{ id: string | number; name: string }[]>([]);
   const [statuses, setStatuses] = useState<{ value: string; label: string }[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Load fresh student detail by id when editing
+  useEffect(() => {
+    if (student?.id) {
+      setLoadingDetail(true);
+      apiRequest<Student>(`/students/${student.id}`)
+        .then((fresh) => {
+          if (fresh) {
+            setForm({
+              studentCode: fresh.studentCode || "",
+              fullName: fresh.fullName || "",
+              email: fresh.email || "",
+              phoneNumber: fresh.phoneNumber || "",
+              dob: dateValue(fresh.dob),
+              gender: fresh.gender || "Nam",
+              address: fresh.fullAddress || fresh.address || "",
+              provinceId: fresh.provinceId ?? "",
+              districtId: fresh.districtId ?? "",
+              wardId: fresh.wardId ?? "",
+              specificAddress: fresh.specificAddress || (!fresh.provinceId ? (fresh.address || fresh.fullAddress || "") : ""),
+              majorId: fresh.majorId ?? "",
+              enrollmentYear: fresh.enrollmentYear || "",
+              status: fresh.status || "ACTIVE",
+              classGroupId: fresh.classGroupId ?? "",
+              userId: fresh.userId || "",
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Error loading fresh student detail:", err);
+        })
+        .finally(() => {
+          setLoadingDetail(false);
+        });
+    }
+  }, [student?.id]);
 
   useEffect(() => {
     // Load Class Groups master data
@@ -80,9 +122,13 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
         ...form,
         classGroupId: form.classGroupId ? Number(form.classGroupId) : null,
         majorId: form.majorId ? Number(form.majorId) : null,
+        provinceId: form.provinceId ? Number(form.provinceId) : null,
+        districtId: form.districtId ? Number(form.districtId) : null,
+        wardId: form.wardId ? Number(form.wardId) : null,
+        dob: form.dob ? form.dob : null,
       };
-      await apiRequest<Student>(student ? `/students/${student.id}` : "/students", {
-        method: student ? "PUT" : "POST",
+      await apiRequest<Student>(student?.id ? `/students/${student.id}` : "/students", {
+        method: student?.id ? "PUT" : "POST",
         body: JSON.stringify(payload),
       });
       onSaved();
@@ -94,7 +140,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-50 dark:bg-slate-950/70 p-4 backdrop-blur-xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-950/70 p-4 backdrop-blur-xl animate-in fade-in duration-200">
       <form
         onSubmit={submit}
         className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 dark:border-white/15 bg-white dark:bg-slate-900 p-6 shadow-2xl text-slate-900 dark:text-white"
@@ -121,7 +167,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
             <select
               value={form.gender}
               onChange={(e) => update("gender", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
               <option value="Nam">Nam</option>
               <option value="Nữ">Nữ</option>
@@ -134,7 +180,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
             <select
               value={form.classGroupId || ""}
               onChange={(e) => update("classGroupId", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
               <option value="">-- Chọn lớp học --</option>
               {classGroups.map((cg) => (
@@ -150,7 +196,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
             <select
               value={form.majorId || ""}
               onChange={(e) => update("majorId", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
               <option value="">-- Chọn ngành học --</option>
               {majors.map((m) => (
@@ -168,7 +214,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
             <select
               value={form.status || "ACTIVE"}
               onChange={(e) => update("status", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
               {statuses.map((st) => (
                 <option key={st.value} value={st.value}>
@@ -178,16 +224,28 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
             </select>
           </label>
 
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider sm:col-span-2">
-            Địa chỉ *
-            <input
-              required
-              value={form.address}
-              onChange={(e) => update("address", e.target.value)}
-              placeholder="VD: 123 Đường Nguyễn Huệ, Quận 1, TP.HCM"
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+          <div className="sm:col-span-2 pt-2 border-t border-slate-200 dark:border-white/10">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 mb-3">
+              Thông tin Địa chỉ Cư trú (Theo CCCD / VNeID)
+            </h4>
+            <AddressSelector
+              provinceId={form.provinceId}
+              districtId={form.districtId}
+              wardId={form.wardId}
+              specificAddress={form.specificAddress}
+              currentAddress={form.address || (student ? (student.fullAddress || student.address) : "")}
+              onChange={(addr) => {
+                setForm((prev) => ({
+                  ...prev,
+                  provinceId: addr.provinceId,
+                  districtId: addr.districtId,
+                  wardId: addr.wardId,
+                  specificAddress: addr.specificAddress,
+                  address: addr.fullAddress || prev.address,
+                }));
+              }}
             />
-          </label>
+          </div>
         </div>
 
         {error && <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">{error}</p>}
@@ -198,7 +256,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
           </button>
           <button
             disabled={saving}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white shadow-md disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md disabled:opacity-50 cursor-pointer"
           >
             {saving && <span className="size-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
             <span>{saving ? "Đang lưu..." : "Lưu sinh viên"}</span>
@@ -233,7 +291,7 @@ function Field({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs placeholder-slate-500 outline-none focus:border-cyan-400"
+        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs placeholder-slate-500 outline-none focus:border-cyan-400"
       />
     </label>
   );

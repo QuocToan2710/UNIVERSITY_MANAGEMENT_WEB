@@ -3,6 +3,8 @@ import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "reac
 import { apiRequest } from "../lib/api";
 import { clearToken, getToken } from "../lib/auth";
 import type { User } from "../types/management";
+import type { AppNotification, NotificationSummary } from "../types/notification";
+import { notificationService } from "../services/notification.service";
 import { useTheme } from "../lib/theme";
 import {
   ArrowRightIcon,
@@ -58,7 +60,7 @@ const allNavigation: NavItem[] = [
   },
   { to: "/class-groups", label: "Lớp học", Icon: ClassGroupIcon, allowedRoles: ["ADMIN"] },
   { to: "/students", label: "Sinh viên", Icon: StudentIcon, allowedRoles: ["ADMIN", "TEACHER"] },
-  { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN", "STUDENT"] },
+  { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN"] },
   { to: "/courses", label: "Môn học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
   { to: "/majors", label: "Ngành học", Icon: MajorIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
   {
@@ -69,17 +71,21 @@ const allNavigation: NavItem[] = [
       { to: "/categories/buildings", label: "Tòa nhà", allowedRoles: ["ADMIN"] },
       { to: "/categories/floors", label: "Tầng", allowedRoles: ["ADMIN"] },
       { to: "/categories/rooms", label: "Phòng học", allowedRoles: ["ADMIN"] },
+      { to: "/categories/provinces", label: "Tỉnh / Thành phố", allowedRoles: ["ADMIN"] },
+      { to: "/categories/districts", label: "Quận / Huyện / TP", allowedRoles: ["ADMIN"] },
+      { to: "/categories/wards", label: "Phường / Xã", allowedRoles: ["ADMIN"] },
     ],
   },
   { to: "/users", label: "Người dùng", Icon: UsersIcon, allowedRoles: ["ADMIN"] },
+  { to: "/notifications", label: "Thông báo", Icon: BellIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "USER"] },
 ];
 
 function navClassName({ isActive }: NavLinkRenderProps) {
   return [
     "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200",
     isActive
-      ? "bg-sky-100 text-sky-950 font-extrabold border border-sky-400 shadow-2xs dark:bg-gradient-to-r dark:from-cyan-500/20 dark:via-blue-600/20 dark:to-indigo-600/20 dark:text-cyan-300 dark:border-cyan-400/30 dark:shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-      : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200",
+      ? "bg-cyan-50 text-cyan-950 font-bold border border-cyan-300 shadow-sm dark:bg-gradient-to-r dark:from-cyan-500/25 dark:via-blue-600/20 dark:to-indigo-600/20 dark:text-white dark:border-cyan-400/40 dark:shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+      : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800/60 dark:hover:text-white",
   ].join(" ");
 }
 
@@ -87,8 +93,8 @@ function subNavClassName({ isActive }: NavLinkRenderProps) {
   return [
     "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs transition-all duration-200 pl-9",
     isActive
-      ? "bg-sky-100 text-sky-950 font-extrabold border-l-4 border-sky-600 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-400"
-      : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200",
+      ? "bg-cyan-50 text-cyan-950 font-bold border-l-4 border-cyan-600 dark:bg-cyan-500/20 dark:text-white dark:border-cyan-400 font-bold"
+      : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800/40 dark:hover:text-white",
   ].join(" ");
 }
 
@@ -104,13 +110,47 @@ export function AppShell({ title, description, children }: AppShellProps) {
   const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
   const [scheduleExpanded, setScheduleExpanded] = useState(true);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
+  // Notification State
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifSummary, setNotifSummary] = useState<NotificationSummary>({ unreadCount: 0, recentNotifications: [] });
+
+  const loadNotifications = async () => {
+    try {
+      const summary = await notificationService.getMySummary();
+      if (summary) setNotifSummary(summary);
+    } catch {
+      // ignore in unauthorized context
+    }
+  };
+
   useEffect(() => {
     void apiRequest<User>("/users/myInfo")
-      .then(setUser)
+      .then((u) => {
+        setUser(u);
+        void loadNotifications();
+      })
       .catch(() => setUser(null));
+
+    // Polling unread count every 30s
+    const timer = setInterval(() => {
+      if (getToken()) {
+        void loadNotifications();
+      }
+    }, 30000);
+
+    const handleNotificationsUpdated = () => {
+      void loadNotifications();
+    };
+    window.addEventListener("notifications-updated", handleNotificationsUpdated);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("notifications-updated", handleNotificationsUpdated);
+    };
   }, []);
 
   useEffect(() => {
@@ -118,14 +158,49 @@ export function AppShell({ title, description, children }: AppShellProps) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifOpen(false);
+      }
     }
-    if (profileOpen) {
+    if (profileOpen || notifOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [profileOpen]);
+  }, [profileOpen, notifOpen]);
+
+  const handleNotificationClick = async (notif: AppNotification) => {
+    if (!notif.read) {
+      try {
+        await notificationService.markAsRead(notif.id);
+        setNotifSummary((prev) => ({
+          unreadCount: Math.max(0, prev.unreadCount - 1),
+          recentNotifications: prev.recentNotifications.map((n) =>
+            n.id === notif.id ? { ...n, read: true } : n
+          ),
+        }));
+      } catch {
+        // ignore
+      }
+    }
+    setNotifOpen(false);
+    if (notif.actionUrl) {
+      navigate(notif.actionUrl);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifSummary((prev) => ({
+        unreadCount: 0,
+        recentNotifications: prev.recentNotifications.map((n) => ({ ...n, read: true })),
+      }));
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     if (location.pathname.startsWith("/schedule")) {
@@ -213,7 +288,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
       <div className="pointer-events-none fixed -bottom-40 right-0 size-[36rem] rounded-full bg-indigo-600/10 dark:bg-indigo-600/15 blur-[150px] opacity-20 dark:opacity-100" />
 
       {/* Sidebar Navigation */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-100 dark:bg-slate-950/80 p-4.5 backdrop-blur-2xl md:flex md:flex-col shadow-xs">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950/80 p-4.5 backdrop-blur-2xl md:flex md:flex-col shadow-xs">
         {/* Brand Header */}
         <div className="mb-6 flex items-center gap-3.5 px-2 pt-2">
           <EduManageLogo size={42} />
@@ -253,12 +328,12 @@ export function AppShell({ title, description, children }: AppShellProps) {
                     onClick={toggleExpanded}
                     className={`group flex w-full items-center justify-between gap-3.5 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer ${
                       isChildActive
-                        ? "bg-sky-100 dark:bg-gradient-to-r dark:from-cyan-500/20 dark:via-blue-600/20 dark:to-indigo-600/20 text-sky-950 dark:text-cyan-300 font-extrabold border border-sky-400 dark:border-cyan-400/30 shadow-2xs"
-                        : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+                        ? "bg-cyan-50 text-cyan-950 font-bold border border-cyan-300 shadow-sm dark:bg-gradient-to-r dark:from-cyan-500/25 dark:via-blue-600/20 dark:to-indigo-600/20 dark:text-white dark:border-cyan-400/40 dark:shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+                        : "font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800/60 dark:hover:text-white"
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
-                      <span className={`grid size-7 place-items-center rounded-lg transition-transform group-hover:scale-110 ${isChildActive ? "text-sky-800 dark:text-cyan-300" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200"}`}>
+                      <span className={`grid size-7 place-items-center rounded-lg transition-transform group-hover:scale-110 ${isChildActive ? "text-cyan-700 dark:text-cyan-400" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
                         <item.Icon size={19} />
                       </span>
                       <span className="tracking-wide">{item.label}</span>
@@ -268,7 +343,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180 text-sky-800 dark:text-cyan-300" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}
+                      className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180 text-cyan-700 dark:text-cyan-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}
                     >
                       <path d="M6 9l6 6 6-6" />
                     </svg>
@@ -281,7 +356,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                         <NavLink key={sub.to} to={sub.to} className={subNavClassName}>
                           {({ isActive }) => (
                             <>
-                              <span className={`size-1.5 rounded-full ${isActive ? "bg-sky-700 dark:bg-cyan-400" : "bg-slate-400 dark:bg-slate-600 group-hover:bg-sky-600 dark:group-hover:bg-cyan-300"}`} />
+                              <span className={`size-1.5 rounded-full ${isActive ? "bg-cyan-600 dark:bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-slate-400 dark:bg-slate-600 group-hover:bg-cyan-600 dark:group-hover:bg-cyan-300"}`} />
                               <span>{sub.label}</span>
                             </>
                           )}
@@ -299,7 +374,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   <>
                     <span
                       className={`grid size-7 place-items-center rounded-lg transition-transform group-hover:scale-110 ${
-                        isActive ? "text-sky-800 dark:text-cyan-300" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200"
+                        isActive ? "text-cyan-700 dark:text-cyan-400" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white"
                       }`}
                     >
                       <item.Icon size={19} />
@@ -316,7 +391,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
       {/* Main Container */}
       <main className="md:ml-64 relative min-h-screen">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-50 dark:bg-slate-950/70 px-6 backdrop-blur-xl md:px-8 transition-colors shadow-xs">
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/70 px-6 backdrop-blur-xl md:px-8 transition-colors shadow-xs">
           <div className="flex items-center gap-3 md:hidden">
             <EduManageLogo size={32} />
             <span className="font-bold text-slate-900 dark:text-white text-base">EduManage</span>
@@ -342,14 +417,132 @@ export function AppShell({ title, description, children }: AppShellProps) {
               )}
             </button>
 
-            {/* Notification Bell */}
-            <button
-              className="relative grid size-10 place-items-center rounded-xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:border-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors shadow-sm cursor-pointer"
-              aria-label="Thông báo"
-            >
-              <BellIcon size={18} />
-              <span className="absolute top-2 right-2 size-2 rounded-full bg-cyan-500 shadow-[0_0_8px_#22d3ee]" />
-            </button>
+            {/* Notification Bell & Dropdown */}
+            <div ref={notifRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setNotifOpen((open) => !open)}
+                className={`relative grid size-10 place-items-center rounded-xl border transition-all duration-300 cursor-pointer shadow-sm ${
+                  notifOpen
+                    ? "border-cyan-400 bg-cyan-50 dark:bg-slate-800 text-cyan-600 dark:text-cyan-300 ring-2 ring-cyan-400/20"
+                    : notifSummary.unreadCount > 0
+                    ? "border-rose-300 dark:border-rose-500/60 bg-rose-50/50 dark:bg-slate-900/80 text-rose-600 dark:text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.25)] hover:border-rose-400"
+                    : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:border-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
+                }`}
+                title={notifSummary.unreadCount > 0 ? `Bạn có ${notifSummary.unreadCount} thông báo chưa đọc` : "Thông báo hệ thống"}
+                aria-label="Thông báo"
+              >
+                <BellIcon size={18} className={notifSummary.unreadCount > 0 ? "animate-[bounce_2s_infinite]" : ""} />
+                {notifSummary.unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                    <span className="relative flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-pink-600 px-1 text-[10px] font-black text-white shadow-[0_0_10px_#f43f5e] ring-2 ring-white dark:ring-slate-950">
+                      {notifSummary.unreadCount > 9 ? "9+" : notifSummary.unreadCount}
+                    </span>
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Popover Dropdown */}
+              {notifOpen && (
+                <div className="absolute right-0 z-50 mt-2 w-80 sm:w-96 origin-top-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/95 p-3 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 text-left">
+                  {/* Popover Header */}
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 px-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">Thông báo</span>
+                      {notifSummary.unreadCount > 0 && (
+                        <span className="rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 px-2 py-0.5 text-[10px] font-bold">
+                          {notifSummary.unreadCount} mới
+                        </span>
+                      )}
+                    </div>
+                    {notifSummary.unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleMarkAllRead}
+                        className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                      >
+                        Đọc tất cả
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Popover List */}
+                  <div className="mt-2 max-h-80 overflow-y-auto space-y-1.5 divide-y divide-slate-100 dark:divide-slate-800/60 pr-1">
+                    {notifSummary.recentNotifications.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">
+                        <p className="text-2xl mb-1.5">🔕</p>
+                        Không có thông báo mới nào
+                      </div>
+                    ) : (
+                      notifSummary.recentNotifications.map((notif) => {
+                        const typeConfig = {
+                          EXAM: { bg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20", icon: "📝", label: "Lịch thi" },
+                          SCHEDULE: { bg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20", icon: "📅", label: "Lịch học" },
+                          ENROLLMENT: { bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20", icon: "🎓", label: "Đăng ký" },
+                          GRADE: { bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20", icon: "📊", label: "Điểm số" },
+                          SYSTEM: { bg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20", icon: "⚡", label: "Hệ thống" },
+                          ACADEMIC: { bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20", icon: "📚", label: "Học vụ" },
+                          GENERAL: { bg: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20", icon: "📢", label: "Chung" },
+                        }[notif.type] || { bg: "bg-slate-500/10 text-slate-600", icon: "📢", label: "Chung" };
+
+                        return (
+                          <div
+                            key={notif.id}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`group relative flex items-start gap-3 rounded-xl p-2.5 transition-colors cursor-pointer pt-3 ${
+                              notif.read
+                                ? "hover:bg-slate-50 dark:hover:bg-slate-800/40 opacity-75 hover:opacity-100"
+                                : "bg-cyan-50/40 dark:bg-cyan-950/20 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 border border-cyan-200/50 dark:border-cyan-500/20"
+                            }`}
+                          >
+                            <span className="text-base mt-0.5 shrink-0">{typeConfig.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`inline-block rounded px-1.5 py-0.2 text-[9px] font-bold border ${typeConfig.bg}`}>
+                                  {typeConfig.label}
+                                </span>
+                                {!notif.read && (
+                                  <span className="size-1.5 rounded-full bg-cyan-500 shrink-0" />
+                                )}
+                              </div>
+                              <p className="mt-1 text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-1">
+                                {notif.title}
+                              </p>
+                              <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                {notif.content}
+                              </p>
+                              <span className="mt-1 block text-[10px] font-medium text-slate-400 dark:text-slate-500 font-mono">
+                                {new Date(notif.createdAt).toLocaleString("vi-VN", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Popover Footer */}
+                  <div className="mt-2.5 border-t border-slate-100 dark:border-slate-800 pt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNotifOpen(false);
+                        navigate("/notifications");
+                      }}
+                      className="w-full rounded-xl py-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    >
+                      Xem toàn bộ thông báo →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Cyberpunk Glass Capsule Profile Widget */}
             <div ref={profileRef} className="relative border-l border-slate-200 dark:border-white/10 pl-3">
@@ -361,13 +554,13 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 className={`group relative flex items-center gap-3 rounded-2xl border p-1.5 pr-3.5 text-left transition-all duration-300 cursor-pointer backdrop-blur-xl ${
                   profileOpen
                     ? "border-cyan-500 dark:border-cyan-400/60 bg-cyan-50/80 dark:bg-slate-900/95 shadow-[0_0_20px_rgba(34,211,238,0.25)] ring-2 ring-cyan-400/20"
-                    : "border-slate-200 dark:border-white/15 bg-white/80 dark:bg-slate-900/70 hover:border-cyan-500 hover:bg-slate-100 dark:hover:border-cyan-400/50 dark:hover:bg-white dark:bg-slate-900/90 shadow-sm"
+                    : "border-slate-200 dark:border-white/15 bg-white/80 dark:bg-slate-900/70 hover:border-cyan-500 hover:bg-slate-100 dark:hover:border-cyan-400/50 dark:hover:bg-slate-800/80 dark:bg-slate-900/90 shadow-sm"
                 }`}
               >
                 {/* 3D Gradient Avatar with Pulsing Status Indicator */}
                 <div className="relative">
                   <div
-                    className={`grid size-9 place-items-center rounded-xl bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-slate-900 dark:text-white ${roleStyles.glow} transition-transform duration-300 group-hover:scale-105`}
+                    className={`grid size-9 place-items-center rounded-xl bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-white ${roleStyles.glow} transition-transform duration-300 group-hover:scale-105`}
                   >
                     {initials}
                   </div>
@@ -596,23 +789,23 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
             {/* Content List */}
             <div className="mt-5 space-y-3.5 text-xs">
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/60 p-3">
                 <span className="text-slate-500 dark:text-slate-400">Họ và tên</span>
                 <span className="font-bold text-slate-900 dark:text-white">{displayName}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/60 p-3">
                 <span className="text-slate-500 dark:text-slate-400">Tên đăng nhập (Username)</span>
                 <span className="font-mono font-bold text-cyan-600 dark:text-cyan-300">@{user?.username || "..."}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/60 p-3">
                 <span className="text-slate-500 dark:text-slate-400">Email</span>
                 <span className="font-medium text-slate-800 dark:text-slate-200">{user?.email || "Chưa cập nhật"}</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/60 p-3">
                 <span className="text-slate-500 dark:text-slate-400">Mã định danh ID</span>
                 <span className="font-mono font-bold text-slate-700 dark:text-slate-300">#{user?.id ?? "1"}</span>
               </div>
-              <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-50 dark:bg-slate-950/60 p-3 space-y-2">
+              <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/60 p-3 space-y-2">
                 <span className="text-slate-500 dark:text-slate-400 block">Quyền hạn hệ thống (Roles)</span>
                 <div className="flex flex-wrap gap-1.5">
                   {(userRoleNames.length > 0 ? userRoleNames : ["ADMIN"]).map((r) => (
@@ -760,7 +953,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 <button
                   type="submit"
                   disabled={changingPassword}
-                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-xs font-bold text-slate-900 dark:text-white hover:brightness-110 disabled:opacity-50 transition cursor-pointer"
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition cursor-pointer"
                 >
                   {changingPassword ? "Đang lưu..." : "Cập nhật mật khẩu"}
                 </button>

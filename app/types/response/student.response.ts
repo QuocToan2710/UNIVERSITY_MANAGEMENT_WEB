@@ -7,6 +7,14 @@ export type StudentResponse = {
   dob: string;
   gender: string;
   address: string;
+  provinceId?: number | string;
+  provinceName?: string;
+  districtId?: number | string;
+  districtName?: string;
+  wardId?: number | string;
+  wardName?: string;
+  specificAddress?: string;
+  fullAddress?: string;
   majorId?: number | string;
   majorName?: string;
   major?: string;

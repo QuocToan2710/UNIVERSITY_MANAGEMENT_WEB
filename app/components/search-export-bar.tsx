@@ -13,8 +13,8 @@ type SearchExportBarProps = {
   keyword: string;
   onKeywordChange: (val: string) => void;
   filterFields?: FilterField[];
-  filterValues?: Record<string, any>;
-  onFilterChange?: (key: string, value: any) => void;
+  filterValues?: Record<string, string>;
+  onFilterChange?: (key: string, value: string) => void;
   onResetFilters?: () => void;
   onExport: () => void;
   exporting?: boolean;

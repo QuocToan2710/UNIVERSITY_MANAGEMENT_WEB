@@ -11,3 +11,4 @@ export * from './student.response';
 export * from './course.response';
 export * from './class-group.response';
 export * from './schedule.response';
+export * from './administrative.response';

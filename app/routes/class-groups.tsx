@@ -14,7 +14,7 @@ export default function ClassGroups() {
   const navigate = useNavigate();
   const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, any>>({
+  const [filters, setFilters] = useState<Record<string, string>>({
     classCode: "",
     className: "",
     academicYear: "",
@@ -75,20 +75,26 @@ export default function ClassGroups() {
     return visibleClassGroups.slice(start, start + pageSize);
   }, [visibleClassGroups, currentPage, pageSize]);
 
-  function handleExport() {
-    exportToExcel(
-      visibleClassGroups,
-      "Danh_Sach_Lop_Hoc",
-      "LopHoc",
-      [
-        { key: "classCode", header: "Mã Lớp" },
-        { key: "className", header: "Tên Lớp" },
-        { key: "major", header: "Ngành đào tạo" },
-        { key: "academicYear", header: "Niên khóa" },
-        { key: "homeroomTeacherName", header: "GV Chủ Nhiệm" },
-        { key: "studentCount", header: "Sĩ số Sinh viên" },
-      ]
-    );
+  async function handleExport() {
+    setExporting(true);
+    try {
+      exportToExcel(
+        visibleClassGroups,
+        "Danh_Sach_Lop_Hoc",
+        "LopHoc",
+        [
+          { key: "classCode", header: "Mã Lớp" },
+          { key: "className", header: "Tên Lớp" },
+          { key: "major", header: "Ngành đào tạo" },
+          { key: "academicYear", header: "Niên khóa" },
+          { key: "homeroomTeacherName", header: "GV Chủ Nhiệm" },
+          { key: "currentStudents", header: "Số SV thực tế" },
+          { key: "maxStudents", header: "Sĩ số tối đa" },
+        ]
+      );
+    } finally {
+      setExporting(false);
+    }
   }
 
   const filterFields: FilterField[] = [
@@ -118,20 +124,19 @@ export default function ClassGroups() {
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="grid size-9 place-items-center rounded-xl border border-teal-400/30 bg-teal-500/10 text-teal-300">
+              <div className="grid size-9 place-items-center rounded-xl border border-teal-400/30 bg-teal-500/10 text-teal-700 dark:text-teal-300">
                 <ClassGroupIcon size={18} />
               </div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách lớp học</h2>
             </div>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{classGroups.length} lớp học trong hệ thống</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-600 to-green-600 px-5 py-3 text-xs font-semibold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-600 to-cyan-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
-            <span>Tạo lớp học mới</span>
+            <span>Thêm Lớp học</span>
           </button>
         </div>
 
@@ -158,11 +163,11 @@ export default function ClassGroups() {
                 <th className="px-6 py-4">Ngành học</th>
                 <th className="px-6 py-4">Niên khóa</th>
                 <th className="px-6 py-4">GV Chủ Nhiệm</th>
-                <th className="px-6 py-4 text-center">Sĩ số</th>
+                <th className="px-6 py-4 text-center">Sĩ số (Thực tế / Tối đa)</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-800 dark:text-slate-300">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
@@ -176,38 +181,65 @@ export default function ClassGroups() {
                   </td>
                 </tr>
               ) : (
-                paginatedClassGroups.map((cg) => (
-                  <tr key={cg.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-slate-900 dark:text-slate-100">{cg.className}</p>
-                      <p className="mt-0.5 text-[11px] text-teal-300 font-mono">{cg.classCode}</p>
-                    </td>
-                    <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{cg.major || "Chưa phân ngành"}</td>
-                    <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-400 font-mono">{cg.academicYear || "N/A"}</td>
-                    <td className="px-6 py-4">
-                      {cg.homeroomTeacherName ? (
-                        <span className="font-medium text-slate-800 dark:text-slate-200">{cg.homeroomTeacherName}</span>
-                      ) : (
-                        <span className="text-slate-500 italic">Chưa gán</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center justify-center rounded-full bg-teal-500/10 px-3 py-1 text-xs font-bold text-teal-300 border border-teal-400/20">
-                        {cg.studentCount} SV
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <ActionIcon label="Sửa lớp học" color="teal" onClick={() => setEditing(cg)}>
-                        <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />
-                        <path d="m13.5 7 3.5 3.5" />
-                      </ActionIcon>
-                      <ActionIcon label="Xóa lớp học" color="red" onClick={() => setDeletingGroup(cg)}>
-                        <path d="M4 7h16" />
-                        <path d="M10 11v5M14 11v5M6 7l1-3h10l1 3M7 7l1 13h8l1-13" />
-                      </ActionIcon>
-                    </td>
-                  </tr>
-                ))
+                paginatedClassGroups.map((cg) => {
+                  const current = cg.currentStudents ?? cg.studentCount ?? 0;
+                  const max = cg.maxStudents ?? 50;
+                  const percent = max > 0 ? Math.min(100, Math.round((current / max) * 100)) : 0;
+                  const isFull = current >= max;
+                  const isNearFull = current >= max * 0.85;
+
+                  const badgeColor = isFull
+                    ? "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-400/30"
+                    : isNearFull
+                    ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-400/30"
+                    : "bg-teal-50 text-teal-700 border-teal-300 dark:bg-teal-500/15 dark:text-teal-300 dark:border-teal-400/30";
+
+                  const barColor = isFull ? "bg-rose-500" : isNearFull ? "bg-amber-500" : "bg-teal-500";
+
+                  return (
+                    <tr key={cg.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-slate-900 dark:text-slate-100">{cg.className}</p>
+                        <p className="mt-0.5 text-[11px] text-teal-700 dark:text-teal-300 font-bold font-mono">{cg.classCode}</p>
+                      </td>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{cg.major || "Chưa phân ngành"}</td>
+                      <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-400 font-mono">{cg.academicYear || "N/A"}</td>
+                      <td className="px-6 py-4">
+                        {cg.homeroomTeacherName ? (
+                          <span className="font-medium text-slate-800 dark:text-slate-200">{cg.homeroomTeacherName}</span>
+                        ) : (
+                          <span className="text-slate-500 italic">Chưa gán</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="inline-flex flex-col items-center gap-1">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${badgeColor}`}>
+                            <span>{current}</span>
+                            <span className="opacity-60">/</span>
+                            <span>{max}</span>
+                            <span className="text-[10px] opacity-75 ml-0.5">SV</span>
+                          </span>
+                          <div className="w-16 h-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${barColor}`}
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <ActionIcon label="Sửa lớp học" color="teal" onClick={() => setEditing(cg)}>
+                          <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />
+                          <path d="m13.5 7 3.5 3.5" />
+                        </ActionIcon>
+                        <ActionIcon label="Xóa lớp học" color="red" onClick={() => setDeletingGroup(cg)}>
+                          <path d="M4 7h16" />
+                          <path d="M10 11v5M14 11v5M6 7l1-3h10l1 3M7 7l1 13h8l1-13" />
+                        </ActionIcon>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

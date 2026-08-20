@@ -28,7 +28,15 @@ export default function TeachingSchedulePage() {
     setLoading(true);
     setError("");
     try {
-      setSchedules(await apiListRequest<ClassSchedule>("/schedules?size=200"));
+      if (isAdmin) {
+        setSchedules(await apiListRequest<ClassSchedule>("/schedules?size=200"));
+      } else {
+        setSchedules(
+          await apiListRequest<ClassSchedule>(
+            `/schedules/my?semester=${semester}&academicYear=${academicYear}`
+          ).catch(async () => await apiListRequest<ClassSchedule>("/schedules?size=200"))
+        );
+      }
     } catch (reason) {
       const apiError = reason as ApiError;
       if (apiError.status === 401) navigate("/login");
@@ -52,7 +60,7 @@ export default function TeachingSchedulePage() {
         </div>
         <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl p-5 backdrop-blur-xl shadow-xl">
           <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Định mức tiết giảng dạy</p>
-          <p className="mt-2 text-2xl font-black text-cyan-700 dark:text-cyan-700 dark:text-cyan-300">
+          <p className="mt-2 text-2xl font-black text-cyan-700 dark:text-cyan-300">
             {schedules.reduce((acc, curr) => acc + ((curr.endPeriod ?? 0) >= (curr.startPeriod ?? 0) ? (curr.endPeriod ?? 0) - (curr.startPeriod ?? 0) + (curr.endPeriod !== undefined ? 1 : 0) : 0), 0)} Tiết / Tuần
           </p>
         </div>
@@ -131,7 +139,7 @@ export default function TeachingSchedulePage() {
                   <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
                       <div>{item.courseClassId || "HP_DEFAULT"}</div>
-                      <div className="text-xs text-cyan-700 dark:text-cyan-700 dark:text-cyan-300 font-bold font-mono font-normal">Mã TKB: {item.scheduleCode}</div>
+                      <div className="text-xs text-cyan-700 dark:text-cyan-300 font-bold font-mono">Mã TKB: {item.scheduleCode}</div>
                     </td>
                     <td className="px-6 py-4 text-slate-800 dark:text-slate-200">
                       <div>{item.teacherName || "Giảng viên bộ môn"}</div>

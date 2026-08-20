@@ -79,17 +79,16 @@ export default function Users() {
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="grid size-9 place-items-center rounded-xl border border-emerald-400/30 bg-emerald-500/10 text-emerald-300">
+              <div className="grid size-9 place-items-center rounded-xl border border-emerald-400/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                 <UsersIcon size={18} />
               </div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách tài khoản hệ thống</h2>
             </div>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">{users.length} tài khoản người dùng đã đăng ký</p>
           </div>
 
           <button
             onClick={() => setEditing(null)}
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 px-5 py-3 text-xs font-bold text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 px-5 py-3 text-xs font-bold text-white shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusIcon size={16} />
             <span>Tạo tài khoản mới</span>
@@ -154,15 +153,15 @@ export default function Users() {
                               key={role.name}
                               className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                                 role.name === "ADMIN"
-                                  ? "border-amber-400/40 bg-amber-500/10 text-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.2)]"
-                                  : "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                                  ? "border-amber-300 dark:border-amber-400/40 bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 shadow-xs"
+                                  : "border-emerald-300 dark:border-emerald-400/40 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
                               }`}
                             >
                               {role.name}
                             </span>
                           ))
                         ) : (
-                          <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
+                          <span className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-700 dark:text-slate-400">
                             USER
                           </span>
                         )}

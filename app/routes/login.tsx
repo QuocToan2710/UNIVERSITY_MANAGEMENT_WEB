@@ -60,17 +60,33 @@ export default function Login() {
       data-theme="dark"
       className="login-page relative isolate min-h-screen overflow-hidden bg-[#070e1e] text-white antialiased selection:bg-cyan-500 selection:text-slate-950 font-sans"
     >
-      {/* Real 4K Ultra-HD University Campus Background - 100% Full Clarity */}
+      {/* Real 4K Ultra-HD University Campus with Spring Cherry Blossoms - 100% Full Clarity */}
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100 scale-100"
         style={{
-          backgroundImage: `url('/images/university-campus-bg.jpg')`,
+          backgroundImage: `url('/images/university-campus-cherry-blossom.jpg')`,
         }}
       />
 
       {/* Ultra-Light Transparent Vignette: lets full 4K background shine through everywhere */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/40 via-black/10 to-black/35" />
       <div className="pointer-events-none absolute inset-0 bg-black/15" />
+
+      {/* Gentle Cherry Blossom Petals (Hoa Đào Rơi Tản Đều Màn Hình - Số lượng ít & Tinh tế) */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden z-[4]">
+        <div className="sakura-petal w-3 h-4" style={{ left: "4%", animation: "petalSwayFall1 14s ease-in-out infinite 0s" }} />
+        <div className="sakura-petal w-2.5 h-3.5" style={{ left: "12%", animation: "petalSwayFall2 18s ease-in-out infinite -5s" }} />
+        <div className="sakura-petal w-2 h-3" style={{ left: "20%", animation: "petalSwayFall3 16s ease-in-out infinite -10s" }} />
+        <div className="sakura-petal w-3 h-4.5" style={{ left: "28%", animation: "petalSwayFall1 20s ease-in-out infinite -3s" }} />
+        <div className="sakura-petal w-2.5 h-3.5" style={{ left: "37%", animation: "petalSwayFall2 15s ease-in-out infinite -8s" }} />
+        <div className="sakura-petal w-2 h-3" style={{ left: "46%", animation: "petalSwayFall3 19s ease-in-out infinite -13s" }} />
+        <div className="sakura-petal w-3 h-4" style={{ left: "55%", animation: "petalSwayFall1 17s ease-in-out infinite -2s" }} />
+        <div className="sakura-petal w-2.5 h-3.5" style={{ left: "63%", animation: "petalSwayFall2 21s ease-in-out infinite -7s" }} />
+        <div className="sakura-petal w-2 h-3" style={{ left: "72%", animation: "petalSwayFall3 14s ease-in-out infinite -11s" }} />
+        <div className="sakura-petal w-3 h-4.5" style={{ left: "80%", animation: "petalSwayFall1 18s ease-in-out infinite -4s" }} />
+        <div className="sakura-petal w-2.5 h-3.5" style={{ left: "89%", animation: "petalSwayFall2 16s ease-in-out infinite -9s" }} />
+        <div className="sakura-petal w-2 h-3" style={{ left: "96%", animation: "petalSwayFall3 22s ease-in-out infinite -14s" }} />
+      </div>
 
       {/* Ambient Lighting Orbs */}
       <div className="pointer-events-none absolute -left-20 top-10 size-[32rem] rounded-full bg-cyan-400/15 blur-[120px]" />
@@ -81,36 +97,46 @@ export default function Login() {
         {/* Left Side: Branding & Hero Info - Floating Naturally Over 4K Background */}
         <section className="mx-auto w-full max-w-2xl lg:mx-0">
           <div className="login-brand-3d flex items-center gap-4">
-            {/* Transparent Glass Logo Box */}
-            <div className="relative group grid size-13 place-items-center rounded-2xl border border-white/35 bg-black/25 p-0.5 shadow-lg backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
-              <div className="grid size-full place-items-center rounded-[14px] bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 text-2xl font-black text-white shadow-md">
-                E
+            {/* Authentic Rutherford-Bohr 3D Atomic Quantum Model */}
+            <div className="atom-model-container size-18 shrink-0 select-none mr-3">
+              {/* 4 Crossing Atomic Orbitals (0, 45, 90, 135 deg) */}
+              <div className="atom-orbital-ring atom-orbital-1">
+                <div className="atom-electron atom-electron-cyan" style={{ width: "9px", height: "9px", top: "-4.5px" }} />
+              </div>
+              <div className="atom-orbital-ring atom-orbital-2">
+                <div className="atom-electron atom-electron-purple" style={{ width: "9px", height: "9px", top: "-4.5px" }} />
+              </div>
+              <div className="atom-orbital-ring atom-orbital-3">
+                <div className="atom-electron atom-electron-sky" style={{ width: "9px", height: "9px", top: "-4.5px" }} />
+              </div>
+              <div className="atom-orbital-ring atom-orbital-4">
+                <div className="atom-electron atom-electron-emerald" style={{ width: "9px", height: "9px", top: "-4.5px" }} />
+              </div>
+
+              {/* Central Atomic Nucleus (Hạt nhân 3D phát quang với chữ E) */}
+              <div className="atom-nucleus size-10">
+                <span className="relative z-10 font-black text-xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  T
+                </span>
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-extrabold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                  EduManage
+                  EDUCATION MANAGEMENT
                 </p>
                 <span className="rounded-full border border-cyan-300/50 bg-black/30 px-2.5 py-0.5 text-[10px] font-bold text-cyan-200 tracking-wider uppercase backdrop-blur-[2px]">
-                  Portal v2.4
+                  Ver v2.4
                 </span>
               </div>
               <p className="text-xs font-bold tracking-[0.2em] text-cyan-200 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                Hệ thống Đào tạo Thông minh
+                Hệ thống Quản Lý Giáo Dục
               </p>
             </div>
           </div>
 
           {/* Giant Cascading Left-to-Right Animated Color Wave Title */}
           <div className="login-hero-title mt-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/30 px-3.5 py-1.5 backdrop-blur-[2px] shadow-sm mb-4">
-              <span className="size-2 rounded-full bg-cyan-300 animate-pulse shadow-[0_0_8px_#67e8f9]" />
-              <span className="text-xs font-bold text-cyan-100">
-                Cổng Quản Trị Đào Tạo Thông Minh
-              </span>
-            </div>
-
             <h1 className="text-4xl sm:text-5xl lg:text-[3.65rem] xl:text-[4.15rem] font-black leading-[1.12] tracking-tight">
               <span className="block animate-wave-line1 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] pr-2">
                 Quản trị đào tạo
@@ -157,7 +183,7 @@ export default function Login() {
           <div className="login-form-anim flex items-center justify-between">
             <div>
               <p className="text-xs font-bold tracking-wider text-cyan-300 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                EduManage Portal
+                EDUMANAGE PORTAL
               </p>
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
                 Cổng Đăng Nhập
@@ -259,7 +285,7 @@ export default function Login() {
               className="login-form-anim group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-4 py-3.5 font-bold text-white shadow-lg transition-all duration-200 hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             >
               <span className="relative z-10 text-sm tracking-wide">
-                {isSubmitting ? "Đang xác thực dữ liệu..." : "Đăng Nhập Vào Hệ Thống"}
+                {isSubmitting ? "Đang xác thực" : "Đăng Nhập"}
               </span>
 
               {!isSubmitting && (
@@ -272,7 +298,7 @@ export default function Login() {
             {/* Quick Demo Accounts Helper */}
             <div className="login-form-anim mt-5 pt-3.5 border-t border-white/20">
               <p className="text-xs font-bold text-white mb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                Thử nghiệm nhanh với 3 Vai trò (Roles):
+                Trải nghiệm nhanh với 3 vai trò chính:
               </p>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -280,8 +306,7 @@ export default function Login() {
                   onClick={() => { setUsername("admin"); setPassword("admin"); }}
                   className="rounded-lg border border-white/30 bg-black/25 px-2 py-2 text-[11px] font-bold text-cyan-200 hover:bg-black/45 hover:border-cyan-300 backdrop-blur-[2px] transition-all text-center cursor-pointer shadow-sm"
                 >
-                  Admin
-                  <span className="block text-[9px] text-slate-200 font-mono font-medium">admin / admin</span>
+                  Quản trị viên
                 </button>
                 <button
                   type="button"
@@ -289,7 +314,6 @@ export default function Login() {
                   className="rounded-lg border border-white/30 bg-black/25 px-2 py-2 text-[11px] font-bold text-violet-200 hover:bg-black/45 hover:border-violet-300 backdrop-blur-[2px] transition-all text-center cursor-pointer shadow-sm"
                 >
                   Giảng viên
-                  <span className="block text-[9px] text-slate-200 font-mono font-medium">teacher / teacher123</span>
                 </button>
                 <button
                   type="button"
@@ -297,7 +321,6 @@ export default function Login() {
                   className="rounded-lg border border-white/30 bg-black/25 px-2 py-2 text-[11px] font-bold text-emerald-200 hover:bg-black/45 hover:border-emerald-300 backdrop-blur-[2px] transition-all text-center cursor-pointer shadow-sm"
                 >
                   Sinh viên
-                  <span className="block text-[9px] text-slate-200 font-mono font-medium">student / student123</span>
                 </button>
               </div>
             </div>
@@ -305,7 +328,7 @@ export default function Login() {
 
           {/* Card Footer */}
           <div className="login-form-anim mt-6 pt-4 border-t border-white/20 flex items-center justify-between text-[11px] font-semibold text-slate-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-            <span>EduManage Portal</span>
+            <span>By Toan</span>
             <span className="flex items-center gap-1.5 text-cyan-300">
               <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
               Bảo mật SSL 256-bit

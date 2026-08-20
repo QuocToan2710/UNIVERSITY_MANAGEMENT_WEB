@@ -58,7 +58,7 @@ export function MajorForm({ major, onClose, onSaved }: MajorFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-50 dark:bg-slate-950/70 p-4 backdrop-blur-xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-950/70 p-4 backdrop-blur-xl animate-in fade-in duration-200">
       <form
         onSubmit={submit}
         className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-slate-200 dark:border-white/15 bg-white dark:bg-slate-900 p-6 shadow-2xl text-slate-900 dark:text-white"
@@ -84,7 +84,7 @@ export function MajorForm({ major, onClose, onSaved }: MajorFormProps) {
               <select
                 value={form.departmentId || ""}
                 onChange={(e) => update("departmentId", e.target.value)}
-                className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-emerald-400"
+                className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-emerald-400"
               >
                 <option value="" className="bg-white dark:bg-slate-900 text-slate-400">-- Chưa chọn Khoa --</option>
                 {departments.map((dept) => (
@@ -105,7 +105,7 @@ export function MajorForm({ major, onClose, onSaved }: MajorFormProps) {
           </button>
           <button
             disabled={saving}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white shadow-md disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-md disabled:opacity-50 cursor-pointer"
           >
             {saving && <span className="size-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
             <span>{saving ? "Đang lưu..." : "Lưu thông tin"}</span>
@@ -140,7 +140,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-100 dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs placeholder-slate-500 outline-none focus:border-emerald-400"
+        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs placeholder-slate-500 outline-none focus:border-emerald-400"
       />
     </label>
   );
