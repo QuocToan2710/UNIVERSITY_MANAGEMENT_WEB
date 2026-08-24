@@ -202,12 +202,40 @@ export function AppShell({ title, description, children }: AppShellProps) {
     }
   };
 
+  const navRef = useRef<HTMLElement>(null);
+
+  // Restore and keep sidebar scroll position
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const savedTop = sessionStorage.getItem("sidebar_scroll_top");
+    if (savedTop) {
+      nav.scrollTop = Number(savedTop);
+    }
+
+    const handleScroll = () => {
+      sessionStorage.setItem("sidebar_scroll_top", String(nav.scrollTop));
+    };
+
+    nav.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      nav.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   useEffect(() => {
     if (location.pathname.startsWith("/schedule")) {
       setScheduleExpanded(true);
     }
     if (location.pathname.startsWith("/categories")) {
       setCategoriesExpanded(true);
+    }
+
+    // Khi chuyển route, phục hồi ngay vị trí cuộn của sidebar từ sessionStorage
+    const savedTop = sessionStorage.getItem("sidebar_scroll_top");
+    if (savedTop && navRef.current) {
+      navRef.current.scrollTop = Number(savedTop);
     }
   }, [location.pathname]);
 
@@ -302,7 +330,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
         </div>
 
         {/* Navigation Items */}
-        <nav className="space-y-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" aria-label="Điều hướng chính">
+        <nav ref={navRef} className="space-y-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" aria-label="Điều hướng chính">
           {filteredNavigation.map((item) => {
             if (item.subItems) {
               const isSchedule = item.label === "Lịch";
@@ -353,7 +381,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   {isExpanded && (
                     <div className="space-y-1 pt-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
                       {filteredSubItems.map((sub) => (
-                        <NavLink key={sub.to} to={sub.to} className={subNavClassName}>
+                        <NavLink key={sub.to} to={sub.to} preventScrollReset className={subNavClassName}>
                           {({ isActive }) => (
                             <>
                               <span className={`size-1.5 rounded-full ${isActive ? "bg-cyan-600 dark:bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-slate-400 dark:bg-slate-600 group-hover:bg-cyan-600 dark:group-hover:bg-cyan-300"}`} />
@@ -369,7 +397,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
             }
 
             return (
-              <NavLink key={item.to} to={item.to!} end={item.end} className={navClassName}>
+              <NavLink key={item.to} to={item.to!} end={item.end} preventScrollReset className={navClassName}>
                 {({ isActive }) => (
                   <>
                     <span
