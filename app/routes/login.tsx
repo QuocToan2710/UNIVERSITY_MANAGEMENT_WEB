@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { gsap } from "gsap";
-import { ApiError, login } from "../lib/api";
+import { ApiError, forgotPassword, login, resetPassword } from "../lib/api";
 import { isAuthenticated, setToken } from "../lib/auth";
 
 export default function Login() {
@@ -19,6 +19,67 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Forgot password modal state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotStep, setForgotStep] = useState<1 | 2>(1);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState("");
+
+  async function handleSendOtp(e: FormEvent) {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      setForgotError("Vui lòng nhập Email hoặc Mã SV/MSGV");
+      return;
+    }
+    setForgotError("");
+    setForgotSuccess("");
+    setForgotLoading(true);
+    try {
+      const msg = await forgotPassword(forgotEmail.trim());
+      setForgotSuccess(msg || "Mã OTP đã được gửi đến email của bạn.");
+      setForgotStep(2);
+    } catch (err: any) {
+      setForgotError(err instanceof ApiError || err instanceof Error ? err.message : "Không thể gửi OTP.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
+
+  async function handleResetPassword(e: FormEvent) {
+    e.preventDefault();
+    if (!otpCode.trim() || !newPassword.trim()) {
+      setForgotError("Vui lòng nhập đầy đủ mã OTP và mật khẩu mới.");
+      return;
+    }
+    setForgotError("");
+    setForgotSuccess("");
+    setForgotLoading(true);
+    try {
+      const msg = await resetPassword({
+        email: forgotEmail.trim(),
+        otp: otpCode.trim(),
+        newPassword: newPassword.trim(),
+      });
+      setForgotSuccess(msg || "Đặt lại mật khẩu thành công!");
+      setUsername(forgotEmail);
+      setTimeout(() => {
+        setShowForgotModal(false);
+        setForgotStep(1);
+        setOtpCode("");
+        setNewPassword("");
+        setForgotSuccess("");
+      }, 2000);
+    } catch (err: any) {
+      setForgotError(err instanceof ApiError || err instanceof Error ? err.message : "Đặt lại mật khẩu thất bại.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
 
   useEffect(() => {
     const context = gsap.context(() => {
@@ -202,10 +263,10 @@ export default function Login() {
 
           {/* Login Form */}
           <form className="mt-7 space-y-4.5" onSubmit={handleSubmit}>
-            {/* Username Input - Transparent Glass */}
+            {/* Username / Email Input - Transparent Glass */}
             <div className="login-form-anim">
               <label className="block text-xs font-bold uppercase tracking-wider text-white mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                Tên đăng nhập
+                Tài khoản hoặc Email
               </label>
               <div className="relative flex items-center">
                 <span className="pointer-events-none absolute left-4 text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
@@ -219,17 +280,32 @@ export default function Login() {
                   autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-4 py-3 text-sm font-semibold text-white placeholder-slate-200 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
-                  placeholder="Nhập tên tài khoản"
+                  className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-4 py-3 text-sm font-semibold text-white placeholder-slate-300 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
+                  placeholder="Mã SV / Email / Tên tài khoản"
                 />
               </div>
             </div>
 
             {/* Password Input - Transparent Glass */}
             <div className="login-form-anim">
-              <label className="block text-xs font-bold uppercase tracking-wider text-white mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                Mật khẩu
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                  Mật khẩu
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotModal(true);
+                    setForgotStep(1);
+                    setForgotError("");
+                    setForgotSuccess("");
+                    if (username) setForgotEmail(username);
+                  }}
+                  className="text-xs font-bold text-cyan-300 hover:text-cyan-200 hover:underline cursor-pointer transition"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
               <div className="relative flex items-center">
                 <span className="pointer-events-none absolute left-4 text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                   <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.2">
@@ -243,7 +319,7 @@ export default function Login() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-11 py-3 text-sm font-semibold text-white placeholder-slate-200 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
+                  className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-11 py-3 text-sm font-semibold text-white placeholder-slate-300 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
                   placeholder="••••••••"
                 />
                 <button
@@ -336,6 +412,173 @@ export default function Login() {
           </div>
         </section>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-2xl border border-white/30 bg-slate-900/95 p-6 sm:p-8 shadow-2xl text-white">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowForgotModal(false);
+                setForgotStep(1);
+                setForgotError("");
+                setForgotSuccess("");
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
+            >
+              <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Khôi Phục Mật Khẩu</h3>
+                <p className="text-xs text-slate-300">
+                  {forgotStep === 1 ? "Bước 1/2: Nhận mã OTP qua Email" : "Bước 2/2: Xác thực & Đổi mật khẩu"}
+                </p>
+              </div>
+            </div>
+
+            {/* Step Progress Pills */}
+            <div className="flex gap-2 my-4">
+              <div className={`h-1.5 flex-1 rounded-full ${forgotStep >= 1 ? "bg-cyan-400" : "bg-white/20"}`} />
+              <div className={`h-1.5 flex-1 rounded-full ${forgotStep === 2 ? "bg-cyan-400" : "bg-white/20"}`} />
+            </div>
+
+            {/* Success Alert */}
+            {forgotSuccess && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-950/70 p-3 text-xs font-semibold text-emerald-200">
+                <svg viewBox="0 0 24 24" className="size-4 shrink-0 fill-none stroke-current" strokeWidth="2.2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span>{forgotSuccess}</span>
+              </div>
+            )}
+
+            {/* Error Alert */}
+            {forgotError && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-400/40 bg-red-950/70 p-3 text-xs font-semibold text-red-200">
+                <svg viewBox="0 0 24 24" className="size-4 shrink-0 fill-none stroke-current" strokeWidth="2.2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{forgotError}</span>
+              </div>
+            )}
+
+            {/* Step 1 Form */}
+            {forgotStep === 1 ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
+                    Email hoặc Tên tài khoản / Mã SV
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="ví dụ: sv24001@university.edu.vn hoặc SV24001"
+                    className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+                  />
+                  <p className="mt-1.5 text-[11px] text-slate-400">
+                    Hệ thống sẽ gửi mã xác thực 6 số đến địa chỉ email đã đăng ký của bạn.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-[0.99] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {forgotLoading ? (
+                    <>
+                      <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Đang gửi mã OTP...</span>
+                    </>
+                  ) : (
+                    <span>Gửi Mã Xác Nhận OTP</span>
+                  )}
+                </button>
+              </form>
+            ) : (
+              /* Step 2 Form */
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
+                    Mã OTP (6 chữ số trong Email)
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="123456"
+                    className="w-full rounded-xl border border-cyan-400/50 bg-black/50 px-4 py-3 text-center text-xl font-mono tracking-widest text-cyan-300 placeholder-slate-500 outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
+                    Mật khẩu mới
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    minLength={5}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Nhập mật khẩu mới (tối thiểu 5 ký tự)"
+                    className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-[0.99] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {forgotLoading ? (
+                    <>
+                      <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Đang cập nhật...</span>
+                    </>
+                  ) : (
+                    <span>Xác Nhận & Đổi Mật Khẩu</span>
+                  )}
+                </button>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotStep(1);
+                      setForgotError("");
+                      setForgotSuccess("");
+                    }}
+                    className="text-xs text-cyan-300 hover:underline cursor-pointer"
+                  >
+                    ← Chưa nhận được mã? Gửi lại
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

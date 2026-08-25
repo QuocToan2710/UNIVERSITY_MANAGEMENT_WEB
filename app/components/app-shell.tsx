@@ -20,6 +20,8 @@ import {
   RoomIcon,
   StudentIcon,
   SunIcon,
+  GradeIcon,
+  TranscriptIcon,
   TeacherIcon,
   UsersIcon,
 } from "./icons";
@@ -62,6 +64,8 @@ const allNavigation: NavItem[] = [
   { to: "/students", label: "Sinh viên", Icon: StudentIcon, allowedRoles: ["ADMIN", "TEACHER"] },
   { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN"] },
   { to: "/courses", label: "Môn học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/grades", label: "Quản lý điểm", Icon: GradeIcon, allowedRoles: ["ADMIN", "TEACHER"] },
+  { to: "/transcripts", label: "Bảng điểm", Icon: TranscriptIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
   { to: "/majors", label: "Ngành học", Icon: MajorIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
   {
     label: "Quản trị danh mục",

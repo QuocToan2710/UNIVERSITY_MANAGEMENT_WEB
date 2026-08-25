@@ -19,6 +19,8 @@ export default [
   route("schedule/class", "routes/schedules/class.tsx"),
   route("schedule/exam", "routes/schedules/exam.tsx"),
   route("schedule/teaching", "routes/schedules/teaching.tsx"),
+  route("grades", "routes/grades.tsx"),
+  route("transcripts", "routes/transcripts.tsx"),
   route("users", "routes/users.tsx"),
   route("notifications", "routes/notifications.tsx"),
 ] satisfies RouteConfig;

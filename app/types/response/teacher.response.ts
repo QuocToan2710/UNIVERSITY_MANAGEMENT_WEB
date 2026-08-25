@@ -16,7 +16,7 @@ export type TeacherResponse = {
   fullAddress?: string;
   departmentId?: number | string;
   departmentName?: string;
-  userId?: string;
+  userId?: number | string;
 };
 
 export type Teacher = TeacherResponse;

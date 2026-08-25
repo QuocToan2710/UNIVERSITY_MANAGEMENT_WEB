@@ -62,6 +62,22 @@ export async function login(username: string, password: string): Promise<Authent
   });
 }
 
+export async function forgotPassword(email: string): Promise<string> {
+  return apiRequest<string>("/auth/forgot-password", {
+    method: "POST",
+    authenticated: false,
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(data: { email: string; otp: string; newPassword: string }): Promise<string> {
+  return apiRequest<string>("/auth/reset-password", {
+    method: "POST",
+    authenticated: false,
+    body: JSON.stringify(data),
+  });
+}
+
 export async function fetchMasterData(
   type: ComboType,
   options?: { cascader?: string; codeSystem?: string; isCodeIsId?: boolean }

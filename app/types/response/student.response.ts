@@ -23,7 +23,7 @@ export type StudentResponse = {
   classGroupId?: number | string;
   classCode?: string;
   classGroupName?: string;
-  userId?: string;
+  userId?: number | string;
 };
 
 export type Student = StudentResponse;

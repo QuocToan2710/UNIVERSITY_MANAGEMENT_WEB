@@ -6,7 +6,8 @@ export type RoleResponse = {
 };
 
 export type UserResponse = {
-  id: string;
+  id: number | string;
+  userCode?: string;
   username: string;
   email: string;
   fullName: string;

@@ -1,6 +1,7 @@
 import { AlertTriangleIcon } from "./icons";
 
 type ConfirmModalProps = {
+  open?: boolean;
   title: string;
   message: string;
   confirmLabel?: string;
@@ -8,12 +9,14 @@ type ConfirmModalProps = {
   cancelLabel?: string;
   loading?: boolean;
   isSubmitting?: boolean;
-  confirmVariant?: "danger" | "warning" | "primary" | string;
+  confirmVariant?: "danger" | "warning" | "primary" | "info" | string;
   onConfirm: () => void | Promise<void>;
-  onClose: () => void;
+  onClose?: () => void;
+  onCancel?: () => void;
 };
 
 export function ConfirmModal({
+  open,
   title,
   message,
   confirmLabel,
@@ -24,12 +27,17 @@ export function ConfirmModal({
   confirmVariant = "danger",
   onConfirm,
   onClose,
+  onCancel,
 }: ConfirmModalProps) {
+  if (open === false) return null;
+  const handleClose = onClose || onCancel || (() => {});
   const isBusy = loading || isSubmitting;
-  const label = confirmText || confirmLabel || "Xóa ngay";
+  const label = confirmText || confirmLabel || "Xác nhận";
   const buttonStyle =
-    confirmVariant === "primary"
+    confirmVariant === "primary" || confirmVariant === "info"
       ? "bg-gradient-to-r from-blue-500 to-indigo-600 shadow-blue-500/25"
+      : confirmVariant === "warning"
+      ? "bg-gradient-to-r from-amber-500 to-orange-600 shadow-amber-500/25"
       : "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/25";
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 dark:bg-slate-950/75 p-4 backdrop-blur-xl animate-in fade-in duration-200">
