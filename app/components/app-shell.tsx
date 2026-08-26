@@ -8,7 +8,9 @@ import { notificationService } from "../services/notification.service";
 import { useTheme } from "../lib/theme";
 import {
   ArrowRightIcon,
+  BanknotesIcon,
   BellIcon,
+  BookOpenIcon,
   ClassGroupIcon,
   CourseIcon,
   DashboardIcon,
@@ -24,6 +26,8 @@ import {
   TranscriptIcon,
   TeacherIcon,
   UsersIcon,
+  CogIcon,
+  ShieldCheckIcon,
 } from "./icons";
 
 type AppShellProps = {
@@ -55,18 +59,27 @@ const allNavigation: NavItem[] = [
     allowedRoles: ["ADMIN", "TEACHER", "STUDENT"],
     subItems: [
       { to: "/schedule/timetable", label: "Thời khóa biểu", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
-      { to: "/schedule/class", label: "Lịch học", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
-      { to: "/schedule/exam", label: "Lịch thi", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+      { to: "/schedule/class", label: "Lịch học", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/schedule/exam", label: "Lịch thi", allowedRoles: ["ADMIN", "TEACHER"] },
       { to: "/schedule/teaching", label: "Lịch dạy", allowedRoles: ["ADMIN", "TEACHER"] },
     ],
   },
   { to: "/class-groups", label: "Lớp học", Icon: ClassGroupIcon, allowedRoles: ["ADMIN"] },
   { to: "/students", label: "Sinh viên", Icon: StudentIcon, allowedRoles: ["ADMIN", "TEACHER"] },
   { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN"] },
-  { to: "/courses", label: "Môn học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/courses", label: "Môn học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER"] },
+  { to: "/course-registration", label: "Đăng ký tín chỉ", Icon: BookOpenIcon, allowedRoles: ["ADMIN", "STUDENT"] },
   { to: "/grades", label: "Quản lý điểm", Icon: GradeIcon, allowedRoles: ["ADMIN", "TEACHER"] },
   { to: "/transcripts", label: "Bảng điểm", Icon: TranscriptIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
-  { to: "/majors", label: "Ngành học", Icon: MajorIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  {
+    label: "Tài chính",
+    Icon: BanknotesIcon,
+    allowedRoles: ["ADMIN", "STUDENT"],
+    subItems: [
+      { to: "/finance/tuition", label: "Học phí", allowedRoles: ["ADMIN", "STUDENT"] },
+    ],
+  },
+  { to: "/majors", label: "Ngành học", Icon: MajorIcon, allowedRoles: ["ADMIN"] },
   {
     label: "Quản trị danh mục",
     Icon: RoomIcon,
@@ -80,7 +93,15 @@ const allNavigation: NavItem[] = [
       { to: "/categories/wards", label: "Phường / Xã", allowedRoles: ["ADMIN"] },
     ],
   },
-  { to: "/users", label: "Người dùng", Icon: UsersIcon, allowedRoles: ["ADMIN"] },
+  {
+    label: "Quản trị hệ thống",
+    Icon: CogIcon,
+    allowedRoles: ["ADMIN"],
+    subItems: [
+      { to: "/users", label: "Người dùng", allowedRoles: ["ADMIN"] },
+      { to: "/roles", label: "Vai trò", allowedRoles: ["ADMIN"] },
+    ],
+  },
   { to: "/notifications", label: "Thông báo", Icon: BellIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "USER"] },
 ];
 

@@ -11,3 +11,4 @@ export * from "./class-group.service";
 export * from "./schedule.service";
 export * from "./master-data.service";
 export * from "./grade.service";
+export * from "./enrollment.service";

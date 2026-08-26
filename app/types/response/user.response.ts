@@ -1,8 +1,19 @@
+export type Permission = {
+  id?: number | string;
+  permissionCode?: string;
+  name: string;
+  description?: string;
+  module?: string;
+  endpoint?: string;
+  method?: string;
+};
+
 export type RoleResponse = {
   id?: number | string;
   roleCode?: string;
   name: string;
   description?: string;
+  permissions?: Permission[];
 };
 
 export type UserResponse = {
@@ -16,3 +27,4 @@ export type UserResponse = {
 
 export type User = UserResponse;
 export type Role = RoleResponse;
+

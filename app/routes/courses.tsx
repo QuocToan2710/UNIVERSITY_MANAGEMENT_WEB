@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
 import { CourseForm } from "../components/forms/course-form";
+import { EnrollmentManagementModal } from "../components/forms/enrollment-management-modal";
 import { CourseIcon, PlusIcon } from "../components/icons";
 import { Pagination } from "../components/pagination";
 import { SearchExportBar, type FilterField } from "../components/search-export-bar";
@@ -26,6 +27,7 @@ export default function Courses() {
   const [editing, setEditing] = useState<Course | null | undefined>(undefined);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [managingEnrollmentCourse, setManagingEnrollmentCourse] = useState<Course | null>(null);
 
   async function loadData() {
     setLoading(true);
@@ -219,6 +221,12 @@ export default function Courses() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
+                        <ActionIcon label="Quản lý sinh viên trong lớp" color="blue" onClick={() => setManagingEnrollmentCourse(course)}>
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </ActionIcon>
                         <ActionIcon label="Sửa môn học" color="amber" onClick={() => setEditing(course)}>
                           <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />
                           <path d="m13.5 7 3.5 3.5" />
@@ -249,6 +257,21 @@ export default function Courses() {
           }}
         />
       </div>
+
+      {managingEnrollmentCourse && (
+        <EnrollmentManagementModal
+          isOpen={Boolean(managingEnrollmentCourse)}
+          subjectClass={{
+            id: Number(managingEnrollmentCourse.id),
+            subjectClassCode: managingEnrollmentCourse.courseCode,
+            name: managingEnrollmentCourse.courseName,
+            semester: managingEnrollmentCourse.semester,
+            teacherName: managingEnrollmentCourse.teacherId ? teacherMap.get(managingEnrollmentCourse.teacherId)?.fullName : undefined,
+          }}
+          onClose={() => setManagingEnrollmentCourse(null)}
+          onSuccess={() => void loadData()}
+        />
+      )}
 
       {editing !== undefined && (
         <CourseForm
