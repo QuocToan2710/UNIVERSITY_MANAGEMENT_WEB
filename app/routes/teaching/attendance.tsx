@@ -346,39 +346,7 @@ export default function TeachingAttendance() {
     );
   }
 
-  // Handle Save and Continue (Lưu & Tiếp tục chỉnh sửa)
-  async function handleSaveAndContinue() {
-    if (!activeSession) return;
-    try {
-      setSubmittingAttendance(true);
-      setError("");
-      setInlineSaveMsg("");
-      await attendanceService.submitAttendance(activeSession.id, {
-        records: records.map((r) => ({
-          studentId: r.studentId,
-          enrollmentId: r.enrollmentId,
-          status: r.status,
-          lateMinutes: r.lateMinutes,
-          note: r.note,
-        })),
-        topic: sessionTopic,
-        note: sessionNote,
-      });
-
-      setInlineSaveMsg("Đã lưu tiến độ điểm danh thành công!");
-      setTimeout(() => setInlineSaveMsg(""), 4000);
-      if (selectedClassId) {
-        await loadSessions(selectedClassId);
-      }
-    } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Lỗi khi lưu điểm danh";
-      setError(msg);
-    } finally {
-      setSubmittingAttendance(false);
-    }
-  }
-
-  // Handle Submit Attendance (Chốt & Đóng)
+  // Handle Save and Continue / Submit Attendance (Lưu & Đóng popup)
   async function handleSubmitAttendance() {
     if (!activeSession) return;
     try {
@@ -396,13 +364,13 @@ export default function TeachingAttendance() {
         note: sessionNote,
       });
 
-      setSuccessMsg(`Đã chốt điểm danh buổi ${activeSession.sessionNumber} thành công!`);
+      setSuccessMsg(`Đã lưu dữ liệu điểm danh buổi ${activeSession.sessionNumber} thành công!`);
       setTakingModalOpen(false);
       if (selectedClassId) {
         await loadSessions(selectedClassId);
       }
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Lỗi khi chốt điểm danh";
+      const msg = err instanceof ApiError ? err.message : "Lỗi khi lưu điểm danh";
       setError(msg);
     } finally {
       setSubmittingAttendance(false);
@@ -1018,45 +986,26 @@ export default function TeachingAttendance() {
             {/* Footer */}
             <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="text-xs text-slate-500 flex items-center gap-1.5">
-                {inlineSaveMsg ? (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in">
-                    <CheckIcon size={14} />
-                    <span>{inlineSaveMsg}</span>
-                  </span>
-                ) : (
-                  <>
-                    <AlertTriangleIcon size={14} className="text-amber-500" />
-                    <span>Tự động cập nhật điểm chuyên cần & cảnh báo cấm thi</span>
-                  </>
-                )}
+                <AlertTriangleIcon size={14} className="text-amber-500" />
+                <span>Tự động cập nhật điểm chuyên cần & cảnh báo cấm thi</span>
               </div>
 
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setTakingModalOpen(false)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Đóng
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAndContinue}
-                  disabled={submittingAttendance || records.length === 0}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-cyan-600/30 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-                  title="Lưu tiến độ hiện tại và tiếp tục chỉnh sửa trên bảng"
-                >
-                  <RefreshIcon size={13} className={submittingAttendance ? "animate-spin" : ""} />
-                  <span>{submittingAttendance ? "Đang lưu..." : "Lưu & Tiếp tục"}</span>
+                  Hủy
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmitAttendance}
                   disabled={submittingAttendance || records.length === 0}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
                   <CheckIcon size={14} />
-                  <span>{submittingAttendance ? "Đang lưu..." : "Chốt & Đóng"}</span>
+                  <span>{submittingAttendance ? "Đang lưu..." : "Lưu & Tiếp tục"}</span>
                 </button>
               </div>
             </div>
