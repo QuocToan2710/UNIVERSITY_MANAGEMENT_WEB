@@ -346,7 +346,38 @@ export default function TeachingAttendance() {
     );
   }
 
-  // Handle Save and Continue / Submit Attendance (Lưu & Đóng popup)
+  // Handle Save and Continue (Lưu tiến độ và đóng popup)
+  async function handleSaveAndContinue() {
+    if (!activeSession) return;
+    try {
+      setSubmittingAttendance(true);
+      setError("");
+      await attendanceService.submitAttendance(activeSession.id, {
+        records: records.map((r) => ({
+          studentId: r.studentId,
+          enrollmentId: r.enrollmentId,
+          status: r.status,
+          lateMinutes: r.lateMinutes,
+          note: r.note,
+        })),
+        topic: sessionTopic,
+        note: sessionNote,
+      });
+
+      setSuccessMsg(`Đã lưu tiến độ điểm danh buổi ${activeSession.sessionNumber} thành công!`);
+      setTakingModalOpen(false);
+      if (selectedClassId) {
+        await loadSessions(selectedClassId);
+      }
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Lỗi khi lưu điểm danh";
+      setError(msg);
+    } finally {
+      setSubmittingAttendance(false);
+    }
+  }
+
+  // Handle Submit Attendance (Chốt điểm danh chính thức & Đóng popup)
   async function handleSubmitAttendance() {
     if (!activeSession) return;
     try {
@@ -364,13 +395,13 @@ export default function TeachingAttendance() {
         note: sessionNote,
       });
 
-      setSuccessMsg(`Đã lưu dữ liệu điểm danh buổi ${activeSession.sessionNumber} thành công!`);
+      setSuccessMsg(`Đã chốt điểm danh buổi ${activeSession.sessionNumber} thành công!`);
       setTakingModalOpen(false);
       if (selectedClassId) {
         await loadSessions(selectedClassId);
       }
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Lỗi khi lưu điểm danh";
+      const msg = err instanceof ApiError ? err.message : "Lỗi khi chốt điểm danh";
       setError(msg);
     } finally {
       setSubmittingAttendance(false);
@@ -990,22 +1021,31 @@ export default function TeachingAttendance() {
                 <span>Tự động cập nhật điểm chuyên cần & cảnh báo cấm thi</span>
               </div>
 
-              <div className="flex items-center justify-end gap-2.5">
+              <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setTakingModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="button"
+                  onClick={handleSaveAndContinue}
+                  disabled={submittingAttendance || records.length === 0}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+                  title="Lưu tiến độ điểm danh và đóng popup"
+                >
+                  <span>Lưu & Tiếp tục</span>
+                </button>
+                <button
+                  type="button"
                   onClick={handleSubmitAttendance}
                   disabled={submittingAttendance || records.length === 0}
-                  className="inline-flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
                   <CheckIcon size={14} />
-                  <span>{submittingAttendance ? "Đang lưu..." : "Lưu & Tiếp tục"}</span>
+                  <span>{submittingAttendance ? "Đang chốt..." : "Chốt điểm danh"}</span>
                 </button>
               </div>
             </div>
