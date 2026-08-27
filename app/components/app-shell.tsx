@@ -28,6 +28,7 @@ import {
   UsersIcon,
   CogIcon,
   ShieldCheckIcon,
+  ClipboardCheckIcon,
 } from "./icons";
 
 type AppShellProps = {
@@ -71,6 +72,16 @@ const allNavigation: NavItem[] = [
   { to: "/course-registration", label: "Đăng ký tín chỉ", Icon: BookOpenIcon, allowedRoles: ["ADMIN", "STUDENT"] },
   { to: "/grades", label: "Quản lý điểm", Icon: GradeIcon, allowedRoles: ["ADMIN", "TEACHER"] },
   { to: "/transcripts", label: "Bảng điểm", Icon: TranscriptIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  {
+    label: "Điểm danh & Chuyên cần",
+    Icon: ClipboardCheckIcon,
+    allowedRoles: ["ADMIN", "TEACHER", "STUDENT"],
+    subItems: [
+      { to: "/teaching/attendance", label: "Điểm danh học phần", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/student/attendance", label: "Tra cứu chuyên cần", allowedRoles: ["STUDENT"] },
+      { to: "/admin/attendance-reports", label: "Báo cáo cấm thi", allowedRoles: ["ADMIN", "TEACHER"] },
+    ],
+  },
   {
     label: "Tài chính",
     Icon: BanknotesIcon,
@@ -136,8 +147,13 @@ export function AppShell({ title, description, children }: AppShellProps) {
   const [changingPassword, setChangingPassword] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
-  const [scheduleExpanded, setScheduleExpanded] = useState(true);
-  const [categoriesExpanded, setCategoriesExpanded] = useState(true);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    "Lịch": true,
+    "Điểm danh & Chuyên cần": true,
+    "Tài chính": true,
+    "Quản trị danh mục": true,
+    "Quản trị hệ thống": true,
+  });
 
   // Notification State
   const [notifOpen, setNotifOpen] = useState(false);
@@ -250,13 +266,6 @@ export function AppShell({ title, description, children }: AppShellProps) {
   }, []);
 
   useEffect(() => {
-    if (location.pathname.startsWith("/schedule")) {
-      setScheduleExpanded(true);
-    }
-    if (location.pathname.startsWith("/categories")) {
-      setCategoriesExpanded(true);
-    }
-
     // Khi chuyển route, phục hồi ngay vị trí cuộn của sidebar từ sessionStorage
     const savedTop = sessionStorage.getItem("sidebar_scroll_top");
     if (savedTop && navRef.current) {
@@ -358,21 +367,18 @@ export function AppShell({ title, description, children }: AppShellProps) {
         <nav ref={navRef} className="space-y-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" aria-label="Điều hướng chính">
           {filteredNavigation.map((item) => {
             if (item.subItems) {
-              const isSchedule = item.label === "Lịch";
-              const isChildActive = isSchedule
-                ? location.pathname.startsWith("/schedule")
-                : location.pathname.startsWith("/categories");
-
-              const isExpanded = isSchedule ? scheduleExpanded : categoriesExpanded;
+              const isChildActive = item.subItems.some((sub) => location.pathname.startsWith(sub.to));
+              const isExpanded = expandedMenus[item.label] ?? true;
               const toggleExpanded = () => {
-                if (isSchedule) setScheduleExpanded((open) => !open);
-                else setCategoriesExpanded((open) => !open);
+                setExpandedMenus((prev) => ({ ...prev, [item.label]: !isExpanded }));
               };
 
               const filteredSubItems = item.subItems.filter((sub) => {
                 if (user === null || isAdmin) return true;
                 return sub.allowedRoles.some((role) => userRoleNames.includes(role));
               });
+
+              if (filteredSubItems.length === 0) return null;
 
               return (
                 <div key={item.label} className="space-y-1">

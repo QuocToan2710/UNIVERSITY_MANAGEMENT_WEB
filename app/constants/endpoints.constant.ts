@@ -41,4 +41,14 @@ export const API_ENDPOINTS = {
     BATCH: "/enrollments/batch",
     CLASS_GROUP: "/enrollments/class-group",
   },
+  ATTENDANCE: {
+    BASE: "/attendance",
+    SESSIONS: "/attendance/sessions",
+    AUTO_GENERATE: "/attendance/sessions/auto-generate",
+    SESSION_RECORDS: (sessionId: string | number) => `/attendance/sessions/${sessionId}/records`,
+    SUBMIT_SESSION: (sessionId: string | number) => `/attendance/sessions/${sessionId}/submit`,
+    MY_SUMMARY: "/attendance/my-summary",
+    MY_DETAILS: "/attendance/my-details",
+    BANNED_STUDENTS: "/attendance/banned-students",
+  },
 } as const;
