@@ -13,6 +13,7 @@ import {
   CheckIcon,
   ClockIcon,
   AlertTriangleIcon,
+  StudentIcon,
 } from "../../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
 import { attendanceService } from "../../services/attendance.service";
@@ -22,6 +23,7 @@ import type {
   AttendanceStatus,
 } from "../../types/attendance";
 import type { User } from "../../types/management";
+import type { Student } from "../../types/student";
 import { exportToExcel } from "../../lib/excel";
 
 type SubjectClassOption = {
@@ -226,6 +228,19 @@ export default function TeachingAttendance() {
     action: async () => {},
   });
 
+  // Student Profile Detail Modal State
+  const [studentModal, setStudentModal] = useState<{
+    open: boolean;
+    record: AttendanceRecord | null;
+    profile: Student | null;
+    loading: boolean;
+  }>({
+    open: false,
+    record: null,
+    profile: null,
+    loading: false,
+  });
+
   const rawRoles = (currentUser?.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
   const isAdmin = rawRoles.some((r) => r.includes("ADMIN"));
   const isTeacher = rawRoles.some((r) => r.includes("TEACHER"));
@@ -344,6 +359,30 @@ export default function TeachingAttendance() {
     setRecords((prev) =>
       prev.map((r) => (r.studentId === studentId ? { ...r, note } : r))
     );
+  }
+
+  // Handle click student name to view detailed profile
+  async function handleViewStudentProfile(record: AttendanceRecord) {
+    setStudentModal({
+      open: true,
+      record,
+      profile: null,
+      loading: true,
+    });
+    try {
+      const data = await apiRequest<Student>(`/students/${record.studentId}`);
+      setStudentModal({
+        open: true,
+        record,
+        profile: data,
+        loading: false,
+      });
+    } catch {
+      setStudentModal((prev) => ({
+        ...prev,
+        loading: false,
+      }));
+    }
   }
 
   // Handle Save and Continue (Lưu tiến độ và đóng popup)
@@ -912,98 +951,75 @@ export default function TeachingAttendance() {
                   return (
                     <div
                       key={r.studentId}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                      className="p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
                     >
-                      {/* Student info */}
-                      <div className="flex items-center gap-3 min-w-[200px]">
-                        <span className="text-slate-400 font-mono text-[11px] w-5 text-center">
+                      {/* Left: STT + Clickable Student Name & Code */}
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-slate-400 font-mono text-[11px] w-5 text-center shrink-0">
                           {idx + 1}
                         </span>
-                        <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300 text-xs shrink-0">
-                          {r.studentName.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-slate-900 dark:text-slate-100">
-                            {r.studentName}
+                        <button
+                          type="button"
+                          onClick={() => handleViewStudentProfile(r)}
+                          className="text-left group flex items-center gap-2.5 cursor-pointer focus:outline-none min-w-0"
+                          title="Bấm để xem thông tin chi tiết sinh viên"
+                        >
+                          <div className="size-7 rounded-full bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800/60 flex items-center justify-center font-bold text-cyan-700 dark:text-cyan-300 text-xs shrink-0 group-hover:bg-cyan-500 group-hover:text-white transition-colors">
+                            {r.studentName.charAt(0)}
                           </div>
-                          <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2">
-                            <span>{r.studentCode}</span>
-                            {r.classGroupName && <span>• {r.classGroupName}</span>}
+                          <div className="min-w-0">
+                            <span className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors group-hover:underline decoration-cyan-500 underline-offset-2">
+                              {r.studentName}
+                            </span>
+                            <span className="ml-2 text-[11px] font-mono text-slate-400">
+                              ({r.studentCode})
+                            </span>
                           </div>
-                        </div>
+                        </button>
                       </div>
 
-                      {/* Clean Status Pill Toggles */}
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleStatusChange(r.studentId, "PRESENT")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                            r.status === "PRESENT"
-                              ? "bg-emerald-600 text-white font-bold shadow-xs"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                          }`}
-                        >
-                          Có mặt
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleStatusChange(r.studentId, "LATE")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                            r.status === "LATE"
-                              ? "bg-amber-600 text-white font-bold shadow-xs"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                          }`}
-                        >
-                          Muộn
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleStatusChange(r.studentId, "EXCUSED")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                            r.status === "EXCUSED"
-                              ? "bg-blue-600 text-white font-bold shadow-xs"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                          }`}
-                        >
-                          Có phép
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleStatusChange(r.studentId, "UNEXCUSED")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                            r.status === "UNEXCUSED"
-                              ? "bg-rose-600 text-white font-bold shadow-xs"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                          }`}
-                        >
-                          Vắng
-                        </button>
+                      {/* Right: Status Dropdown + Late input + Note */}
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <div className="relative">
+                          <select
+                            value={r.status}
+                            onChange={(e) => handleStatusChange(r.studentId, e.target.value as AttendanceStatus)}
+                            className={`rounded-lg px-2.5 py-1 text-xs font-semibold border focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer transition-all ${
+                              r.status === "PRESENT"
+                                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
+                                : r.status === "LATE"
+                                ? "bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+                                : r.status === "EXCUSED"
+                                ? "bg-blue-50 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
+                                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300"
+                            }`}
+                          >
+                            <option value="PRESENT" className="bg-white dark:bg-slate-900 text-emerald-600">● Có mặt</option>
+                            <option value="LATE" className="bg-white dark:bg-slate-900 text-amber-600">● Đi muộn</option>
+                            <option value="EXCUSED" className="bg-white dark:bg-slate-900 text-blue-600">● Có phép</option>
+                            <option value="UNEXCUSED" className="bg-white dark:bg-slate-900 text-rose-600">● Vắng không phép</option>
+                          </select>
+                        </div>
 
                         {isLate && (
-                          <div className="flex items-center gap-1 ml-1.5">
+                          <div className="flex items-center gap-1">
                             <input
                               type="number"
                               min={1}
                               max={180}
-                              className="w-12 bg-slate-50 dark:bg-slate-800 border border-amber-300 dark:border-amber-600 rounded-md px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-300 text-center font-bold focus:outline-none"
+                              className="w-12 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-600 rounded-lg px-1.5 py-1 text-xs text-amber-700 dark:text-amber-300 text-center font-bold focus:outline-none"
                               value={r.lateMinutes || 15}
                               onChange={(e) => handleLateMinutesChange(r.studentId, Number(e.target.value))}
+                              title="Số phút đi muộn"
                             />
-                            <span className="text-[11px] text-slate-400">phút</span>
+                            <span className="text-[11px] text-slate-400">p</span>
                           </div>
                         )}
-                      </div>
 
-                      {/* Note Input */}
-                      <div className="min-w-[140px]">
                         <input
                           type="text"
-                          placeholder="Lý do / Ghi chú..."
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                          placeholder="Ghi chú..."
+                          className="w-24 sm:w-36 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                           value={r.note || ""}
                           onChange={(e) => handleRecordNoteChange(r.studentId, e.target.value)}
                         />
@@ -1219,6 +1235,131 @@ export default function TeachingAttendance() {
         }}
         onCancel={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
       />
+
+      {/* MODAL: Student Detailed Profile Popup */}
+      {studentModal.open && studentModal.record && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="size-11 rounded-2xl bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800/60 flex items-center justify-center font-bold text-cyan-600 dark:text-cyan-400 text-sm shrink-0">
+                  <StudentIcon size={22} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                    {studentModal.record.studentName}
+                  </h3>
+                  <p className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400">
+                    Mã SV: {studentModal.record.studentCode}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStudentModal((prev) => ({ ...prev, open: false }))}
+                className="size-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Profile Info Content */}
+            {studentModal.loading ? (
+              <div className="py-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
+                <RefreshIcon size={24} className="animate-spin text-cyan-500" />
+                <span className="text-xs">Đang tải hồ sơ sinh viên...</span>
+              </div>
+            ) : (
+              <div className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">Email liên hệ:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block mt-0.5" title={studentModal.profile?.email || ""}>
+                      {studentModal.profile?.email || "Chưa cập nhật"}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">Số điện thoại:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">
+                      {studentModal.profile?.phoneNumber || "Chưa cập nhật"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">Lớp sinh hoạt:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">
+                      {studentModal.profile?.classGroupName || studentModal.record.classGroupName || "Chưa phân lớp"}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">Ngành học:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">
+                      {studentModal.profile?.majorName || studentModal.profile?.major || "Chưa cập nhật"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">Giới tính:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">
+                      {studentModal.profile?.gender || "Khác"}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-400 block text-[11px]">Ngày sinh:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">
+                      {studentModal.profile?.dob || "Chưa cập nhật"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-400 block text-[11px]">Địa chỉ thường trú:</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200 block mt-0.5">
+                    {studentModal.profile?.fullAddress || studentModal.profile?.address || "Chưa cập nhật"}
+                  </span>
+                </div>
+
+                {/* Session Attendance status */}
+                <div className="p-3 rounded-xl bg-cyan-50/60 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800/50 flex items-center justify-between">
+                  <div>
+                    <span className="text-slate-500 dark:text-slate-400 text-[11px] block">Trạng thái buổi học này:</span>
+                    <strong className="text-cyan-700 dark:text-cyan-300 font-semibold text-xs">
+                      {studentModal.record.status === "PRESENT"
+                        ? "🟢 Có mặt"
+                        : studentModal.record.status === "LATE"
+                        ? `🟡 Đi muộn (${studentModal.record.lateMinutes || 15} phút)`
+                        : studentModal.record.status === "EXCUSED"
+                        ? "🔵 Vắng có phép"
+                        : "🔴 Vắng không phép"}
+                    </strong>
+                  </div>
+                  {studentModal.record.note && (
+                    <div className="text-right max-w-[200px] truncate text-[11px] text-slate-500">
+                      Ghi chú: <em>"{studentModal.record.note}"</em>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setStudentModal((prev) => ({ ...prev, open: false }))}
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
+              >
+                Đóng hồ sơ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
