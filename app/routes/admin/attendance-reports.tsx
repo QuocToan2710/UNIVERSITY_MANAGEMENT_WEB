@@ -44,25 +44,58 @@ function ActionDropdown({
   onSendReminder?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
+    function handleScroll() {
+      setOpen(false);
+    }
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", handleScroll);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, [open]);
 
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownHeight = 90;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const openUp = spaceBelow < dropdownHeight && rect.top > dropdownHeight;
+      const top = openUp ? rect.top - dropdownHeight - 4 : rect.bottom + 4;
+      const left = Math.max(10, rect.right - 176);
+      setCoords({ top, left });
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  };
+
   return (
-    <div className="relative inline-block text-left" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+    <div className="inline-block text-left" onClick={(e) => e.stopPropagation()}>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={handleToggle}
         className="inline-flex size-7 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all shadow-xs active:scale-95 cursor-pointer"
         title="Tùy chọn hành động"
       >
@@ -74,7 +107,11 @@ function ActionDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-1 w-44 origin-top-right rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 p-1 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 text-left">
+        <div
+          ref={menuRef}
+          style={{ position: "fixed", top: coords.top, left: coords.left, zIndex: 9999 }}
+          className="w-44 origin-top-right rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 p-1 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100 text-left"
+        >
           {onViewDetails && (
             <button
               type="button"
