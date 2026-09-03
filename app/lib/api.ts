@@ -10,7 +10,8 @@ import type { LoginRequest } from "../types/request";
 
 export type { ApiResponse, PageResponse, SelectOption, ComboType };
 
-const API_URL = (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || "http://localhost:8080";
+const rawApiUrl = (import.meta as any).env?.VITE_API_URL || (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:8080";
+const API_URL = rawApiUrl.endsWith("/") ? rawApiUrl.slice(0, -1) : rawApiUrl;
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
