@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { gsap } from "gsap";
+import gsap from "gsap";
 import { ApiError, forgotPassword, login, resetPassword } from "../lib/api";
 import { isAuthenticated, setToken } from "../lib/auth";
 
