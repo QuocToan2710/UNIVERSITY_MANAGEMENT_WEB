@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
 import { apiRequest } from "../lib/api";
-import { clearToken, getToken } from "../lib/auth";
+import { clearToken, getToken, isAuthenticated } from "../lib/auth";
 import type { User } from "../types/management";
 import type { AppNotification, NotificationSummary } from "../types/notification";
 import { notificationService } from "../services/notification.service";
@@ -169,12 +169,20 @@ export function AppShell({ title, description, children }: AppShellProps) {
   };
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
     void apiRequest<User>("/users/myInfo")
       .then((u) => {
         setUser(u);
         void loadNotifications();
       })
-      .catch(() => setUser(null));
+      .catch(() => {
+        clearToken();
+        navigate("/login", { replace: true });
+      });
 
     // Polling unread count every 30s
     const timer = setInterval(() => {
