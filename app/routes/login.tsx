@@ -196,13 +196,13 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Giant Cascading Left-to-Right Animated Color Wave Title */}
+          {/* Hero Title */}
           <div className="login-hero-title mt-8">
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.65rem] xl:text-[4.15rem] font-black leading-[1.12] tracking-tight">
-              <span className="block animate-wave-line1 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] pr-2">
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.65rem] xl:text-[4.15rem] font-black leading-[1.12] tracking-tight text-cyan-300 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+              <span className="block">
                 Quản trị đào tạo
               </span>
-              <span className="block mt-1.5 sm:mt-2 animate-wave-line2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] pr-3">
+              <span className="block mt-1.5 sm:mt-2">
                 Trực quan & Hiện đại
               </span>
             </h1>
