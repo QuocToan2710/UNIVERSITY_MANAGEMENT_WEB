@@ -5,6 +5,7 @@ import { ScheduleForm } from "../../components/forms/schedule-form";
 import { ExamScheduleForm } from "../../components/forms/exam-schedule-form";
 import { ConfirmModal } from "../../components/confirm-modal";
 import { ApiError, apiListRequest, apiRequest } from "../../lib/api";
+import { getCachedUser } from "../../lib/auth";
 import { exportToExcel } from "../../lib/excel";
 import type { ExamSchedule, User } from "../../types/management";
 import type { ClassSchedule, WeekDay } from "../../types/schedule";
@@ -242,7 +243,7 @@ function formatHour(timeStr?: string) {
 
 export default function TimetablePage() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => getCachedUser<User>());
   const [classSchedules, setClassSchedules] = useState<ClassSchedule[]>([]);
   const [examSchedules, setExamSchedules] = useState<ExamSchedule[]>([]);
   const [loading, setLoading] = useState(true);

@@ -14,6 +14,7 @@ import {
   TrashIcon,
 } from "../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../lib/api";
+import { getCachedUser } from "../lib/auth";
 import { exportToExcel } from "../lib/excel";
 import { enrollmentService } from "../services/enrollment.service";
 import type { AvailableSubjectClass, EnrollmentRecord } from "../types/enrollment";
@@ -30,7 +31,7 @@ const MAX_CREDITS_PER_SEMESTER = 24;
 
 export default function CourseRegistration() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
 
   // Admin testing student selector
   const [students, setStudents] = useState<Student[]>([]);

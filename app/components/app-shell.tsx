@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
 import { apiRequest } from "../lib/api";
-import { clearToken, getToken, isAuthenticated } from "../lib/auth";
+import { clearToken, getCachedUser, getToken, isAuthenticated, setCachedUser } from "../lib/auth";
 import type { User } from "../types/management";
 import type { AppNotification, NotificationSummary } from "../types/notification";
 import { notificationService } from "../services/notification.service";
@@ -137,7 +137,7 @@ function subNavClassName({ isActive }: NavLinkRenderProps) {
 export function AppShell({ title, description, children }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => getCachedUser<User>());
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -177,6 +177,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
     void apiRequest<User>("/users/myInfo")
       .then((u) => {
         setUser(u);
+        setCachedUser(u);
         void loadNotifications();
       })
       .catch(() => {
@@ -303,18 +304,28 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
   const rawRoleNames = (user?.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
   const userRoleNames = rawRoleNames.flatMap((r) => [r, r.replace(/^ROLE_/, "")]);
-  const isAdmin = userRoleNames.includes("ADMIN") || userRoleNames.includes("ROLE_ADMIN");
+  const isAdmin = Boolean(user) && (userRoleNames.includes("ADMIN") || userRoleNames.includes("ROLE_ADMIN"));
 
   const filteredNavigation = allNavigation.filter((item) => {
-    if (user === null) return true; // Show all while user profile is loading
     if (isAdmin) return true;
+    if (!user) {
+      return item.allowedRoles.includes("USER");
+    }
     return item.allowedRoles.some((role) => userRoleNames.includes(role));
   });
 
-  const displayName = user?.fullName || "Người dùng";
-  const primaryRoleCode = (userRoleNames[0] || "ADMIN").toUpperCase();
+  const displayName = user?.fullName || (user ? "Người dùng" : "Đang tải...");
+  const primaryRoleCode = (userRoleNames[0] || (user ? "USER" : "")).toUpperCase();
 
   const roleStyles = useMemo(() => {
+    if (!user) {
+      return {
+        badge: "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400",
+        avatar: "from-slate-500 via-slate-600 to-slate-700",
+        glow: "",
+        label: "Đang tải...",
+      };
+    }
     if (primaryRoleCode.includes("ADMIN")) {
       return {
         badge: "border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300",
@@ -345,7 +356,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
       glow: "shadow-[0_0_15px_rgba(59,130,246,0.3)]",
       label: "Người dùng",
     };
-  }, [primaryRoleCode]);
+  }, [user, primaryRoleCode]);
 
   const initials = displayName.split(" ").filter(Boolean).slice(-2).map((part) => part[0]).join("").toUpperCase() || "U";
 
@@ -382,7 +393,10 @@ export function AppShell({ title, description, children }: AppShellProps) {
               };
 
               const filteredSubItems = item.subItems.filter((sub) => {
-                if (user === null || isAdmin) return true;
+                if (isAdmin) return true;
+                if (!user) {
+                  return sub.allowedRoles.includes("USER");
+                }
                 return sub.allowedRoles.some((role) => userRoleNames.includes(role));
               });
 
@@ -875,7 +889,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
               <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/60 p-3 space-y-2">
                 <span className="text-slate-500 dark:text-slate-400 block">Quyền hạn hệ thống (Roles)</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {(userRoleNames.length > 0 ? userRoleNames : ["ADMIN"]).map((r) => (
+                  {(userRoleNames.length > 0 ? userRoleNames : (user ? ["USER"] : [])).map((r) => (
                     <span
                       key={r}
                       className="rounded-lg border border-cyan-300 dark:border-cyan-400/30 bg-cyan-50 dark:bg-cyan-500/10 px-2.5 py-1 font-mono text-[10px] font-bold text-cyan-700 dark:text-cyan-300 uppercase"

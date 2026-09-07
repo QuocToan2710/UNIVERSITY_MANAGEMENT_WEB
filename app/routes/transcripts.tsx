@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { apiListRequest, apiRequest, ApiError } from "../lib/api";
+import { getCachedUser } from "../lib/auth";
 import { gradeService } from "../services/grade.service";
 import type { StudentTranscript } from "../types/grade";
 import type { Student } from "../types/student";
@@ -17,7 +18,7 @@ export function meta() {
 
 export default function Transcripts() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [transcript, setTranscript] = useState<StudentTranscript | null>(null);

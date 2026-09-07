@@ -14,6 +14,7 @@ import {
   TimeIcon,
 } from "../../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
+import { getCachedUser } from "../../lib/auth";
 import { exportToExcel } from "../../lib/excel";
 import { tuitionService } from "../../services/tuition.service";
 import type {
@@ -108,7 +109,7 @@ function ActionDropdown({
 
 export default function TuitionPage() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
 
   // Common filter state
   const [selectedSemester, setSelectedSemester] = useState("1");

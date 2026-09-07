@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
 import { apiListRequest, apiRequest, ApiError } from "../lib/api";
+import { getCachedUser } from "../lib/auth";
 import { gradeService } from "../services/grade.service";
 import type { GradeStatus, SubjectClassGradeSummary, GradeItemInput } from "../types/grade";
 import type { User } from "../types/management";
@@ -26,7 +27,7 @@ export function meta() {
 
 export default function Grades() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
   const [classes, setClasses] = useState<SubjectClassOption[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [summary, setSummary] = useState<SubjectClassGradeSummary | null>(null);

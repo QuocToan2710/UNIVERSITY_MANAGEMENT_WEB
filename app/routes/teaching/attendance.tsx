@@ -16,6 +16,7 @@ import {
   StudentIcon,
 } from "../../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
+import { getCachedUser } from "../../lib/auth";
 import { attendanceService } from "../../services/attendance.service";
 import type {
   AttendanceRecord,
@@ -175,7 +176,7 @@ function ActionDropdown({
 
 export default function TeachingAttendance() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
   const [classes, setClasses] = useState<SubjectClassOption[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);

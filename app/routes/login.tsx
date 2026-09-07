@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import gsap from "gsap";
-import { ApiError, forgotPassword, login, resetPassword } from "../lib/api";
-import { isAuthenticated, setToken } from "../lib/auth";
+import { ApiError, apiRequest, forgotPassword, login, resetPassword } from "../lib/api";
+import { isAuthenticated, setCachedUser, setToken } from "../lib/auth";
+import type { User } from "../types/management";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -107,6 +108,12 @@ export default function Login() {
       const result = await login(username, password);
       if (!result.authenticated || !result.token) throw new Error("Tên đăng nhập hoặc mật khẩu không đúng.");
       setToken(result.token);
+      try {
+        const userInfo = await apiRequest<User>("/users/myInfo");
+        if (userInfo) setCachedUser(userInfo);
+      } catch {
+        // AppShell will retry if network hiccup
+      }
       window.location.href = "/";
     } catch (reason) {
       setError(reason instanceof ApiError || reason instanceof Error ? reason.message : "Đăng nhập thất bại.");

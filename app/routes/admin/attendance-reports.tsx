@@ -13,6 +13,7 @@ import {
   BellIcon,
 } from "../../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
+import { getCachedUser } from "../../lib/auth";
 import { attendanceService } from "../../services/attendance.service";
 import type { BannedStudent } from "../../types/attendance";
 import type { User } from "../../types/management";
@@ -147,7 +148,7 @@ function ActionDropdown({
 
 export default function AttendanceReports() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
   const [bannedList, setBannedList] = useState<BannedStudent[]>([]);
   const [classes, setClasses] = useState<SubjectClassOption[]>([]);
   const [loading, setLoading] = useState(true);
