@@ -5,6 +5,7 @@ import { clearToken, getCachedUser, getToken, isAuthenticated, setCachedUser } f
 import type { User } from "../types/management";
 import type { AppNotification, NotificationSummary } from "../types/notification";
 import { notificationService } from "../services/notification.service";
+import { webSocketService } from "../services/websocket.service";
 import { useTheme } from "../lib/theme";
 import {
   ArrowRightIcon,
@@ -158,6 +159,28 @@ export function AppShell({ title, description, children }: AppShellProps) {
   // Notification State
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifSummary, setNotifSummary] = useState<NotificationSummary>({ unreadCount: 0, recentNotifications: [] });
+  const [toastNotif, setToastNotif] = useState<AppNotification | null>(null);
+
+  const playNotificationSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    } catch {
+      // Audio not supported or blocked by browser policy
+    }
+  };
 
   const loadNotifications = async () => {
     try {
@@ -185,12 +208,26 @@ export function AppShell({ title, description, children }: AppShellProps) {
         navigate("/login", { replace: true });
       });
 
-    // Polling unread count every 30s
+    // Real-time WebSocket connection & subscription
+    webSocketService.connect();
+    const unsubscribeSocket = webSocketService.subscribe((incomingNotif) => {
+      setNotifSummary((prev) => ({
+        unreadCount: prev.unreadCount + 1,
+        recentNotifications: [
+          incomingNotif,
+          ...prev.recentNotifications.filter((n) => n.id !== incomingNotif.id).slice(0, 4),
+        ],
+      }));
+      setToastNotif(incomingNotif);
+      playNotificationSound();
+    });
+
+    // Polling backup every 60s
     const timer = setInterval(() => {
       if (getToken()) {
         void loadNotifications();
       }
-    }, 30000);
+    }, 60000);
 
     const handleNotificationsUpdated = () => {
       void loadNotifications();
@@ -199,9 +236,20 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
     return () => {
       clearInterval(timer);
+      unsubscribeSocket();
       window.removeEventListener("notifications-updated", handleNotificationsUpdated);
     };
   }, []);
+
+  // Auto-dismiss toast notification after 6 seconds
+  useEffect(() => {
+    if (toastNotif) {
+      const timer = setTimeout(() => {
+        setToastNotif(null);
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastNotif]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -1040,6 +1088,52 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Real-time Notification Toast Popup */}
+      {toastNotif && (
+        <div className="fixed top-5 right-5 z-[9999] max-w-sm w-full animate-bounce-in duration-300">
+          <div className="relative overflow-hidden rounded-2xl border border-cyan-500/40 bg-slate-900/95 backdrop-blur-xl p-4 shadow-2xl shadow-cyan-500/20 text-white">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 animate-pulse">
+                <BellIcon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">
+                    Thông báo mới
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setToastNotif(null)}
+                    className="text-slate-400 hover:text-white transition p-0.5 rounded-lg hover:bg-white/10 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <h4 className="mt-1 text-sm font-bold text-white truncate">
+                  {toastNotif.title}
+                </h4>
+                <p className="mt-1 text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                  {toastNotif.content}
+                </p>
+                <div className="mt-3 flex items-center justify-between pt-2 border-t border-white/10">
+                  <span className="text-[10px] text-slate-400">Vừa xong</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNotificationClick(toastNotif);
+                      setToastNotif(null);
+                    }}
+                    className="flex items-center gap-1 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition cursor-pointer"
+                  >
+                    Xem chi tiết <ArrowRightIcon className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

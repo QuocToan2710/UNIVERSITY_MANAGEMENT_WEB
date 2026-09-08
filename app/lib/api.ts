@@ -1,4 +1,5 @@
 import { clearToken, getToken } from "./auth";
+import { resolveErrorMessage, ERROR_MESSAGES } from "./error-messages";
 import type {
   ApiResponse,
   PageResponse,
@@ -9,6 +10,7 @@ import type {
 import type { LoginRequest } from "../types/request";
 
 export type { ApiResponse, PageResponse, SelectOption, ComboType };
+export { ERROR_MESSAGES, resolveErrorMessage };
 
 const rawApiUrl =
   import.meta.env.VITE_API_URL ||
@@ -17,8 +19,22 @@ const rawApiUrl =
 const API_URL = rawApiUrl.endsWith("/") ? rawApiUrl.slice(0, -1) : rawApiUrl;
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number) {
-    super(message);
+  public code?: number;
+  public rawCode?: string;
+  public fieldErrors?: Record<string, string>;
+
+  constructor(
+    message: string,
+    public status: number,
+    code?: number,
+    fieldErrors?: Record<string, string>
+  ) {
+    // message is the dot-code (e.g. "error.student.not.found"), resolve to user-friendly text
+    const displayMessage = resolveErrorMessage(message);
+    super(displayMessage);
+    this.rawCode = message;
+    this.code = code;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -40,7 +56,8 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}): Pro
   const body = (await response.json().catch(() => null)) as ApiResponse<T> | null;
 
   if (!response.ok || !body || body.code !== 1000) {
-    throw new ApiError(body?.message || "Không thể kết nối tới máy chủ.", response.status);
+    const rawMsg = body?.message || "error.common.uncategorized";
+    throw new ApiError(rawMsg, response.status, body?.code, body?.fieldErrors);
   }
 
   return body.result;

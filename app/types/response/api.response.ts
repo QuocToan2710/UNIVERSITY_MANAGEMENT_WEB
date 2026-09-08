@@ -1,6 +1,11 @@
 export type ApiResponse<T> = {
   code: number;
+  errorKey?: string;
   message?: string;
+  path?: string;
+  timestamp?: string;
+  traceId?: string;
+  fieldErrors?: Record<string, string>;
   result: T;
 };
 

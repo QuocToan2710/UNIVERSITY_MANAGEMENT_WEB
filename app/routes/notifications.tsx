@@ -70,6 +70,21 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     void loadData();
+
+    const handleRealtimeNotif = (e: Event) => {
+      const customEvent = e as CustomEvent<AppNotification>;
+      if (customEvent.detail) {
+        setNotifications((prev) => [
+          customEvent.detail,
+          ...prev.filter((n) => n.id !== customEvent.detail.id),
+        ]);
+        setTotalElements((prev) => prev + 1);
+      }
+    };
+    window.addEventListener("realtime-notification", handleRealtimeNotif);
+    return () => {
+      window.removeEventListener("realtime-notification", handleRealtimeNotif);
+    };
   }, [page]);
 
   const handleReadSingle = async (notif: AppNotification) => {
