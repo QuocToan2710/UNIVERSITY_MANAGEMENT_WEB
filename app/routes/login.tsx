@@ -270,10 +270,10 @@ export default function Login() {
 
           {/* Login Form */}
           <form className="mt-7 space-y-4.5" onSubmit={handleSubmit}>
-            {/* Username / Email Input - Transparent Glass */}
+            {/* Username / UserCode Input - Transparent Glass */}
             <div className="login-form-anim">
               <label className="block text-xs font-bold uppercase tracking-wider text-white mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                Tài khoản hoặc Email
+                MÃ SINH VIÊN
               </label>
               <div className="relative flex items-center">
                 <span className="pointer-events-none absolute left-4 text-cyan-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
@@ -288,7 +288,6 @@ export default function Login() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-4 py-3 text-sm font-semibold text-white placeholder-slate-300 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
-                  placeholder="Mã SV / Email / Tên tài khoản"
                 />
               </div>
             </div>
@@ -327,7 +326,6 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-xl border border-white/35 bg-black/30 pl-11 pr-11 py-3 text-sm font-semibold text-white placeholder-slate-300 outline-none backdrop-blur-[2px] transition duration-200 focus:border-cyan-300 focus:bg-black/50 focus:ring-2 focus:ring-cyan-400/30 shadow-inner"
-                  placeholder="••••••••"
                 />
                 <button
                   type="button"
