@@ -328,11 +328,7 @@ export default function TuitionPage() {
   return (
     <AppShell
       title="Quản lý & Tra cứu Học phí"
-      description={
-        isStaff
-          ? "Tổng hợp công nợ học phí toàn trường, theo dõi thu chi và ghi nhận thanh toán."
-          : "Tra cứu phiếu báo học phí cá nhân theo từng học kỳ, biểu giá tín chỉ và hạn nộp tiền."
-      }
+      description=""
     >
       <div className="space-y-6">
         {/* Main Card Container */}
@@ -874,7 +870,7 @@ export default function TuitionPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Ví dụ: Nộp đợt 1 / chuyển qua ngân hàng..."
+                  
                   value={paymentNote}
                   onChange={(e) => setPaymentNote(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 dark:text-slate-200 focus:outline-none"

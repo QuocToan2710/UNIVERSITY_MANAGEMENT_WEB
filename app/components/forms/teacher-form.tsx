@@ -159,7 +159,7 @@ export function TeacherForm({ teacher, onClose, onSaved }: TeacherFormProps) {
               onChange={(e) => update("departmentId", e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-violet-400"
             >
-              <option value="" className="bg-white dark:bg-slate-900 text-slate-400">-- Chưa chọn Khoa --</option>
+              <option value=""></option>
               {departments.map((dept) => (
                 <option key={dept.id} value={dept.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {dept.name} ({dept.departmentCode})

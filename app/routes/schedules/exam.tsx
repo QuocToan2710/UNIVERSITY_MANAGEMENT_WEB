@@ -79,7 +79,7 @@ export default function ExamSchedulePage() {
   }
 
   return (
-    <AppShell title="Tra cứu Lịch thi Học kỳ" description="Xem thông tin chi tiết các ca thi học phần, phòng thi, hình thức thi và cán bộ coi thi.">
+    <AppShell title="Tra cứu Lịch thi Học kỳ" description="">
       {/* Top Controls & Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl p-5 backdrop-blur-xl">
         <div className="flex flex-wrap items-center gap-3">

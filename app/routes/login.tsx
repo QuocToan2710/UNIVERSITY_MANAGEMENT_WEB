@@ -251,7 +251,6 @@ export default function Login() {
           <div className="login-form-anim flex items-center justify-between">
             <div>
               <p className="text-xs font-bold tracking-wider text-cyan-300 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                EDUMANAGE PORTAL
               </p>
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
                 Cổng Đăng Nhập

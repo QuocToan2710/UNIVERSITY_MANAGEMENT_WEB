@@ -99,8 +99,8 @@ export function ClassGroupForm({ classGroup, onClose, onSaved }: ClassGroupFormP
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã lớp *" value={form.classCode} onChange={(v) => update("classCode", v)} required placeholder="VD: 21DTH1" />
-          <Field label="Tên lớp *" value={form.className} onChange={(v) => update("className", v)} required placeholder="VD: Công nghệ thông tin 1" />
+          <Field label="Mã lớp *" value={form.classCode} onChange={(v) => update("classCode", v)} required />
+          <Field label="Tên lớp *" value={form.className} onChange={(v) => update("className", v)} required />
           
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
             Ngành học
@@ -109,7 +109,7 @@ export function ClassGroupForm({ classGroup, onClose, onSaved }: ClassGroupFormP
               onChange={(e) => update("majorId", e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-teal-400"
             >
-              <option value="" className="bg-white dark:bg-slate-900 text-slate-400">-- Chọn ngành học --</option>
+              <option value=""></option>
               {majors.map((m) => (
                 <option key={m.id} value={m.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {m.name}
@@ -141,7 +141,7 @@ export function ClassGroupForm({ classGroup, onClose, onSaved }: ClassGroupFormP
               max="200"
               value={form.maxStudents ?? 50}
               onChange={(e) => update("maxStudents", e.target.value ? Number(e.target.value) : "")}
-              placeholder="VD: 50"
+              
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-teal-400"
             />
           </label>
@@ -153,7 +153,7 @@ export function ClassGroupForm({ classGroup, onClose, onSaved }: ClassGroupFormP
               onChange={(e) => update("homeroomTeacherId", e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-teal-400"
             >
-              <option value="">-- Chưa chọn GVCN --</option>
+              <option value=""></option>
               {teachers.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.teacherCode} - {t.fullName}

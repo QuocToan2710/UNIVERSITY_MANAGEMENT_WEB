@@ -129,7 +129,7 @@ export default function TeachingSchedulePage() {
   return (
     <AppShell
       title="Lịch giảng dạy"
-      description="Quản lý định mức tiết dạy, ca lên lớp và phân công giảng đường của cán bộ giảng viên."
+      description=""
     >
       {/* Overview Stats Widgets */}
       <div className="grid gap-5 sm:grid-cols-3 mb-6">

@@ -73,7 +73,7 @@ export default function Users() {
   }
 
   return (
-    <AppShell title="Quản lý Tài khoản" description="Phân quyền quản trị viên và người dùng hệ thống EduManage.">
+    <AppShell title="Quản lý Tài khoản" description="">
       <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Header Controls */}
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">

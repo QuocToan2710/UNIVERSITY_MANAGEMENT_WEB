@@ -187,7 +187,6 @@ export function AddressSelector({
       {/* Current Saved Address Display */}
       {(currentAddress || specificAddress) && (
         <div className="flex items-center gap-2 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-500/20 px-3.5 py-2.5 text-xs text-cyan-900 dark:text-cyan-200">
-          <span className="shrink-0 text-sm">📍</span>
           <div className="flex-1 min-w-0">
             <span className="font-bold">Địa chỉ hiện tại:</span>{" "}
             <span className="font-medium text-slate-700 dark:text-slate-300">
@@ -199,10 +198,10 @@ export function AddressSelector({
 
       {/* 3-Tier Cascading Dropdowns */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {/* Tỉnh / Thành phố */}
+        {/* Tỉnh/TP */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Tỉnh / Thành phố {required && <span className="text-red-500">*</span>}
+            Tỉnh/TP {required && <span className="text-red-500">*</span>}
           </label>
           <select
             value={provinceId ? String(provinceId) : ""}
@@ -211,9 +210,6 @@ export function AddressSelector({
             required={required}
             className="w-full rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-3 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all disabled:opacity-50"
           >
-            <option value="">
-              {loadingProvinces ? "-- Đang tải danh sách Tỉnh/TP --" : "-- Chọn Tỉnh / Thành phố --"}
-            </option>
             {provinces.map((p) => (
               <option key={p.value} value={String(p.value)}>
                 {p.label}
@@ -222,10 +218,10 @@ export function AddressSelector({
           </select>
         </div>
 
-        {/* Quận / Huyện / TP thuộc tỉnh */}
+        {/* Quận/Huyện */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Quận / Huyện / TP trực thuộc {required && <span className="text-red-500">*</span>}
+            Quận/Huyện {required && <span className="text-red-500">*</span>}
           </label>
           <select
             value={districtId ? String(districtId) : ""}
@@ -234,13 +230,6 @@ export function AddressSelector({
             required={required}
             className="w-full rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-3 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all disabled:opacity-50"
           >
-            <option value="">
-              {!provinceId
-                ? "-- Hãy chọn Tỉnh/TP trước --"
-                : loadingDistricts
-                ? "-- Đang tải Quận/Huyện --"
-                : "-- Chọn Quận / Huyện / TP --"}
-            </option>
             {districts.map((d) => (
               <option key={d.value} value={String(d.value)}>
                 {d.label}
@@ -249,10 +238,10 @@ export function AddressSelector({
           </select>
         </div>
 
-        {/* Phường / Xã / Thị trấn */}
+        {/* Xã/Phường */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Phường / Xã / Thị trấn {required && <span className="text-red-500">*</span>}
+            Xã/Phường {required && <span className="text-red-500">*</span>}
           </label>
           <select
             value={wardId ? String(wardId) : ""}
@@ -261,13 +250,6 @@ export function AddressSelector({
             required={required}
             className="w-full rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-3 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all disabled:opacity-50"
           >
-            <option value="">
-              {!districtId
-                ? "-- Hãy chọn Quận/Huyện trước --"
-                : loadingWards
-                ? "-- Đang tải Phường/Xã --"
-                : "-- Chọn Phường / Xã --"}
-            </option>
             {wards.map((w) => (
               <option key={w.value} value={String(w.value)}>
                 {w.label}
@@ -277,17 +259,16 @@ export function AddressSelector({
         </div>
       </div>
 
-      {/* Số nhà, Thôn, Xóm, Tổ dân phố */}
+      {/* Địa chỉ chi tiết */}
       <div>
         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-          Số nhà, Thôn / Xóm / Tên đường (Chi tiết theo CCCD)
+          Địa chỉ chi tiết
         </label>
         <input
           type="text"
           value={specificAddress}
           onChange={handleSpecificAddressChange}
           disabled={disabled}
-          placeholder="Ví dụ: Thôn 3, Xóm Cầu, hoặc Số 12 Ngõ 45"
           className="w-full rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all disabled:opacity-50 placeholder:text-slate-400 dark:placeholder:text-slate-500"
         />
       </div>

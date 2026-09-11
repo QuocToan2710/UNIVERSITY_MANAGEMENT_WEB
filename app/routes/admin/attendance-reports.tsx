@@ -265,7 +265,7 @@ export default function AttendanceReports() {
   return (
     <AppShell
       title="Báo cáo Cấm thi & Chuyên cần"
-      description="Thống kê danh sách sinh viên bị cấm thi kết thúc học phần do vi phạm quy chế chuyên cần"
+      description=""
     >
       <div className="space-y-6">
         {/* Alerts */}

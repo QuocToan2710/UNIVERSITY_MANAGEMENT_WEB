@@ -241,6 +241,137 @@ function formatHour(timeStr?: string) {
   return `${parts[0]}:${parts[1] || "00"}`;
 }
 
+function TimetableMatrixSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 shadow-sm animate-pulse">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-left min-w-[1000px]">
+          <thead>
+            <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/80 text-xs">
+              <th className="w-40 p-3.5 text-center border-r border-slate-200 dark:border-white/10 sticky left-0 z-20 bg-slate-50 dark:bg-slate-950">
+                <div className="h-4 w-20 mx-auto rounded-md bg-slate-200 dark:bg-slate-800" />
+              </th>
+              {WEEK_DAYS.map((day) => (
+                <th key={day} className="p-3.5 text-center border-r border-slate-200 dark:border-white/10 last:border-r-0">
+                  <div className="h-4 w-16 mx-auto rounded-md bg-slate-200 dark:bg-slate-800" />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+            {SHIFTS.map((shift, idx) => (
+              <tr key={shift.id}>
+                <td className="p-3 border-r border-slate-200 dark:border-white/10 bg-slate-100/80 dark:bg-slate-950/70 align-top sticky left-0 z-10 text-center">
+                  <div className="h-5 w-12 mx-auto rounded-lg bg-slate-300 dark:bg-slate-800" />
+                  <div className="mt-2 h-3.5 w-16 mx-auto rounded-md bg-slate-200 dark:bg-slate-800" />
+                  <div className="mt-1.5 h-3 w-20 mx-auto rounded-md bg-slate-200 dark:bg-slate-800" />
+                </td>
+                {WEEK_DAYS.map((day, dIdx) => {
+                  const hasPlaceholder = (idx + dIdx) % 3 === 0 || (idx === 1 && dIdx === 2) || (idx === 3 && dIdx === 4);
+                  return (
+                    <td key={day} className="p-2 align-top border-r border-slate-200 dark:border-white/10 last:border-r-0 min-w-[145px]">
+                      {hasPlaceholder ? (
+                        <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/40 p-2.5 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="h-3.5 w-10 rounded-md bg-slate-200 dark:bg-slate-700" />
+                            <div className="h-3.5 w-14 rounded-md bg-slate-200 dark:bg-slate-700" />
+                          </div>
+                          <div className="h-3.5 w-full rounded-md bg-slate-200 dark:bg-slate-700" />
+                          <div className="h-3 w-2/3 rounded-md bg-slate-200 dark:bg-slate-700" />
+                        </div>
+                      ) : (
+                        <div className="h-20 rounded-xl border border-dashed border-slate-200/50 dark:border-white/5" />
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function TimetableColumnsSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 shadow-sm animate-pulse">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-white/10">
+        {WEEK_DAYS.map((day, dIdx) => (
+          <div key={day} className="flex flex-col min-h-[360px]">
+            <div className="border-b border-slate-200 dark:border-white/10 px-3 py-2.5 flex items-center justify-center gap-1.5 bg-slate-50/90 dark:bg-slate-950/80">
+              <div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" />
+              <div className="h-4 w-5 rounded-full bg-slate-200 dark:bg-slate-800" />
+            </div>
+            <div className="flex-1 p-2.5 space-y-2.5">
+              {dIdx % 2 === 0 ? (
+                <>
+                  <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/40 p-3 space-y-2">
+                    <div className="flex justify-between">
+                      <div className="h-3.5 w-12 rounded-md bg-slate-200 dark:bg-slate-700" />
+                      <div className="h-3.5 w-16 rounded-md bg-slate-200 dark:bg-slate-700" />
+                    </div>
+                    <div className="h-4 w-full rounded-md bg-slate-200 dark:bg-slate-700" />
+                    <div className="h-3 w-3/4 rounded-md bg-slate-200 dark:bg-slate-700" />
+                  </div>
+                  <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/40 p-3 space-y-2">
+                    <div className="flex justify-between">
+                      <div className="h-3.5 w-10 rounded-md bg-slate-200 dark:bg-slate-700" />
+                      <div className="h-3.5 w-14 rounded-md bg-slate-200 dark:bg-slate-700" />
+                    </div>
+                    <div className="h-4 w-4/5 rounded-md bg-slate-200 dark:bg-slate-700" />
+                  </div>
+                </>
+              ) : (
+                <div className="grid h-28 place-items-center rounded-xl border border-dashed border-slate-200/50 dark:border-white/5" />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TimetableListSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 shadow-sm animate-pulse">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-slate-950/80 font-bold text-slate-700 dark:text-slate-300">
+            <tr>
+              <th className="px-5 py-3.5"><div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+              <th className="px-5 py-3.5"><div className="h-4 w-28 rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+              <th className="px-5 py-3.5"><div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+              <th className="px-5 py-3.5"><div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+              <th className="px-5 py-3.5"><div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+              <th className="px-5 py-3.5"><div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+              <th className="px-5 py-3.5 text-center"><div className="h-4 w-10 mx-auto rounded-md bg-slate-200 dark:bg-slate-800" /></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-white/10">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <tr key={i}>
+                <td className="px-5 py-3.5"><div className="h-5 w-16 rounded-lg bg-slate-200 dark:bg-slate-800" /></td>
+                <td className="px-5 py-3.5 space-y-1.5">
+                  <div className="h-4 w-3/4 rounded-md bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-3 w-1/3 rounded-md bg-slate-200 dark:bg-slate-800" />
+                </td>
+                <td className="px-5 py-3.5"><div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" /></td>
+                <td className="px-5 py-3.5"><div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800" /></td>
+                <td className="px-5 py-3.5"><div className="h-4 w-14 rounded-md bg-slate-200 dark:bg-slate-800" /></td>
+                <td className="px-5 py-3.5"><div className="h-4 w-28 rounded-md bg-slate-200 dark:bg-slate-800" /></td>
+                <td className="px-5 py-3.5 text-center"><div className="size-7 mx-auto rounded-lg bg-slate-200 dark:bg-slate-800" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function TimetablePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => getCachedUser<User>());
@@ -493,7 +624,7 @@ export default function TimetablePage() {
   return (
     <AppShell
       title="Thời khóa biểu & Lịch thi"
-      description="Quản lý và tra cứu linh hoạt lịch học tập và lịch thi học kỳ theo tuần, ca và phòng học."
+      description=""
     >
       {/* Top Header & Term Selector */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -702,8 +833,17 @@ export default function TimetablePage() {
         </p>
       )}
 
-      {/* VIEW MODE 1: MATRIX TABLE */}
-      {viewMode === "MATRIX" && (
+      {/* SKELETON LOADERS WHEN LOADING */}
+      {loading ? (
+        <>
+          {viewMode === "MATRIX" && <TimetableMatrixSkeleton />}
+          {viewMode === "COLUMNS" && <TimetableColumnsSkeleton />}
+          {viewMode === "LIST" && <TimetableListSkeleton />}
+        </>
+      ) : (
+        <>
+          {/* VIEW MODE 1: MATRIX TABLE */}
+          {viewMode === "MATRIX" && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left min-w-[1000px]">
@@ -979,6 +1119,8 @@ export default function TimetablePage() {
             </table>
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* DETAIL MODAL */}

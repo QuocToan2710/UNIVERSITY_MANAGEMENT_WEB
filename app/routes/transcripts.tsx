@@ -124,7 +124,7 @@ export default function Transcripts() {
   return (
     <AppShell
       title="Bảng điểm & Kết quả học tập"
-      description="Tra cứu điểm học phần, tính điểm GPA học kỳ, điểm tích lũy CPA và xếp loại học lực."
+      description=""
     >
       {error && (
         <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-3.5 text-sm text-red-600 dark:text-red-300 backdrop-blur-md">

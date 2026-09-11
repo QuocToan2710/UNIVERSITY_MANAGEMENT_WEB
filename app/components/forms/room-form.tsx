@@ -87,8 +87,8 @@ export function RoomForm({ room, onClose, onSaved }: RoomFormProps) {
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã phòng học *" value={form.roomCode} onChange={(v) => update("roomCode", v)} required placeholder="VD: A2-402, LAB_03" />
-          <Field label="Tên phòng học *" value={form.name} onChange={(v) => update("name", v)} required placeholder="VD: Phòng học A2-402" />
+          <Field label="Mã phòng học *" value={form.roomCode} onChange={(v) => update("roomCode", v)} required />
+          <Field label="Tên phòng học *" value={form.name} onChange={(v) => update("name", v)} required />
 
           {buildings.length > 0 ? (
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
@@ -98,7 +98,7 @@ export function RoomForm({ room, onClose, onSaved }: RoomFormProps) {
                 onChange={(e) => update("building", e.target.value)}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
-                <option value="" className="bg-white dark:bg-slate-900 text-slate-400">-- Chọn tòa nhà --</option>
+                <option value=""></option>
                 {buildings.map((b) => (
                   <option key={b.id} value={b.name} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {b.name}
@@ -107,7 +107,7 @@ export function RoomForm({ room, onClose, onSaved }: RoomFormProps) {
               </select>
             </label>
           ) : (
-            <Field label="Tòa nhà *" value={form.building || ""} onChange={(v) => update("building", v)} required placeholder="VD: Tòa A2, Tòa B1" />
+            <Field label="Tòa nhà *" value={form.building || ""} onChange={(v) => update("building", v)} required />
           )}
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
@@ -156,7 +156,7 @@ export function RoomForm({ room, onClose, onSaved }: RoomFormProps) {
           </label>
 
           <div className="sm:col-span-2">
-            <Field label="Ghi chú / Thiết bị" value={form.description || ""} onChange={(v) => update("description", v)} placeholder="VD: Trang bị máy chiếu, điều hòa, 45 máy PC..." />
+            <Field label="Ghi chú / Thiết bị" value={form.description || ""} onChange={(v) => update("description", v)} />
           </div>
         </div>
 

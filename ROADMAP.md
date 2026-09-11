@@ -53,6 +53,10 @@
 - [ ] **2.6. Trợ lý Ảo AI Học vụ (AI Academic Assistant):**
   - Tích hợp Gemini API dưới dạng widget chatbox hỗ trợ sinh viên tra cứu quy chế đào tạo, hướng dẫn thủ tục học vụ và nhắc lịch học.
 
+- [ ] **2.7. Triển Khai Gửi Email Thật (Real-Email SMTP Integration - Brevo / Gmail):**
+  - Chuyển từ Mailtrap Sandbox sang dịch vụ gửi thư thực tế (Brevo SMTP 300 mails/ngày hoặc Gmail App Password).
+  - Gửi email cấp tài khoản và mã xác thực OTP về hòm thư thật của sinh viên/giảng viên.
+
 ---
 
 ## 3. Nhóm Trải Nghiệm Người Dùng (UX/UI & Analytics)
