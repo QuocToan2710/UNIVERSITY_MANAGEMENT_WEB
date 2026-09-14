@@ -1,5 +1,5 @@
 export type UserRequest = {
-  id?: string;
+  id?: string | number;
   username: string;
   password?: string;
   email: string;

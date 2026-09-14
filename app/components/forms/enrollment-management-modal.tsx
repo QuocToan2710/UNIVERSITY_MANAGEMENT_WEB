@@ -132,7 +132,7 @@ export function EnrollmentManagementModal({
   const availableStudents = useMemo(() => {
     const term = studentSearch.trim().toLowerCase();
     return allStudents.filter((s) => {
-      if (enrolledStudentIds.has(s.id)) return false;
+      if (enrolledStudentIds.has(Number(s.id))) return false;
       if (!term) return true;
       return (
         (s.studentCode || "").toLowerCase().includes(term) ||
@@ -187,7 +187,7 @@ export function EnrollmentManagementModal({
     setSuccessMsg("");
     setBatchResult(null);
     try {
-      const res = await enrollmentService.batchEnroll(subjectClass.id, selectedStudentIds);
+      const res = await enrollmentService.batchEnroll(Number(subjectClass.id), selectedStudentIds.map(Number));
       setBatchResult(res);
       setSelectedStudentIds([]);
       await loadEnrolledData();

@@ -188,7 +188,7 @@ const CLASS_THEME = {
   roomBadge: "bg-white/90 dark:bg-slate-900 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-500/30",
 };
 
-function getClassTheme() {
+function getClassTheme(_nameOrCode?: string) {
   return CLASS_THEME;
 }
 

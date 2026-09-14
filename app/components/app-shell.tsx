@@ -696,60 +696,30 @@ export function AppShell({ title, description, children }: AppShellProps) {
               )}
             </div>
 
-            {/* Cyberpunk Glass Capsule Profile Widget */}
+            {/* User Profile Avatar Widget */}
             <div ref={profileRef} className="relative border-l border-slate-200 dark:border-white/10 pl-3">
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
                 aria-expanded={profileOpen}
                 aria-haspopup="menu"
-                className={`group relative flex items-center gap-3 rounded-2xl border p-1.5 pr-3.5 text-left transition-all duration-300 cursor-pointer backdrop-blur-xl ${
+                title={displayName}
+                aria-label="Tài khoản người dùng"
+                className={`group relative grid size-10 place-items-center rounded-xl border transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
                   profileOpen
-                    ? "border-cyan-500 dark:border-cyan-400/60 bg-cyan-50/80 dark:bg-slate-900/95 shadow-[0_0_20px_rgba(34,211,238,0.25)] ring-2 ring-cyan-400/20"
-                    : "border-slate-200 dark:border-white/15 bg-white/80 dark:bg-slate-900/70 hover:border-cyan-500 hover:bg-slate-100 dark:hover:border-cyan-400/50 dark:hover:bg-slate-800/80 dark:bg-slate-900/90 shadow-sm"
+                    ? "border-cyan-500 dark:border-cyan-400/60 bg-cyan-50/80 dark:bg-slate-800 ring-2 ring-cyan-400/20 shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+                    : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 hover:border-cyan-400"
                 }`}
               >
-                {/* 3D Gradient Avatar with Pulsing Status Indicator */}
+                {/* Avatar with Status Indicator */}
                 <div className="relative">
                   <div
-                    className={`grid size-9 place-items-center rounded-xl bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-white ${roleStyles.glow} transition-transform duration-300 group-hover:scale-105`}
+                    className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-white ${roleStyles.glow}`}
                   >
                     {initials}
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-slate-950 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                  <span className="absolute -bottom-1 -right-1 size-2.5 rounded-full border-2 border-white dark:border-slate-950 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                 </div>
-
-                {/* User Identity Info */}
-                <div className="hidden text-xs sm:block">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-white transition-colors">
-                      {displayName}
-                    </p>
-                  </div>
-                  <div className="mt-0.5 flex items-center gap-1.5">
-                    <span
-                      className={`rounded-md border px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider ${roleStyles.badge}`}
-                    >
-                      {roleStyles.label}
-                    </span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                      @{user?.username || "..."}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Animated Chevron */}
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`hidden size-4 transition-transform duration-300 sm:block ${
-                    profileOpen ? "rotate-180 text-cyan-600 dark:text-cyan-300" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
               </button>
 
               {/* Rich Profile Dropdown Menu */}

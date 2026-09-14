@@ -79,7 +79,7 @@ export default function CourseRegistration() {
       setMyEnrollments(myEnr || []);
       setStudents(stuList || []);
       if (stuList && stuList.length > 0 && selectedStudentId === "") {
-        setSelectedStudentId(stuList[0].id);
+        setSelectedStudentId(Number(stuList[0].id));
       }
     } catch (reason: any) {
       const err = reason as ApiError;

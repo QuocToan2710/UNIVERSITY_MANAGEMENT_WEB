@@ -4,12 +4,14 @@ export interface ForbiddenStateProps {
   title?: string;
   description?: string;
   requiredEndpoint?: string;
+  requiredRole?: string;
 }
 
 export function ForbiddenState({
   title = "403 - Quyền Truy Cập Bị Từ Chối",
   description = "Tài khoản hiện tại của bạn không có quyền hạn truy cập chức năng này. Vui lòng liên hệ Quản trị viên nếu bạn cho rằng đây là sự nhầm lẫn.",
   requiredEndpoint,
+  requiredRole,
 }: ForbiddenStateProps) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center text-center p-6 animate-in fade-in zoom-in-95 duration-200">
