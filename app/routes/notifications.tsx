@@ -159,7 +159,7 @@ export default function NotificationsPage() {
   return (
     <AppShell
       title="Trung tâm Thông báo"
-      description="Xem và quản lý các thông báo học tập, lịch thi, sự kiện và tin tức đào tạo"
+      description=""
     >
       <div className="space-y-6">
         {/* Top Control Bar */}
@@ -360,7 +360,7 @@ export default function NotificationsPage() {
                   required
                   value={sendForm.title}
                   onChange={(e) => setSendForm({ ...sendForm, title: e.target.value })}
-                  placeholder="Ví dụ: Thông báo lịch thi cuối kỳ..."
+                  
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                 />
               </div>
@@ -454,7 +454,7 @@ export default function NotificationsPage() {
                       required
                       value={sendForm.targetValue || ""}
                       onChange={(e) => setSendForm({ ...sendForm, targetValue: e.target.value })}
-                      placeholder="VD: admin, student, SV24001, hoặc ID lớp"
+                      
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                     />
                   </div>
@@ -469,7 +469,7 @@ export default function NotificationsPage() {
                   type="text"
                   value={sendForm.actionUrl || ""}
                   onChange={(e) => setSendForm({ ...sendForm, actionUrl: e.target.value })}
-                  placeholder="VD: /schedule/exam hoặc /schedule/class"
+                  
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                 />
               </div>
@@ -483,7 +483,7 @@ export default function NotificationsPage() {
                   required
                   value={sendForm.content}
                   onChange={(e) => setSendForm({ ...sendForm, content: e.target.value })}
-                  placeholder="Nhập nội dung thông báo đầy đủ..."
+                  
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                 />
               </div>

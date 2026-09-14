@@ -35,7 +35,7 @@ export function DistrictForm({ district, onClose, onSaved, defaultProvinceId }: 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!provinceId) {
-      setError("Vui lòng chọn Tỉnh / Thành phố trực thuộc.");
+      setError("Vui lòng chọn Tỉnh/TP trực thuộc.");
       return;
     }
     setSaving(true);
@@ -70,9 +70,9 @@ export function DistrictForm({ district, onClose, onSaved, defaultProvinceId }: 
       >
         <div className="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-4">
           <div>
-            <h2 className="text-lg font-bold">{district ? "Cập nhật Quận / Huyện / TP" : "Thêm Quận / Huyện / TP mới"}</h2>
+            <h2 className="text-lg font-bold">{district ? "Cập nhật Quận/Huyện" : "Thêm Quận/Huyện mới"}</h2>
             <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">
-              Quản lý danh mục cấp Quận, Huyện, Thị xã, TP thuộc tỉnh/thành.
+              Quản lý danh mục cấp Quận/Huyện.
             </p>
           </div>
           <button type="button" onClick={onClose} className="text-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer">
@@ -83,7 +83,7 @@ export function DistrictForm({ district, onClose, onSaved, defaultProvinceId }: 
         <div className="mt-6 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Tỉnh / Thành phố trực thuộc *
+              Tỉnh/TP trực thuộc *
             </label>
             <select
               required
@@ -91,7 +91,7 @@ export function DistrictForm({ district, onClose, onSaved, defaultProvinceId }: 
               onChange={(e) => setProvinceId(e.target.value)}
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value="">-- Chọn Tỉnh / Thành phố --</option>
+              <option value=""></option>
               {provinces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.provinceName} ({p.provinceCode})
@@ -102,26 +102,26 @@ export function DistrictForm({ district, onClose, onSaved, defaultProvinceId }: 
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Mã Quận / Huyện / TP *
+              Mã Quận/Huyện *
             </label>
             <input
               required
               value={districtCode}
               onChange={(e) => setDistrictCode(e.target.value)}
-              placeholder="VD: 318 (Thủy Nguyên), 312 (An Dương), 005 (Cầu Giấy)"
+              
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Tên Quận / Huyện / TP *
+              Tên Quận/Huyện *
             </label>
             <input
               required
               value={districtName}
               onChange={(e) => setDistrictName(e.target.value)}
-              placeholder="VD: Thành phố Thủy Nguyên, Quận An Dương, Quận Cầu Giấy"
+              
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </div>
@@ -155,7 +155,7 @@ export function DistrictForm({ district, onClose, onSaved, defaultProvinceId }: 
             className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md disabled:opacity-50 cursor-pointer"
           >
             {saving && <span className="size-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
-            <span>{saving ? "Đang lưu..." : "Lưu Quận / Huyện"}</span>
+            <span>{saving ? "Đang lưu..." : "Lưu Quận/Huyện"}</span>
           </button>
         </div>
       </form>

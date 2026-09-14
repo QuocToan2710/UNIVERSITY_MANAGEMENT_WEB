@@ -43,7 +43,7 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!districtId) {
-      setError("Vui lòng chọn Quận / Huyện trực thuộc.");
+      setError("Vui lòng chọn Quận/Huyện trực thuộc.");
       return;
     }
     setSaving(true);
@@ -64,7 +64,7 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
 
       onSaved();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Không thể lưu thông tin Phường/Xã.");
+      setError(reason instanceof Error ? reason.message : "Không thể lưu thông tin Xã/Phường.");
     } finally {
       setSaving(false);
     }
@@ -78,9 +78,9 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
       >
         <div className="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-4">
           <div>
-            <h2 className="text-lg font-bold">{ward ? "Cập nhật Phường / Xã / Thị trấn" : "Thêm Phường / Xã / Thị trấn mới"}</h2>
+            <h2 className="text-lg font-bold">{ward ? "Cập nhật Xã/Phường" : "Thêm Xã/Phường mới"}</h2>
             <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">
-              Quản lý danh mục cấp Phường, Xã, Thị trấn.
+              Quản lý danh mục cấp Xã/Phường.
             </p>
           </div>
           <button type="button" onClick={onClose} className="text-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer">
@@ -91,14 +91,14 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
         <div className="mt-6 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Lọc theo Tỉnh / Thành phố (Tùy chọn để thu gọn danh sách Quận/Huyện)
+              Lọc theo Tỉnh/TP (Tùy chọn để thu gọn danh sách Quận/Huyện)
             </label>
             <select
               value={provinceId}
               onChange={(e) => setProvinceId(e.target.value)}
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value="">-- Tất cả Tỉnh / TP --</option>
+              <option value="">-- Tất cả Tỉnh/TP --</option>
               {provinces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.provinceName}
@@ -109,7 +109,7 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Quận / Huyện / TP trực thuộc *
+              Quận/Huyện trực thuộc *
             </label>
             <select
               required
@@ -117,7 +117,7 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
               onChange={(e) => setDistrictId(e.target.value)}
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value="">-- Chọn Quận / Huyện / TP --</option>
+              <option value=""></option>
               {districts.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.districtName} ({d.districtCode})
@@ -128,26 +128,26 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Mã Phường / Xã *
+              Mã Xã/Phường *
             </label>
             <input
               required
               value={wardCode}
               onChange={(e) => setWardCode(e.target.value)}
-              placeholder="VD: 31804 (Tam Hưng), 00160 (Dịch Vọng Hậu)"
+              
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider mb-1.5">
-              Tên Phường / Xã *
+              Tên Xã/Phường *
             </label>
             <input
               required
               value={wardName}
               onChange={(e) => setWardName(e.target.value)}
-              placeholder="VD: Xã Tam Hưng, Phường Hoàng Văn Thụ"
+              
               className="w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </div>
@@ -181,7 +181,7 @@ export function WardForm({ ward, onClose, onSaved, defaultDistrictId }: WardForm
             className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md disabled:opacity-50 cursor-pointer"
           >
             {saving && <span className="size-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
-            <span>{saving ? "Đang lưu..." : "Lưu Phường / Xã"}</span>
+            <span>{saving ? "Đang lưu..." : "Lưu Xã/Phường"}</span>
           </button>
         </div>
       </form>

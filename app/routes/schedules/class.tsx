@@ -73,7 +73,7 @@ export default function ClassSchedulePage() {
   }
 
   return (
-    <AppShell title="Màn Lịch học" description="Thời khóa biểu các môn học dành cho sinh viên và hệ thống đào tạo.">
+    <AppShell title="Màn Lịch học" description="">
       {/* Top Controls & Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl p-5 backdrop-blur-xl shadow-xl">
         <div className="flex flex-wrap items-center gap-4">

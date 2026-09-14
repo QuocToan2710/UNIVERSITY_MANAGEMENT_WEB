@@ -67,8 +67,8 @@ export function BuildingForm({ building, onClose, onSaved }: BuildingFormProps) 
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã tòa nhà *" value={form.buildingCode} onChange={(v) => update("buildingCode", v)} required placeholder="VD: TOA_A2, TOA_B1" />
-          <Field label="Tên tòa nhà *" value={form.name} onChange={(v) => update("name", v)} required placeholder="VD: Tòa nhà A2 Giảng đường" />
+          <Field label="Mã tòa nhà *" value={form.buildingCode} onChange={(v) => update("buildingCode", v)} required />
+          <Field label="Tên tòa nhà *" value={form.name} onChange={(v) => update("name", v)} required />
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
             Tổng số tầng *
@@ -99,7 +99,7 @@ export function BuildingForm({ building, onClose, onSaved }: BuildingFormProps) 
           </label>
 
           <div className="sm:col-span-2">
-            <Field label="Ghi chú / Mô tả" value={form.description || ""} onChange={(v) => update("description", v)} placeholder="VD: Tòa nhà chính 10 tầng có điều hòa..." />
+            <Field label="Ghi chú / Mô tả" value={form.description || ""} onChange={(v) => update("description", v)} />
           </div>
         </div>
 

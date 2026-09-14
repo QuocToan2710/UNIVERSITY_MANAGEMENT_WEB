@@ -83,8 +83,8 @@ export function FloorForm({ floor, onClose, onSaved }: FloorFormProps) {
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã tầng *" value={form.floorCode} onChange={(v) => update("floorCode", v)} required placeholder="VD: TANG_04_A2" />
-          <Field label="Tên tầng *" value={form.name} onChange={(v) => update("name", v)} required placeholder="VD: Tầng 4 - Khu A2" />
+          <Field label="Mã tầng *" value={form.floorCode} onChange={(v) => update("floorCode", v)} required />
+          <Field label="Tên tầng *" value={form.name} onChange={(v) => update("name", v)} required />
 
           {/* Tòa nhà trực thuộc */}
           <div className="sm:col-span-2">
@@ -96,7 +96,7 @@ export function FloorForm({ floor, onClose, onSaved }: FloorFormProps) {
                 onChange={(e) => update("buildingId", e.target.value)}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
-                <option value="" className="bg-white dark:bg-slate-900 text-slate-400">-- Chọn tòa nhà --</option>
+                <option value=""></option>
                 {buildings.map((b) => (
                   <option key={b.id} value={b.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {b.name} ({b.buildingCode})
@@ -135,7 +135,7 @@ export function FloorForm({ floor, onClose, onSaved }: FloorFormProps) {
           </label>
 
           <div className="sm:col-span-2">
-            <Field label="Ghi chú" value={form.description || ""} onChange={(v) => update("description", v)} placeholder="VD: Khu vực học lý thuyết chất lượng cao..." />
+            <Field label="Ghi chú" value={form.description || ""} onChange={(v) => update("description", v)} />
           </div>
         </div>
 

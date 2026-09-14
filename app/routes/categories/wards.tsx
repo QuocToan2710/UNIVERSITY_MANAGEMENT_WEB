@@ -95,7 +95,7 @@ export default function WardsCategoryPage() {
     } catch (reason) {
       const err = reason as ApiError;
       if (err.status === 401) navigate("/login");
-      else setError(err.message || "Không thể tải danh sách Phường/Xã.");
+      else setError(err.message || "Không thể tải danh sách Xã/Phường.");
     } finally {
       setLoading(false);
     }
@@ -153,7 +153,7 @@ export default function WardsCategoryPage() {
       setDeletingWard(null);
       await loadWards(selectedDistrictId);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Không thể xóa Phường/Xã.");
+      setError(reason instanceof Error ? reason.message : "Không thể xóa Xã/Phường.");
     } finally {
       setDeleting(false);
     }
@@ -180,50 +180,50 @@ export default function WardsCategoryPage() {
 
       exportToExcel(
         exportData,
-        "Danh_Sach_Phuong_Xa",
-        "PhuongXa",
+        "Danh_Sach_Xa_Phuong",
+        "XaPhuong",
         [
-          { key: "wardCode", header: "Mã Phường / Xã" },
-          { key: "wardName", header: "Tên Phường / Xã / Thị trấn" },
+          { key: "wardCode", header: "Mã Xã/Phường" },
+          { key: "wardName", header: "Tên Xã/Phường" },
           { key: "wardType", header: "Loại đơn vị" },
-          { key: "districtName", header: "Quận / Huyện" },
-          { key: "provinceName", header: "Tỉnh / Thành phố" },
+          { key: "districtName", header: "Quận/Huyện" },
+          { key: "provinceName", header: "Tỉnh/TP" },
         ]
       );
     } catch {
-      alert("Không thể xuất danh sách Phường / Xã.");
+      alert("Không thể xuất danh sách Xã/Phường.");
     } finally {
       setExporting(false);
     }
   }
 
   const filterFields: FilterField[] = [
-    { key: "wardCode", label: "Mã Phường / Xã", placeholder: "VD: 31804, 00160..." },
-    { key: "wardName", label: "Tên Phường / Xã", placeholder: "VD: Tam Hưng, Dịch Vọng..." },
+    { key: "wardCode", label: "Mã Xã/Phường", placeholder: "VD: 31804, 00160..." },
+    { key: "wardName", label: "Tên Xã/Phường", placeholder: "VD: Tam Hưng, Dịch Vọng..." },
     { key: "wardType", label: "Loại đơn vị", placeholder: "VD: Phường, Xã..." },
   ];
 
   return (
-    <AppShell title="Danh mục Phường / Xã / Thị trấn" description="Quản lý danh sách các Phường, Xã, Thị trấn cấp 3 theo CCCD/VNeID.">
+    <AppShell title="Danh mục Xã/Phường" description="">
       {/* Navigation Tabs */}
       <div className="mb-6 flex gap-2 border-b border-slate-200 dark:border-white/10 pb-3">
         <Link
           to="/categories/provinces"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
         >
-          1. Tỉnh / Thành phố
+          1. Tỉnh/TP
         </Link>
         <Link
           to="/categories/districts"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
         >
-          2. Quận / Huyện / TP trực thuộc
+          2. Quận/Huyện
         </Link>
         <Link
           to="/categories/wards"
           className="rounded-xl bg-cyan-500/15 border border-cyan-400/30 px-4 py-2 text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-xs"
         >
-          3. Phường / Xã / Thị trấn ({wards.length})
+          3. Xã/Phường ({wards.length})
         </Link>
       </div>
 
@@ -235,7 +235,7 @@ export default function WardsCategoryPage() {
               <div className="grid size-9 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <RoomIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Phường / Xã / Thị trấn</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Xã/Phường</h2>
             </div>
           </div>
 
@@ -245,7 +245,7 @@ export default function WardsCategoryPage() {
               className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
             >
               <PlusIcon size={16} />
-              <span>Thêm Phường / Xã</span>
+              <span>Thêm Xã/Phường</span>
             </button>
           )}
         </div>
@@ -254,7 +254,7 @@ export default function WardsCategoryPage() {
         <div className="px-6 pt-4 pb-2 flex flex-wrap items-center gap-3 bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-white/5">
           <div className="flex items-center gap-2">
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-              Tỉnh / TP:
+              Tỉnh/TP:
             </label>
             <select
               value={selectedProvinceId}
@@ -264,7 +264,7 @@ export default function WardsCategoryPage() {
               }}
               className="rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500"
             >
-              <option value="">-- Tất cả Tỉnh / TP --</option>
+              <option value="">-- Tất cả Tỉnh/TP --</option>
               {provinces.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.provinceName}
@@ -275,14 +275,14 @@ export default function WardsCategoryPage() {
 
           <div className="flex items-center gap-2">
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-              Quận / Huyện:
+              Quận/Huyện:
             </label>
             <select
               value={selectedDistrictId}
               onChange={(e) => handleDistrictFilterChange(e.target.value)}
               className="rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500"
             >
-              <option value="">-- Tất cả Quận / Huyện --</option>
+              <option value="">-- Tất cả Quận/Huyện --</option>
               {districts.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.districtName} ({d.districtCode})
@@ -320,11 +320,11 @@ export default function WardsCategoryPage() {
           <table className="w-full min-w-[750px] text-left text-xs">
             <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th className="px-6 py-4">Mã Phường / Xã</th>
-                <th className="px-6 py-4">Tên Phường / Xã / Thị trấn</th>
+                <th className="px-6 py-4">Mã Xã/Phường</th>
+                <th className="px-6 py-4">Tên Xã/Phường</th>
                 <th className="px-6 py-4">Loại đơn vị</th>
-                <th className="px-6 py-4">Quận / Huyện</th>
-                <th className="px-6 py-4">Tỉnh / Thành phố</th>
+                <th className="px-6 py-4">Quận/Huyện</th>
+                <th className="px-6 py-4">Tỉnh/TP</th>
                 {isAdmin && <th className="px-6 py-4 text-right">Thao tác</th>}
               </tr>
             </thead>
@@ -332,13 +332,13 @@ export default function WardsCategoryPage() {
               {loading ? (
                 <tr>
                   <td colSpan={isAdmin ? 6 : 5} className="px-6 py-10 text-center text-slate-400">
-                    Đang tải dữ liệu Phường / Xã…
+                    Đang tải dữ liệu Xã/Phường…
                   </td>
                 </tr>
               ) : paginatedWards.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? 6 : 5} className="px-6 py-10 text-center text-slate-400">
-                    Chưa có Phường/Xã nào phù hợp.
+                    Chưa có Xã/Phường nào phù hợp.
                   </td>
                 </tr>
               ) : (
@@ -355,11 +355,11 @@ export default function WardsCategoryPage() {
                     <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-400">{ward.provinceName || "—"}</td>
                     {isAdmin && (
                       <td className="px-6 py-4 text-right">
-                        <ActionIcon label="Sửa Phường/Xã" color="blue" onClick={() => setEditing(ward)}>
+                        <ActionIcon label="Sửa Xã/Phường" color="blue" onClick={() => setEditing(ward)}>
                           <path d="M4 16.5V20h3.5L18 9.5 14.5 6 4 16.5Z" />
                           <path d="m13.5 7 3.5 3.5" />
                         </ActionIcon>
-                        <ActionIcon label="Xóa Phường/Xã" color="red" onClick={() => setDeletingWard(ward)}>
+                        <ActionIcon label="Xóa Xã/Phường" color="red" onClick={() => setDeletingWard(ward)}>
                           <path d="M4 7h16" />
                           <path d="M10 11v5M14 11v5M6 7l1-3h10l1 3M7 7l1 13h8l1-13" />
                         </ActionIcon>
@@ -400,9 +400,9 @@ export default function WardsCategoryPage() {
 
       {deletingWard && (
         <ConfirmModal
-          title="Xác nhận xóa Phường / Xã"
+          title="Xác nhận xóa Xã/Phường"
           message={`Bạn có chắc muốn xóa "${deletingWard.wardName}" (${deletingWard.wardCode})?`}
-          confirmLabel="Xóa Phường / Xã"
+          confirmLabel="Xóa Xã/Phường"
           confirmVariant="danger"
           loading={deleting}
           onConfirm={confirmDeleteWard}

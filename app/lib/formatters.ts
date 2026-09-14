@@ -17,3 +17,12 @@ export function formatGpa(score?: number | null): string {
   if (score === null || score === undefined || isNaN(score)) return "-";
   return score.toFixed(2);
 }
+
+export function formatCurrency(amount?: number | null): string {
+  if (amount === null || amount === undefined || isNaN(amount)) return "0 ₫";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+}
+

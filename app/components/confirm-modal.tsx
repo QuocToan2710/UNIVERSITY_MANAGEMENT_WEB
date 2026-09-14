@@ -3,7 +3,8 @@ import { AlertTriangleIcon } from "./icons";
 type ConfirmModalProps = {
   open?: boolean;
   title: string;
-  message: string;
+  message?: string;
+  description?: string;
   confirmLabel?: string;
   confirmText?: string;
   cancelLabel?: string;
@@ -19,6 +20,7 @@ export function ConfirmModal({
   open,
   title,
   message,
+  description,
   confirmLabel,
   confirmText,
   cancelLabel = "Hủy",
@@ -48,7 +50,7 @@ export function ConfirmModal({
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
-            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">{message}</p>
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">{message || description || ""}</p>
           </div>
         </div>
 

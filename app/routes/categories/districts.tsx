@@ -174,46 +174,46 @@ export default function DistrictsCategoryPage() {
         "Danh_Sach_Quan_Huyen",
         "QuanHuyen",
         [
-          { key: "districtCode", header: "Mã Quận / Huyện" },
-          { key: "districtName", header: "Tên Quận / Huyện / TP" },
+          { key: "districtCode", header: "Mã Quận/Huyện" },
+          { key: "districtName", header: "Tên Quận/Huyện" },
           { key: "districtType", header: "Loại đơn vị" },
-          { key: "provinceName", header: "Tỉnh / TP trực thuộc" },
+          { key: "provinceName", header: "Tỉnh/TP trực thuộc" },
         ]
       );
     } catch {
-      alert("Không thể xuất danh sách Quận / Huyện.");
+      alert("Không thể xuất danh sách Quận/Huyện.");
     } finally {
       setExporting(false);
     }
   }
 
   const filterFields: FilterField[] = [
-    { key: "districtCode", label: "Mã Quận / Huyện", placeholder: "VD: 318, 005..." },
-    { key: "districtName", label: "Tên Quận / Huyện", placeholder: "VD: Thủy Nguyên..." },
+    { key: "districtCode", label: "Mã Quận/Huyện", placeholder: "VD: 318, 005..." },
+    { key: "districtName", label: "Tên Quận/Huyện", placeholder: "VD: Thủy Nguyên..." },
     { key: "districtType", label: "Loại đơn vị", placeholder: "VD: Quận, Huyện, TP..." },
   ];
 
   return (
-    <AppShell title="Danh mục Quận / Huyện / TP trực thuộc" description="Quản lý danh sách các Quận, Huyện, Thị xã, Thành phố trực thuộc tỉnh và TW.">
+    <AppShell title="Danh mục Quận/Huyện" description="">
       {/* Navigation Tabs */}
       <div className="mb-6 flex gap-2 border-b border-slate-200 dark:border-white/10 pb-3">
         <Link
           to="/categories/provinces"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
         >
-          1. Tỉnh / Thành phố
+          1. Tỉnh/TP
         </Link>
         <Link
           to="/categories/districts"
           className="rounded-xl bg-cyan-500/15 border border-cyan-400/30 px-4 py-2 text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-xs"
         >
-          2. Quận / Huyện / TP trực thuộc ({districts.length})
+          2. Quận/Huyện ({districts.length})
         </Link>
         <Link
           to="/categories/wards"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
         >
-          3. Phường / Xã / Thị trấn
+          3. Xã/Phường
         </Link>
       </div>
 
@@ -225,7 +225,7 @@ export default function DistrictsCategoryPage() {
               <div className="grid size-9 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <RoomIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Quận / Huyện / TP</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Quận/Huyện</h2>
             </div>
           </div>
 
@@ -235,7 +235,7 @@ export default function DistrictsCategoryPage() {
               className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
             >
               <PlusIcon size={16} />
-              <span>Thêm Quận / Huyện / TP</span>
+              <span>Thêm Quận/Huyện</span>
             </button>
           )}
         </div>
@@ -243,14 +243,14 @@ export default function DistrictsCategoryPage() {
         {/* Province Quick Filter Bar */}
         <div className="px-6 pt-4 pb-2 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-white/5">
           <label className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-            Lọc theo Tỉnh / TP:
+            Lọc theo Tỉnh/TP:
           </label>
           <select
             value={selectedProvinceId}
             onChange={(e) => handleProvinceFilterChange(e.target.value)}
             className="rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-cyan-500"
           >
-            <option value="">-- Tất cả 63 Tỉnh / Thành phố --</option>
+            <option value="">-- Tất cả Tỉnh/TP --</option>
             {provinces.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.provinceName} ({p.provinceCode})
@@ -262,7 +262,7 @@ export default function DistrictsCategoryPage() {
               onClick={() => handleProvinceFilterChange("")}
               className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
             >
-              Xóa bộ lọc Tỉnh
+              Xóa bộ lọc Tỉnh/TP
             </button>
           )}
         </div>
@@ -286,11 +286,11 @@ export default function DistrictsCategoryPage() {
           <table className="w-full min-w-[700px] text-left text-xs">
             <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th className="px-6 py-4">Mã Quận / Huyện</th>
-                <th className="px-6 py-4">Tên Quận / Huyện / TP</th>
+                <th className="px-6 py-4">Mã Quận/Huyện</th>
+                <th className="px-6 py-4">Tên Quận/Huyện</th>
                 <th className="px-6 py-4">Loại đơn vị</th>
-                <th className="px-6 py-4">Tỉnh / TP trực thuộc</th>
-                <th className="px-6 py-4">Phường / Xã trực thuộc</th>
+                <th className="px-6 py-4">Tỉnh/TP trực thuộc</th>
+                <th className="px-6 py-4">Xã/Phường trực thuộc</th>
                 {isAdmin && <th className="px-6 py-4 text-right">Thao tác</th>}
               </tr>
             </thead>
@@ -298,7 +298,7 @@ export default function DistrictsCategoryPage() {
               {loading ? (
                 <tr>
                   <td colSpan={isAdmin ? 6 : 5} className="px-6 py-10 text-center text-slate-400">
-                    Đang tải dữ liệu Quận / Huyện…
+                    Đang tải dữ liệu Quận/Huyện…
                   </td>
                 </tr>
               ) : paginatedDistricts.length === 0 ? (
@@ -323,7 +323,7 @@ export default function DistrictsCategoryPage() {
                         to={`/categories/wards?districtId=${district.id}`}
                         className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
                       >
-                        <span>Xem danh sách Phường/Xã ➔</span>
+                        <span>Xem danh sách Xã/Phường ➔</span>
                       </Link>
                     </td>
                     {isAdmin && (
@@ -373,9 +373,9 @@ export default function DistrictsCategoryPage() {
 
       {deletingDistrict && (
         <ConfirmModal
-          title="Xác nhận xóa Quận / Huyện"
-          message={`Bạn có chắc muốn xóa "${deletingDistrict.districtName}" (${deletingDistrict.districtCode})? Các Phường/Xã trực thuộc có thể bị ảnh hưởng.`}
-          confirmLabel="Xóa Quận / Huyện"
+          title="Xác nhận xóa Quận/Huyện"
+          message={`Bạn có chắc muốn xóa "${deletingDistrict.districtName}" (${deletingDistrict.districtCode})? Các Xã/Phường trực thuộc có thể bị ảnh hưởng.`}
+          confirmLabel="Xóa Quận/Huyện"
           confirmVariant="danger"
           loading={deleting}
           onConfirm={confirmDeleteDistrict}

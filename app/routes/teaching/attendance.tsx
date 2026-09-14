@@ -604,7 +604,7 @@ export default function TeachingAttendance() {
   return (
     <AppShell
       title="Điểm danh & Chuyên cần"
-      description="Quản lý các buổi học, điểm danh sinh viên và theo dõi điều kiện chuyên cần"
+      description=""
     >
       <div className="space-y-6">
         {/* Top Alerts */}
@@ -917,7 +917,7 @@ export default function TeachingAttendance() {
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Chủ đề bài giảng</label>
                 <input
                   type="text"
-                  placeholder="Ví dụ: Bài 5 - Thiết kế cơ sở dữ liệu"
+                  
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                   value={sessionTopic}
                   onChange={(e) => setSessionTopic(e.target.value)}
@@ -927,7 +927,7 @@ export default function TeachingAttendance() {
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Ghi chú chung</label>
                 <input
                   type="text"
-                  placeholder="Ghi chú buổi học..."
+                  
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                   value={sessionNote}
                   onChange={(e) => setSessionNote(e.target.value)}
@@ -1171,7 +1171,7 @@ export default function TeachingAttendance() {
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phòng học</label>
                   <input
                     type="text"
-                    placeholder="Ví dụ: A1-302"
+                    
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     value={formSessionRoom}
                     onChange={(e) => setFormSessionRoom(e.target.value)}
@@ -1194,7 +1194,7 @@ export default function TeachingAttendance() {
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Chủ đề bài học</label>
                 <input
                   type="text"
-                  placeholder="Ví dụ: Bài 4 - Ôn tập giữa kỳ"
+                  
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                   value={formSessionTopic}
                   onChange={(e) => setFormSessionTopic(e.target.value)}

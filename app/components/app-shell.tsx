@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
 import { apiRequest } from "../lib/api";
 import { clearToken, getCachedUser, getToken, isAuthenticated, setCachedUser } from "../lib/auth";
+import { canAccessNavItem, hasPermission, isAdmin as checkIsAdmin } from "../lib/permission";
+import { ForbiddenState } from "./forbidden-state";
 import type { User } from "../types/management";
 import type { AppNotification, NotificationSummary } from "../types/notification";
 import { notificationService } from "../services/notification.service";
@@ -34,14 +36,16 @@ import {
 
 type AppShellProps = {
   title: string;
-  description: string;
+  description?: string;
   children: React.ReactNode;
 };
 
 type SubNavItem = {
   to: string;
   label: string;
-  allowedRoles: string[];
+  allowedRoles?: string[];
+  requiredEndpoint?: string;
+  requiredMethod?: "GET" | "POST" | "PUT" | "DELETE" | "*";
 };
 
 type NavItem = {
@@ -49,72 +53,69 @@ type NavItem = {
   label: string;
   Icon: React.ComponentType<{ size?: number; className?: string }>;
   end?: boolean;
-  allowedRoles: string[];
+  allowedRoles?: string[];
+  requiredEndpoint?: string;
+  requiredMethod?: "GET" | "POST" | "PUT" | "DELETE" | "*";
   subItems?: SubNavItem[];
 };
 
 const allNavigation: NavItem[] = [
-  { to: "/", label: "Tổng quan", Icon: DashboardIcon, end: true, allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "USER"] },
+  { to: "/", label: "Tổng quan", Icon: DashboardIcon, end: true },
   {
     label: "Lịch",
     Icon: ScheduleIcon,
-    allowedRoles: ["ADMIN", "TEACHER", "STUDENT"],
     subItems: [
-      { to: "/schedule/timetable", label: "Thời khóa biểu", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
-      { to: "/schedule/class", label: "Lịch học", allowedRoles: ["ADMIN", "TEACHER"] },
-      { to: "/schedule/exam", label: "Lịch thi", allowedRoles: ["ADMIN", "TEACHER"] },
-      { to: "/schedule/teaching", label: "Lịch dạy", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/schedule/timetable", label: "Thời khóa biểu", requiredEndpoint: "/schedules/**", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+      { to: "/schedule/class", label: "Lịch học", requiredEndpoint: "/schedules/**", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/schedule/exam", label: "Lịch thi", requiredEndpoint: "/exam-schedules/**", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/schedule/teaching", label: "Lịch dạy", requiredEndpoint: "/teaching-schedules/**", allowedRoles: ["ADMIN", "TEACHER"] },
     ],
   },
-  { to: "/class-groups", label: "Lớp học", Icon: ClassGroupIcon, allowedRoles: ["ADMIN"] },
-  { to: "/students", label: "Sinh viên", Icon: StudentIcon, allowedRoles: ["ADMIN", "TEACHER"] },
-  { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, allowedRoles: ["ADMIN"] },
-  { to: "/courses", label: "Môn học", Icon: CourseIcon, allowedRoles: ["ADMIN", "TEACHER"] },
-  { to: "/course-registration", label: "Đăng ký tín chỉ", Icon: BookOpenIcon, allowedRoles: ["ADMIN", "STUDENT"] },
-  { to: "/grades", label: "Quản lý điểm", Icon: GradeIcon, allowedRoles: ["ADMIN", "TEACHER"] },
-  { to: "/transcripts", label: "Bảng điểm", Icon: TranscriptIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
+  { to: "/class-groups", label: "Lớp học", Icon: ClassGroupIcon, requiredEndpoint: "/class-groups/**", allowedRoles: ["ADMIN"] },
+  { to: "/students", label: "Sinh viên", Icon: StudentIcon, requiredEndpoint: "/students/**", allowedRoles: ["ADMIN", "TEACHER"] },
+  { to: "/teachers", label: "Giảng viên", Icon: TeacherIcon, requiredEndpoint: "/teachers/**", allowedRoles: ["ADMIN"] },
+  { to: "/courses", label: "Môn học", Icon: CourseIcon, requiredEndpoint: "/courses/**", allowedRoles: ["ADMIN", "TEACHER"] },
+  { to: "/course-registration", label: "Đăng ký tín chỉ", Icon: BookOpenIcon, requiredEndpoint: "/enrollments/**", allowedRoles: ["ADMIN", "STUDENT"] },
+  { to: "/grades", label: "Quản lý điểm", Icon: GradeIcon, requiredEndpoint: "/grades/**", allowedRoles: ["ADMIN", "TEACHER"] },
+  { to: "/transcripts", label: "Bảng điểm", Icon: TranscriptIcon, requiredEndpoint: "/grades/**", allowedRoles: ["ADMIN", "TEACHER", "STUDENT"] },
   {
     label: "Điểm danh & Chuyên cần",
     Icon: ClipboardCheckIcon,
-    allowedRoles: ["ADMIN", "TEACHER", "STUDENT"],
     subItems: [
-      { to: "/teaching/attendance", label: "Điểm danh học phần", allowedRoles: ["ADMIN", "TEACHER"] },
-      { to: "/student/attendance", label: "Tra cứu chuyên cần", allowedRoles: ["STUDENT"] },
-      { to: "/admin/attendance-reports", label: "Báo cáo cấm thi", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/teaching/attendance", label: "Điểm danh học phần", requiredEndpoint: "/attendance/**", allowedRoles: ["ADMIN", "TEACHER"] },
+      { to: "/student/attendance", label: "Tra cứu chuyên cần", requiredEndpoint: "/attendance/**", allowedRoles: ["STUDENT"] },
+      { to: "/admin/attendance-reports", label: "Báo cáo cấm thi", requiredEndpoint: "/attendance/**", allowedRoles: ["ADMIN", "TEACHER"] },
     ],
   },
   {
     label: "Tài chính",
     Icon: BanknotesIcon,
-    allowedRoles: ["ADMIN", "STUDENT"],
     subItems: [
-      { to: "/finance/tuition", label: "Học phí", allowedRoles: ["ADMIN", "STUDENT"] },
+      { to: "/finance/tuition", label: "Học phí", requiredEndpoint: "/tuition-fees/**", allowedRoles: ["ADMIN", "STUDENT"] },
     ],
   },
-  { to: "/majors", label: "Ngành học", Icon: MajorIcon, allowedRoles: ["ADMIN"] },
+  { to: "/majors", label: "Ngành học", Icon: MajorIcon, requiredEndpoint: "/majors/**", allowedRoles: ["ADMIN"] },
   {
     label: "Quản trị danh mục",
     Icon: RoomIcon,
-    allowedRoles: ["ADMIN"],
     subItems: [
-      { to: "/categories/buildings", label: "Tòa nhà", allowedRoles: ["ADMIN"] },
-      { to: "/categories/floors", label: "Tầng", allowedRoles: ["ADMIN"] },
-      { to: "/categories/rooms", label: "Phòng học", allowedRoles: ["ADMIN"] },
-      { to: "/categories/provinces", label: "Tỉnh / Thành phố", allowedRoles: ["ADMIN"] },
-      { to: "/categories/districts", label: "Quận / Huyện / TP", allowedRoles: ["ADMIN"] },
-      { to: "/categories/wards", label: "Phường / Xã", allowedRoles: ["ADMIN"] },
+      { to: "/categories/buildings", label: "Tòa nhà", requiredEndpoint: "/master-data/**", allowedRoles: ["ADMIN"] },
+      { to: "/categories/floors", label: "Tầng", requiredEndpoint: "/master-data/**", allowedRoles: ["ADMIN"] },
+      { to: "/categories/rooms", label: "Phòng học", requiredEndpoint: "/master-data/**", allowedRoles: ["ADMIN"] },
+      { to: "/categories/provinces", label: "Tỉnh/TP", requiredEndpoint: "/master-data/**", allowedRoles: ["ADMIN"] },
+      { to: "/categories/districts", label: "Quận/Huyện", requiredEndpoint: "/master-data/**", allowedRoles: ["ADMIN"] },
+      { to: "/categories/wards", label: "Xã/Phường", requiredEndpoint: "/master-data/**", allowedRoles: ["ADMIN"] },
     ],
   },
   {
     label: "Quản trị hệ thống",
     Icon: CogIcon,
-    allowedRoles: ["ADMIN"],
     subItems: [
-      { to: "/users", label: "Người dùng", allowedRoles: ["ADMIN"] },
-      { to: "/roles", label: "Vai trò", allowedRoles: ["ADMIN"] },
+      { to: "/users", label: "Người dùng", requiredEndpoint: "/users/**", allowedRoles: ["ADMIN"] },
+      { to: "/roles", label: "Vai trò", requiredEndpoint: "/roles/**", allowedRoles: ["ADMIN"] },
     ],
   },
-  { to: "/notifications", label: "Thông báo", Icon: BellIcon, allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "USER"] },
+  { to: "/notifications", label: "Thông báo", Icon: BellIcon, requiredEndpoint: "/notifications/**" },
 ];
 
 function navClassName({ isActive }: NavLinkRenderProps) {
@@ -354,13 +355,45 @@ export function AppShell({ title, description, children }: AppShellProps) {
   const userRoleNames = rawRoleNames.flatMap((r) => [r, r.replace(/^ROLE_/, "")]);
   const isAdmin = Boolean(user) && (userRoleNames.includes("ADMIN") || userRoleNames.includes("ROLE_ADMIN"));
 
-  const filteredNavigation = allNavigation.filter((item) => {
-    if (isAdmin) return true;
-    if (!user) {
-      return item.allowedRoles.includes("USER");
+  const filteredNavigation = useMemo(() => {
+    return allNavigation
+      .map((item) => {
+        if (item.subItems) {
+          const filteredSubs = item.subItems.filter((sub) => canAccessNavItem(user, sub));
+          if (filteredSubs.length === 0) return null;
+          return { ...item, subItems: filteredSubs };
+        }
+        return canAccessNavItem(user, item) ? item : null;
+      })
+      .filter((item): item is NavItem => item !== null);
+  }, [user]);
+
+  // Find matching navigation item for current path to check authorization
+  const currentRouteItem = useMemo(() => {
+    for (const item of allNavigation) {
+      if (item.subItems) {
+        for (const sub of item.subItems) {
+          if (location.pathname === sub.to || (sub.to !== "/" && location.pathname.startsWith(sub.to))) {
+            return sub;
+          }
+        }
+      } else if (item.to) {
+        if (item.to === "/" && location.pathname === "/") {
+          return item;
+        }
+        if (item.to !== "/" && (location.pathname === item.to || location.pathname.startsWith(item.to))) {
+          return item;
+        }
+      }
     }
-    return item.allowedRoles.some((role) => userRoleNames.includes(role));
-  });
+    return null;
+  }, [location.pathname]);
+
+  const isCurrentRouteAuthorized = useMemo(() => {
+    if (!currentRouteItem) return true;
+    if (!user && isAuthenticated()) return true; // While initial user profile is in-flight, avoid flash of 403
+    return canAccessNavItem(user, currentRouteItem);
+  }, [user, currentRouteItem]);
 
   const displayName = user?.fullName || (user ? "Người dùng" : "Đang tải...");
   const primaryRoleCode = (userRoleNames[0] || (user ? "USER" : "")).toUpperCase();
@@ -440,16 +473,6 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 setExpandedMenus((prev) => ({ ...prev, [item.label]: !isExpanded }));
               };
 
-              const filteredSubItems = item.subItems.filter((sub) => {
-                if (isAdmin) return true;
-                if (!user) {
-                  return sub.allowedRoles.includes("USER");
-                }
-                return sub.allowedRoles.some((role) => userRoleNames.includes(role));
-              });
-
-              if (filteredSubItems.length === 0) return null;
-
               return (
                 <div key={item.label} className="space-y-1">
                   <button
@@ -481,7 +504,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   {/* Sub-menu Dropdown Items right underneath */}
                   {isExpanded && (
                     <div className="space-y-1 pt-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
-                      {filteredSubItems.map((sub) => (
+                      {item.subItems.map((sub) => (
                         <NavLink key={sub.to} to={sub.to} preventScrollReset className={subNavClassName}>
                           {({ isActive }) => (
                             <>
@@ -673,60 +696,30 @@ export function AppShell({ title, description, children }: AppShellProps) {
               )}
             </div>
 
-            {/* Cyberpunk Glass Capsule Profile Widget */}
+            {/* User Profile Avatar Widget */}
             <div ref={profileRef} className="relative border-l border-slate-200 dark:border-white/10 pl-3">
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
                 aria-expanded={profileOpen}
                 aria-haspopup="menu"
-                className={`group relative flex items-center gap-3 rounded-2xl border p-1.5 pr-3.5 text-left transition-all duration-300 cursor-pointer backdrop-blur-xl ${
+                title={displayName}
+                aria-label="Tài khoản người dùng"
+                className={`group relative grid size-10 place-items-center rounded-xl border transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
                   profileOpen
-                    ? "border-cyan-500 dark:border-cyan-400/60 bg-cyan-50/80 dark:bg-slate-900/95 shadow-[0_0_20px_rgba(34,211,238,0.25)] ring-2 ring-cyan-400/20"
-                    : "border-slate-200 dark:border-white/15 bg-white/80 dark:bg-slate-900/70 hover:border-cyan-500 hover:bg-slate-100 dark:hover:border-cyan-400/50 dark:hover:bg-slate-800/80 dark:bg-slate-900/90 shadow-sm"
+                    ? "border-cyan-500 dark:border-cyan-400/60 bg-cyan-50/80 dark:bg-slate-800 ring-2 ring-cyan-400/20 shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+                    : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/60 hover:border-cyan-400"
                 }`}
               >
-                {/* 3D Gradient Avatar with Pulsing Status Indicator */}
+                {/* Avatar with Status Indicator */}
                 <div className="relative">
                   <div
-                    className={`grid size-9 place-items-center rounded-xl bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-white ${roleStyles.glow} transition-transform duration-300 group-hover:scale-105`}
+                    className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br ${roleStyles.avatar} text-xs font-black text-white ${roleStyles.glow}`}
                   >
                     {initials}
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-slate-950 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                  <span className="absolute -bottom-1 -right-1 size-2.5 rounded-full border-2 border-white dark:border-slate-950 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                 </div>
-
-                {/* User Identity Info */}
-                <div className="hidden text-xs sm:block">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-white transition-colors">
-                      {displayName}
-                    </p>
-                  </div>
-                  <div className="mt-0.5 flex items-center gap-1.5">
-                    <span
-                      className={`rounded-md border px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider ${roleStyles.badge}`}
-                    >
-                      {roleStyles.label}
-                    </span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                      @{user?.username || "..."}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Animated Chevron */}
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`hidden size-4 transition-transform duration-300 sm:block ${
-                    profileOpen ? "rotate-180 text-cyan-600 dark:text-cyan-300" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
               </button>
 
               {/* Rich Profile Dropdown Menu */}
@@ -884,11 +877,22 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
         {/* Page Content View */}
         <section className="mx-auto max-w-7xl px-6 py-8 md:px-8">
-          <div className="mb-8">
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">{title}</h1>
-            <p className="mt-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">{description}</p>
-          </div>
-          {children}
+          {!isCurrentRouteAuthorized ? (
+            <ForbiddenState
+              requiredEndpoint={currentRouteItem?.requiredEndpoint}
+              requiredRole={currentRouteItem?.allowedRoles?.[0]}
+            />
+          ) : (
+            <>
+              <div className="mb-8">
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">{title}</h1>
+                {description ? (
+                  <p className="mt-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">{description}</p>
+                ) : null}
+              </div>
+              {children}
+            </>
+          )}
         </section>
       </main>
 

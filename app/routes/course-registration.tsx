@@ -79,7 +79,7 @@ export default function CourseRegistration() {
       setMyEnrollments(myEnr || []);
       setStudents(stuList || []);
       if (stuList && stuList.length > 0 && selectedStudentId === "") {
-        setSelectedStudentId(stuList[0].id);
+        setSelectedStudentId(Number(stuList[0].id));
       }
     } catch (reason: any) {
       const err = reason as ApiError;
@@ -171,7 +171,7 @@ export default function CourseRegistration() {
   return (
     <AppShell
       title="Đăng ký học phần"
-      description="Đăng ký môn học, kiểm tra thời khóa biểu và theo dõi học phần đã đăng ký."
+      description=""
     >
       <div className="space-y-6">
         {/* Main Card Container */}
@@ -186,9 +186,6 @@ export default function CourseRegistration() {
                 <h2 className="font-bold text-lg text-slate-900 dark:text-white">
                   Cổng Đăng Ký Học Phần
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Sinh viên chọn lớp học phần phù hợp với lộ trình đào tạo và kiểm tra sĩ số lớp.
-                </p>
               </div>
             </div>
 

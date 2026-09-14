@@ -83,7 +83,7 @@ export default function StudentAttendance() {
   return (
     <AppShell
       title="Tra cứu Chuyên cần & Điểm danh"
-      description="Theo dõi chi tiết số buổi tham gia lớp, tỷ lệ vắng và điều kiện dự thi các môn học"
+      description=""
     >
       <div className="space-y-6">
         {/* Error Notification */}

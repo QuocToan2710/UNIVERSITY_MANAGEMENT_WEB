@@ -79,7 +79,7 @@ export function UserForm({ user, onClose, onSaved }: UserFormProps) {
             value={form.username}
             onChange={(v) => update("username", v)}
             required
-            placeholder="Min 6 ký tự"
+            
           />
           <Field label="Họ và tên" value={form.fullName} onChange={(v) => update("fullName", v)} required />
           <Field label="Email liên hệ" type="email" value={form.email} onChange={(v) => update("email", v)} required />
@@ -91,7 +91,7 @@ export function UserForm({ user, onClose, onSaved }: UserFormProps) {
               value={form.password || ""}
               onChange={(v) => update("password", v)}
               required
-              placeholder="Min 5 ký tự"
+              
             />
           )}
         </div>

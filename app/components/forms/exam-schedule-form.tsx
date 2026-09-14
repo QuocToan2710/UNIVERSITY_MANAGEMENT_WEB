@@ -103,8 +103,8 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã ca thi *" value={form.examCode} onChange={(v) => update("examCode", v)} required placeholder="VD: EXAM_JAVA01_HK1" />
-          <Field label="Tên môn / Kỳ thi *" value={form.name} onChange={(v) => update("name", v)} required placeholder="VD: Thi kết thúc HP Lập trình Java" />
+          <Field label="Mã ca thi *" value={form.examCode} onChange={(v) => update("examCode", v)} required />
+          <Field label="Tên môn / Kỳ thi *" value={form.name} onChange={(v) => update("name", v)} required />
 
           {/* Chọn Môn học liên kết */}
           <div className="sm:col-span-2">
@@ -115,7 +115,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
                 onChange={(e) => update("subjectId", e.target.value)}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
-                <option value="">-- Chọn môn học --</option>
+                <option value=""></option>
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} ({s.subjectCode})
@@ -136,7 +136,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
                 onChange={(e) => update("room", e.target.value)}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
-                <option value="">-- Chọn phòng thi --</option>
+                <option value=""></option>
                 {rooms.map((r) => (
                   <option key={r.value} value={r.value}>
                     {r.label}
@@ -145,7 +145,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
               </select>
             </label>
           ) : (
-            <Field label="Phòng thi *" value={form.room} onChange={(v) => update("room", v)} required placeholder="VD: Phòng A2-402" />
+            <Field label="Phòng thi *" value={form.room} onChange={(v) => update("room", v)} required />
           )}
 
           <Field label="Giờ bắt đầu *" type="time" value={form.startTime} onChange={(v) => update("startTime", v)} required />

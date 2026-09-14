@@ -109,7 +109,7 @@ export function CourseForm({ course, teachers: initialTeachers, onClose, onSaved
                 }}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-amber-400"
               >
-                <option value="">-- Chọn môn học từ danh mục --</option>
+                <option value=""></option>
                 {subjectList.map((s) => (
                   <option key={s.id} value={s.code}>
                     {s.name} ({s.code})
@@ -159,9 +159,7 @@ export function CourseForm({ course, teachers: initialTeachers, onClose, onSaved
               onChange={(e) => update("teacherId", e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-amber-400"
             >
-              <option value="">
-                -- Chọn giảng viên phụ trách --
-              </option>
+              <option value=""></option>
               {teacherList.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.fullName} ({t.teacherCode})

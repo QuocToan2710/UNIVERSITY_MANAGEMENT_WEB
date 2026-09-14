@@ -239,7 +239,7 @@ export default function Grades() {
   return (
     <AppShell
       title="Quản lý điểm học phần"
-      description="Nhập điểm thành phần theo hệ số động, theo dõi phổ điểm và chốt nộp bảng điểm."
+      description=""
     >
       {/* Alert Messages */}
       {error && (
@@ -257,7 +257,7 @@ export default function Grades() {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-6 backdrop-blur-xl shadow-sm">
         <div className="flex-1">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-            Chọn Lớp Học Phần Cần Nhập Điểm
+            Lớp Học Phần
           </label>
           <div className="flex flex-wrap items-center gap-3">
             {classes.length === 0 ? (

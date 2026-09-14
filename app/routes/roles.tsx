@@ -318,7 +318,7 @@ export default function RolesPage() {
   return (
     <AppShell
       title="Quản lý Vai trò & Phân quyền"
-      description="Cấu hình nhóm quyền hạn, vai trò truy cập API và bảo mật chức năng toàn trường."
+      description=""
     >
       <div className="space-y-6">
         {/* KPI Stats Overview */}
@@ -534,7 +534,7 @@ export default function RolesPage() {
                       <input
                         type="text"
                         required
-                        placeholder="VD: ACCOUNTANT, MANAGER..."
+                        
                         value={formRoleCode}
                         onChange={(e) => setFormRoleCode(e.target.value.toUpperCase())}
                         className="w-full px-3.5 py-2 text-xs font-mono font-bold uppercase rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
@@ -548,7 +548,7 @@ export default function RolesPage() {
                       <input
                         type="text"
                         required
-                        placeholder="VD: Kế toán viên, Quản lý..."
+                        
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
@@ -561,7 +561,7 @@ export default function RolesPage() {
                       </label>
                       <input
                         type="text"
-                        placeholder="Mô tả phạm vi quyền hạn và trách nhiệm..."
+                        
                         value={formDescription}
                         onChange={(e) => setFormDescription(e.target.value)}
                         className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none"

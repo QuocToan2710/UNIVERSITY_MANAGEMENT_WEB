@@ -1,11 +1,11 @@
 import { apiRequest } from "../lib/api";
 import type {
-  PageResponse,
   RecordPaymentPayload,
   StudentTuitionSummary,
   TuitionDashboardSummary,
   TuitionStatus,
 } from "../types/tuition";
+import type { PageResponse } from "../types/response";
 
 export interface PageResponseData<T> {
   currentPage: number;

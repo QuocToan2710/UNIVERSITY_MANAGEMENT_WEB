@@ -129,7 +129,7 @@ export function ScheduleForm({ schedule, onClose, onSaved }: ScheduleFormProps) 
               onChange={(e) => update("courseClassId", e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value="">-- Chọn lớp học phần --</option>
+              <option value=""></option>
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.courseCode} - {c.courseName}
@@ -147,7 +147,7 @@ export function ScheduleForm({ schedule, onClose, onSaved }: ScheduleFormProps) 
               onChange={(e) => update("teacherId", e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value="">-- Chọn giảng viên --</option>
+              <option value=""></option>
               {teachers.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.teacherCode} - {t.fullName}
@@ -182,7 +182,7 @@ export function ScheduleForm({ schedule, onClose, onSaved }: ScheduleFormProps) 
                 onChange={(e) => update("room", e.target.value)}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
               >
-                <option value="">-- Chọn phòng học --</option>
+                <option value=""></option>
                 {rooms.map((r) => (
                   <option key={r.value} value={r.value}>
                     {r.label}
@@ -191,7 +191,7 @@ export function ScheduleForm({ schedule, onClose, onSaved }: ScheduleFormProps) 
               </select>
             </label>
           ) : (
-            <Field label="Phòng học" value={form.room} onChange={(v) => update("room", v)} placeholder="VD: A1.101" />
+            <Field label="Phòng học" value={form.room} onChange={(v) => update("room", v)} />
           )}
 
           {/* Giờ bắt đầu */}
@@ -238,7 +238,7 @@ export function ScheduleForm({ schedule, onClose, onSaved }: ScheduleFormProps) 
             <input
               value={form.note || ""}
               onChange={(e) => update("note", e.target.value)}
-              placeholder="Ghi chú thêm (nếu có)"
+              
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </label>

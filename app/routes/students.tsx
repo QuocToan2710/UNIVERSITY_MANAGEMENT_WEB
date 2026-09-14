@@ -134,7 +134,7 @@ export default function Students() {
   }
 
   return (
-    <AppShell title="Quản lý Sinh viên" description="Danh sách hồ sơ học viên trong hệ thống đào tạo EduManage.">
+    <AppShell title="Quản lý Sinh viên" description="">
       <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-2xl backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Table Header Controls */}
         <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -214,7 +214,6 @@ export default function Students() {
                     <td className="max-w-[280px] px-6 py-4">
                       {student.fullAddress || student.address ? (
                         <div className="flex items-start gap-1.5" title={student.fullAddress || student.address}>
-                          <span className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0 text-xs">📍</span>
                           <span className="font-medium text-slate-700 dark:text-slate-300 line-clamp-2 text-xs leading-relaxed">
                             {student.fullAddress || student.address}
                           </span>

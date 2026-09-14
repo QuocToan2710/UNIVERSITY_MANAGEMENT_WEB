@@ -76,7 +76,7 @@ export default function ProvincesCategoryPage() {
     } catch (reason) {
       const err = reason as ApiError;
       if (err.status === 401) navigate("/login");
-      else setError(err.message || "Không thể tải danh sách Tỉnh / Thành phố.");
+      else setError(err.message || "Không thể tải danh sách Tỉnh/TP.");
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ export default function ProvincesCategoryPage() {
       setDeletingProvince(null);
       await loadProvinces();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Không thể xóa Tỉnh/Thành phố.");
+      setError(reason instanceof Error ? reason.message : "Không thể xóa Tỉnh/TP.");
     } finally {
       setDeleting(false);
     }
@@ -151,48 +151,48 @@ export default function ProvincesCategoryPage() {
 
       exportToExcel(
         exportData,
-        "Danh_Sach_Tinh_Thanh_Pho",
-        "TinhThanh",
+        "Danh_Sach_Tinh_TP",
+        "TinhTP",
         [
-          { key: "provinceCode", header: "Mã Tỉnh / TP" },
-          { key: "provinceName", header: "Tên Tỉnh / Thành phố" },
+          { key: "provinceCode", header: "Mã Tỉnh/TP" },
+          { key: "provinceName", header: "Tên Tỉnh/TP" },
           { key: "provinceType", header: "Loại đơn vị" },
         ]
       );
     } catch {
-      alert("Không thể xuất danh sách Tỉnh / Thành phố.");
+      alert("Không thể xuất danh sách Tỉnh/TP.");
     } finally {
       setExporting(false);
     }
   }
 
   const filterFields: FilterField[] = [
-    { key: "provinceCode", label: "Mã Tỉnh / TP", placeholder: "VD: 31, 01..." },
-    { key: "provinceName", label: "Tên Tỉnh / TP", placeholder: "VD: Hải Phòng..." },
+    { key: "provinceCode", label: "Mã Tỉnh/TP", placeholder: "VD: 31, 01..." },
+    { key: "provinceName", label: "Tên Tỉnh/TP", placeholder: "VD: Hải Phòng..." },
     { key: "provinceType", label: "Loại đơn vị", placeholder: "VD: Thành phố Trung ương..." },
   ];
 
   return (
-    <AppShell title="Danh mục Tỉnh / Thành phố" description="Quản lý danh sách các tỉnh, thành phố trực thuộc Trung ương trong hệ thống.">
+    <AppShell title="Danh mục Tỉnh/TP" description="">
       {/* Navigation Tabs for Administrative Units */}
       <div className="mb-6 flex gap-2 border-b border-slate-200 dark:border-white/10 pb-3">
         <Link
           to="/categories/provinces"
           className="rounded-xl bg-cyan-500/15 border border-cyan-400/30 px-4 py-2 text-xs font-bold text-cyan-700 dark:text-cyan-300 shadow-xs"
         >
-          1. Tỉnh / Thành phố ({provinces.length})
+          1. Tỉnh/TP ({provinces.length})
         </Link>
         <Link
           to="/categories/districts"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
         >
-          2. Quận / Huyện / TP trực thuộc
+          2. Quận/Huyện
         </Link>
         <Link
           to="/categories/wards"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
         >
-          3. Phường / Xã / Thị trấn
+          3. Xã/Phường
         </Link>
       </div>
 
@@ -204,7 +204,7 @@ export default function ProvincesCategoryPage() {
               <div className="grid size-9 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
                 <RoomIcon size={18} />
               </div>
-              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Tỉnh / Thành phố</h2>
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Danh sách Tỉnh/TP</h2>
             </div>
           </div>
 
@@ -214,7 +214,7 @@ export default function ProvincesCategoryPage() {
               className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-5 py-3 text-xs font-semibold text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
             >
               <PlusIcon size={16} />
-              <span>Thêm Tỉnh / Thành phố</span>
+              <span>Thêm Tỉnh/TP</span>
             </button>
           )}
         </div>
@@ -238,10 +238,10 @@ export default function ProvincesCategoryPage() {
           <table className="w-full min-w-[650px] text-left text-xs">
             <thead className="bg-slate-100 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-cyan-300 border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th className="px-6 py-4">Mã Tỉnh / TP</th>
-                <th className="px-6 py-4">Tên Tỉnh / Thành phố</th>
+                <th className="px-6 py-4">Mã Tỉnh/TP</th>
+                <th className="px-6 py-4">Tên Tỉnh/TP</th>
                 <th className="px-6 py-4">Loại đơn vị</th>
-                <th className="px-6 py-4">Quận / Huyện trực thuộc</th>
+                <th className="px-6 py-4">Quận/Huyện trực thuộc</th>
                 {isAdmin && <th className="px-6 py-4 text-right">Thao tác</th>}
               </tr>
             </thead>
@@ -249,13 +249,13 @@ export default function ProvincesCategoryPage() {
               {loading ? (
                 <tr>
                   <td colSpan={isAdmin ? 5 : 4} className="px-6 py-10 text-center text-slate-400">
-                    Đang tải dữ liệu Tỉnh / Thành phố…
+                    Đang tải dữ liệu Tỉnh/TP…
                   </td>
                 </tr>
               ) : paginatedProvinces.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? 5 : 4} className="px-6 py-10 text-center text-slate-400">
-                    Chưa có Tỉnh/Thành phố nào phù hợp.
+                    Chưa có Tỉnh/TP nào phù hợp.
                   </td>
                 </tr>
               ) : (
@@ -322,9 +322,9 @@ export default function ProvincesCategoryPage() {
 
       {deletingProvince && (
         <ConfirmModal
-          title="Xác nhận xóa Tỉnh / Thành phố"
+          title="Xác nhận xóa Tỉnh/TP"
           message={`Bạn có chắc muốn xóa "${deletingProvince.provinceName}" (${deletingProvince.provinceCode})? Các Quận/Huyện trực thuộc có thể bị ảnh hưởng.`}
-          confirmLabel="Xóa Tỉnh / TP"
+          confirmLabel="Xóa Tỉnh/TP"
           confirmVariant="danger"
           loading={deleting}
           onConfirm={confirmDeleteProvince}

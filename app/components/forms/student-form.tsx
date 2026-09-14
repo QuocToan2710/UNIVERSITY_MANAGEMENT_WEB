@@ -35,7 +35,8 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
   );
 
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [classGroups, setClassGroups] = useState<{ id: string | number; name: string }[]>([]);
+  const [classGroups, setClassGroups] = useState<{ id: string | number; name: string; majorId?: string | number }[]>([]);
+  const [loadingClassGroups, setLoadingClassGroups] = useState(false);
   const [majors, setMajors] = useState<{ id: string | number; name: string }[]>([]);
   const [statuses, setStatuses] = useState<{ value: string; label: string }[]>([]);
   const [error, setError] = useState("");
@@ -77,17 +78,8 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
     }
   }, [student?.id]);
 
+  // Load Majors & Statuses master data on mount
   useEffect(() => {
-    // Load Class Groups master data
-    void fetchMasterData("CLASS_GROUP")
-      .then((opts) => {
-        setClassGroups(opts.map((o) => ({ id: o.value, name: o.label })));
-      })
-      .catch(async () => {
-        const list = await apiListRequest<ClassGroup>("/class-groups/all").catch(() => []);
-        setClassGroups(list.map((cg) => ({ id: cg.id, name: `${cg.className} (${cg.classCode})` })));
-      });
-
     // Load Majors master data
     void fetchMasterData("MAJOR")
       .then((opts) => setMajors(opts.map((o) => ({ id: o.value, name: o.label }))))
@@ -109,8 +101,45 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
       );
   }, []);
 
+  // Fetch class groups specifically for the selected major using CLASS_GROUP_BY_MAJOR
+  useEffect(() => {
+    if (!form.majorId) {
+      setClassGroups([]);
+      return;
+    }
+    setLoadingClassGroups(true);
+    fetchMasterData("CLASS_GROUP_BY_MAJOR", { cascader: String(form.majorId) })
+      .then((opts) => {
+        setClassGroups(opts.map((o) => ({ id: o.value, name: o.label, majorId: form.majorId })));
+      })
+      .catch(async () => {
+        // Fallback: load all and filter by major
+        const list = await apiListRequest<ClassGroup>("/class-groups/all").catch(() => []);
+        const matched = list.filter((cg) => String(cg.majorId) === String(form.majorId));
+        setClassGroups(matched.map((cg) => ({ id: cg.id, name: `${cg.className} (${cg.classCode})`, majorId: cg.majorId })));
+      })
+      .finally(() => {
+        setLoadingClassGroups(false);
+      });
+  }, [form.majorId]);
+
   function update<K extends keyof StudentPayload>(key: K, value: StudentPayload[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function handleMajorChange(newMajorId: string | number) {
+    setForm((prev) => ({
+      ...prev,
+      majorId: newMajorId,
+      classGroupId: "",
+    }));
+  }
+
+  function handleClassGroupChange(newClassGroupId: string | number) {
+    setForm((prev) => ({
+      ...prev,
+      classGroupId: newClassGroupId,
+    }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -156,10 +185,10 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã sinh viên *" value={form.studentCode} onChange={(v) => update("studentCode", v)} required placeholder="VD: SV2025001" />
-          <Field label="Họ và tên *" value={form.fullName} onChange={(v) => update("fullName", v)} required placeholder="VD: Nguyễn Văn A" />
-          <Field label="Email *" type="email" value={form.email} onChange={(v) => update("email", v)} required placeholder="nguyenvana@university.edu.vn" />
-          <Field label="Số điện thoại *" value={form.phoneNumber} onChange={(v) => update("phoneNumber", v)} required placeholder="VD: 0912345678" />
+          <Field label="Mã sinh viên *" value={form.studentCode} onChange={(v) => update("studentCode", v)} required />
+          <Field label="Họ và tên *" value={form.fullName} onChange={(v) => update("fullName", v)} required />
+          <Field label="Email *" type="email" value={form.email} onChange={(v) => update("email", v)} required />
+          <Field label="Số điện thoại *" value={form.phoneNumber} onChange={(v) => update("phoneNumber", v)} required />
           <Field label="Ngày sinh *" type="date" value={form.dob} onChange={(v) => update("dob", v)} required />
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
@@ -176,29 +205,13 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
           </label>
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
-            Lớp sinh hoạt
-            <select
-              value={form.classGroupId || ""}
-              onChange={(e) => update("classGroupId", e.target.value)}
-              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
-            >
-              <option value="">-- Chọn lớp học --</option>
-              {classGroups.map((cg) => (
-                <option key={cg.id} value={cg.id}>
-                  {cg.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
-            Ngành học
+            Ngành học *
             <select
               value={form.majorId || ""}
-              onChange={(e) => update("majorId", e.target.value)}
+              onChange={(e) => handleMajorChange(e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value="">-- Chọn ngành học --</option>
+              <option value=""></option>
               {majors.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
@@ -207,7 +220,23 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
             </select>
           </label>
 
-          <Field label="Năm nhập học" value={form.enrollmentYear || ""} onChange={(v) => update("enrollmentYear", v)} placeholder="VD: 2024" />
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
+            Lớp sinh hoạt
+            <select
+              value={form.classGroupId || ""}
+              onChange={(e) => handleClassGroupChange(e.target.value)}
+              className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
+            >
+              <option value=""></option>
+              {classGroups.map((cg) => (
+                <option key={cg.id} value={cg.id}>
+                  {cg.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <Field label="Năm nhập học" value={form.enrollmentYear || ""} onChange={(v) => update("enrollmentYear", v)} />
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
             Trạng thái
@@ -226,7 +255,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
 
           <div className="sm:col-span-2 pt-2 border-t border-slate-200 dark:border-white/10">
             <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 mb-3">
-              Thông tin Địa chỉ Cư trú (Theo CCCD / VNeID)
+              Thông tin Địa chỉ Cư trú
             </h4>
             <AddressSelector
               provinceId={form.provinceId}

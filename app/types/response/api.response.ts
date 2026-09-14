@@ -37,6 +37,7 @@ export type ComboType =
   | 'COURSE_CLASS'
   | 'TEACHER'
   | 'CLASS_GROUP'
+  | 'CLASS_GROUP_BY_MAJOR'
   | 'DEGREE'
   | 'EXAM_FORMAT'
   | 'ROOM_STATUS'

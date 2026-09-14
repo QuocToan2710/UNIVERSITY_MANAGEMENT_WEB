@@ -74,8 +74,8 @@ export function MajorForm({ major, onClose, onSaved }: MajorFormProps) {
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Mã ngành học *" value={form.majorCode} onChange={(v) => update("majorCode", v)} required placeholder="VD: MJ_KTPM, CNTT" />
-          <Field label="Tên ngành học *" value={form.name} onChange={(v) => update("name", v)} required placeholder="VD: Kỹ thuật Phần mềm" />
+          <Field label="Mã ngành học *" value={form.majorCode} onChange={(v) => update("majorCode", v)} required />
+          <Field label="Tên ngành học *" value={form.name} onChange={(v) => update("name", v)} required />
 
           {/* Khoa trực thuộc */}
           <div className="sm:col-span-2">
@@ -86,7 +86,7 @@ export function MajorForm({ major, onClose, onSaved }: MajorFormProps) {
                 onChange={(e) => update("departmentId", e.target.value)}
                 className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-emerald-400"
               >
-                <option value="" className="bg-white dark:bg-slate-900 text-slate-400">-- Chưa chọn Khoa --</option>
+                <option value=""></option>
                 {departments.map((dept) => (
                   <option key={dept.id} value={dept.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {dept.name} ({dept.departmentCode})
