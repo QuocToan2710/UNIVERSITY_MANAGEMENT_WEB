@@ -748,9 +748,6 @@ export default function TeachingAttendance() {
             <div className="p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2">
               <CalendarIcon size={32} className="text-slate-400 dark:text-slate-600" />
               <div className="text-sm font-medium text-slate-700 dark:text-slate-300">Chưa có buổi học nào</div>
-              <p className="text-xs text-slate-500 max-w-sm">
-                Bấm <strong>"Sinh tự động 15 buổi TKB"</strong> hoặc <strong>"Thêm buổi học"</strong> ở phía trên để bắt đầu.
-              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">

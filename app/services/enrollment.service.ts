@@ -9,11 +9,13 @@ export const enrollmentService = {
   /** Lấy danh sách lớp học phần đang mở đăng ký */
   async getAvailableClasses(
     semester?: string,
-    academicYear?: string
+    academicYear?: string,
+    studentId?: number
   ): Promise<AvailableSubjectClass[]> {
     const params = new URLSearchParams();
     if (semester) params.append("semester", semester);
     if (academicYear) params.append("academicYear", academicYear);
+    if (studentId) params.append("studentId", String(studentId));
     const qs = params.toString();
     return apiRequest<AvailableSubjectClass[]>(
       `/enrollments/available-classes${qs ? `?${qs}` : ""}`
@@ -45,11 +47,13 @@ export const enrollmentService = {
   /** Lấy danh sách môn đã đăng ký của sinh viên hiện tại */
   async getMyRegistrations(
     semester?: string,
-    academicYear?: string
+    academicYear?: string,
+    studentId?: number
   ): Promise<EnrollmentRecord[]> {
     const params = new URLSearchParams();
     if (semester) params.append("semester", semester);
     if (academicYear) params.append("academicYear", academicYear);
+    if (studentId) params.append("studentId", String(studentId));
     const qs = params.toString();
     return apiRequest<EnrollmentRecord[]>(
       `/enrollments/my-registrations${qs ? `?${qs}` : ""}`

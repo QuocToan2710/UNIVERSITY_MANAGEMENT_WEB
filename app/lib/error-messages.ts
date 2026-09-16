@@ -59,6 +59,9 @@ export const ERROR_MESSAGES: Record<string, string> = {
   "error.enrollment.already.exists": "Sinh viên đã đăng ký lớp học phần này trước đó.",
   "error.enrollment.capacity.full": "Lớp học phần đã đủ sĩ số tối đa, không thể đăng ký thêm.",
   "error.enrollment.schedule.conflict": "Trùng lịch học với một môn học khác đã đăng ký.",
+  "error.enrollment.cannot.be.cancelled": "Học phần đã có điểm cuối kỳ hoặc đã hoàn thành, không thể hủy đăng ký.",
+  "error.enrollment.max.credits.exceeded": "Vượt quá số tín chỉ tối đa được phép đăng ký trong một học kỳ.",
+  "error.enrollment.subject.already.registered": "Sinh viên đã đăng ký một lớp học phần khác của môn học này trong cùng học kỳ.",
 
   // === Grades & Examination ===
   "error.grade.locked": "Bảng điểm lớp học phần này đã bị khóa, không thể chỉnh sửa.",

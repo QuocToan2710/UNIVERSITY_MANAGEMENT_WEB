@@ -196,9 +196,6 @@ export default function StudentAttendance() {
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2 shadow-xs">
             <CalendarIcon size={32} className="text-slate-400 dark:text-slate-600" />
             <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">Không có dữ liệu lớp học phần</div>
-            <p className="text-xs text-slate-500 max-w-sm">
-              Bạn chưa đăng ký lớp học phần nào trong học kỳ này hoặc chưa có buổi học được tạo.
-            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

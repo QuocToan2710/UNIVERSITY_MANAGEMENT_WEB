@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
 import { apiRequest } from "../lib/api";
 import { clearToken, getCachedUser, getToken, isAuthenticated, setCachedUser } from "../lib/auth";
-import { canAccessNavItem, hasPermission, isAdmin as checkIsAdmin } from "../lib/permission";
+import { canAccessNavItem } from "../lib/permission";
 import { ForbiddenState } from "./forbidden-state";
 import type { User } from "../types/management";
 import type { AppNotification, NotificationSummary } from "../types/notification";
@@ -30,7 +30,6 @@ import {
   TeacherIcon,
   UsersIcon,
   CogIcon,
-  ShieldCheckIcon,
   ClipboardCheckIcon,
 } from "./icons";
 
@@ -353,7 +352,6 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
   const rawRoleNames = (user?.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
   const userRoleNames = rawRoleNames.flatMap((r) => [r, r.replace(/^ROLE_/, "")]);
-  const isAdmin = Boolean(user) && (userRoleNames.includes("ADMIN") || userRoleNames.includes("ROLE_ADMIN"));
 
   const filteredNavigation = useMemo(() => {
     return allNavigation

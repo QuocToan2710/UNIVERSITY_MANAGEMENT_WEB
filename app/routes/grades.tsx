@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { AppShell } from "../components/app-shell";
 import { ConfirmModal } from "../components/confirm-modal";
+import { StatusBadge } from "../components/status-badge";
 import { apiListRequest, apiRequest, ApiError } from "../lib/api";
 import { getCachedUser } from "../lib/auth";
 import { gradeService } from "../services/grade.service";
-import type { GradeStatus, SubjectClassGradeSummary, GradeItemInput } from "../types/grade";
+import type { SubjectClassGradeSummary, GradeItemInput } from "../types/grade";
 import type { User } from "../types/management";
 import { exportToExcel } from "../lib/excel";
+import { DownloadIcon, GradeIcon, RefreshIcon } from "../components/icons";
 
 type SubjectClassOption = {
   id: number;
@@ -254,12 +256,12 @@ export default function Grades() {
       )}
 
       {/* Class Selector & Actions Header */}
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-6 backdrop-blur-xl shadow-sm">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 shadow-xs">
         <div className="flex-1">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
             Lớp Học Phần
           </label>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             {classes.length === 0 ? (
               <span className="text-xs text-slate-500 font-medium">Chưa có lớp học phần nào trong hệ thống.</span>
             ) : (
@@ -267,7 +269,7 @@ export default function Grades() {
                 value={selectedClassId || ""}
                 onChange={(e) => setSelectedClassId(Number(e.target.value))}
                 disabled={loadingClasses}
-                className="min-w-[280px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+                className="min-w-[280px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition cursor-pointer"
               >
                 {classes.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -278,27 +280,29 @@ export default function Grades() {
             )}
             <button
               onClick={() => selectedClassId && void loadGrades(selectedClassId)}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 transition cursor-pointer"
             >
-              Tải lại
+              <RefreshIcon size={14} className="text-slate-400" />
+              <span>Tải lại</span>
             </button>
           </div>
         </div>
 
         {summary && (
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleExportExcel}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-blue-400/40 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
             >
-              Xuất Excel
+              <DownloadIcon size={14} />
+              <span>Xuất Excel</span>
             </button>
 
             {!isLocked && (
               <button
                 onClick={handleSaveGrades}
                 disabled={saving}
-                className="rounded-xl bg-cyan-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-cyan-500 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                className="rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 px-4 py-2 text-xs font-semibold text-white shadow-xs shadow-blue-500/20 active:scale-95 transition disabled:opacity-50 cursor-pointer"
               >
                 {saving ? "Đang lưu…" : "Lưu bảng điểm"}
               </button>
@@ -317,7 +321,7 @@ export default function Grades() {
                   })
                 }
                 disabled={actionLoading}
-                className="rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-400/50 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-750 transition disabled:opacity-50 cursor-pointer"
               >
                 Chốt nộp điểm
               </button>
@@ -336,7 +340,7 @@ export default function Grades() {
                   })
                 }
                 disabled={actionLoading}
-                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-500 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-400/50 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-750 transition disabled:opacity-50 cursor-pointer"
               >
                 Công bố điểm
               </button>
@@ -355,7 +359,7 @@ export default function Grades() {
                   })
                 }
                 disabled={actionLoading}
-                className="rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-red-500 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/40 transition disabled:opacity-50 cursor-pointer"
               >
                 Khóa sổ
               </button>
@@ -375,81 +379,121 @@ export default function Grades() {
       ) : (
         <>
           {/* Class Overview Banner */}
-          <div className="mt-6 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-6 backdrop-blur-xl shadow-sm">
+          <div className="mt-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                    {summary.subjectName} ({summary.subjectCode})
-                  </h2>
-                  <StatusBadge status={summary.gradeStatus} />
+              <div className="flex items-center gap-3.5">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400">
+                  <GradeIcon size={22} />
                 </div>
-                <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">
-                  Lớp: <span className="font-bold text-cyan-600 dark:text-cyan-400">{summary.subjectClassName} ({summary.subjectClassCode})</span> · Tín chỉ: <span className="font-bold text-slate-900 dark:text-white">{summary.credit}</span> · Giảng viên: <span className="font-bold">{summary.teacherName || "Chưa phân công"}</span>
-                </p>
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                      {summary.subjectName}{" "}
+                      <span className="font-mono text-sm font-semibold text-blue-600 dark:text-blue-400">
+                        ({summary.subjectCode})
+                      </span>
+                    </h2>
+                    <StatusBadge status={summary.gradeStatus} />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Lớp: <span className="font-semibold text-slate-800 dark:text-slate-200">{summary.subjectClassName} ({summary.subjectClassCode})</span> · Tín chỉ: <span className="font-semibold text-slate-800 dark:text-slate-200">{summary.credit}</span> · Giảng viên: <span className="font-semibold text-slate-800 dark:text-slate-200">{summary.teacherName || "Chưa phân công"}</span>
+                  </p>
+                </div>
               </div>
 
-              {/* Dynamic Coefficients Badge */}
-              <div className="rounded-2xl border border-amber-300 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-2.5 text-xs">
-                <span className="font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                  Cấu hình hệ số:
-                </span>
-                <span className="ml-2 font-black text-slate-900 dark:text-white">
+              {/* Dynamic Coefficients Badge - Unified Soft Primary Accent */}
+              <div className="rounded-xl border border-blue-200/70 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/30 px-3.5 py-2 text-xs text-blue-900 dark:text-blue-200">
+                <span className="font-semibold text-blue-700 dark:text-blue-400">Hệ số: </span>
+                <span className="font-mono font-medium">
                   Chuyên cần ({summary.attendanceCoeff}) · Giữa kỳ ({summary.midtermCoeff}) · Cuối kỳ ({summary.finalCoeff})
                 </span>
               </div>
             </div>
 
-            {/* KPI Cards Grid */}
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              <KpiCard label="Sĩ số lớp" value={String(summary.totalStudents)} theme="cyan" />
-              <KpiCard label="Đã có điểm" value={`${summary.gradedStudents} / ${summary.totalStudents}`} theme="violet" />
-              <KpiCard label="Số lượng Đạt" value={`${summary.passedCount}`} detail={`Tỷ lệ: ${summary.gradedStudents > 0 ? Math.round((summary.passedCount / summary.gradedStudents) * 100) : 0}%`} theme="emerald" />
-              <KpiCard label="Không đạt (Rớt)" value={`${summary.failedCount}`} detail={`Tỷ lệ: ${summary.gradedStudents > 0 ? Math.round((summary.failedCount / summary.gradedStudents) * 100) : 0}%`} theme="amber" />
-              <KpiCard label="Điểm TB lớp" value={summary.averageScore !== null && summary.averageScore !== undefined ? String(summary.averageScore) : "—"} theme="rose" />
+            {/* KPI Cards Grid - Single cohesive base with semantic highlights only for Pass/Fail */}
+            <div className="mt-5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
+              <KpiCard label="Sĩ số lớp" value={String(summary.totalStudents)} />
+              <KpiCard label="Đã có điểm" value={`${summary.gradedStudents} / ${summary.totalStudents}`} />
+              <KpiCard
+                label="Số lượng Đạt"
+                value={String(summary.passedCount)}
+                detail={`Tỷ lệ: ${summary.gradedStudents > 0 ? Math.round((summary.passedCount / summary.gradedStudents) * 100) : 0}%`}
+                variant="success"
+              />
+              <KpiCard
+                label="Không đạt (Rớt)"
+                value={String(summary.failedCount)}
+                detail={`Tỷ lệ: ${summary.gradedStudents > 0 ? Math.round((summary.failedCount / summary.gradedStudents) * 100) : 0}%`}
+                variant="danger"
+              />
+              <KpiCard
+                label="Điểm TB lớp"
+                value={summary.averageScore !== null && summary.averageScore !== undefined ? String(summary.averageScore) : "—"}
+              />
             </div>
 
-            {/* Grade Distribution Bar */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                Phổ điểm môn học (Grade Distribution)
+            {/* Grade Distribution Bar - Minimalist with semantic highlights only for A and F */}
+            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">
+                Phổ điểm môn học
               </p>
-              <div className="flex flex-wrap gap-2.5">
-                {Object.entries(summary.gradeDistribution || {}).map(([grade, count]) => (
-                  <div key={grade} className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-3 py-1.5 text-xs">
-                    <span className="font-mono font-black text-slate-900 dark:text-white">{grade}</span>
-                    <span className="rounded-md bg-cyan-100 dark:bg-cyan-500/20 px-1.5 py-0.5 font-bold text-cyan-800 dark:text-cyan-300">
-                      {count} SV
-                    </span>
-                  </div>
-                ))}
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(summary.gradeDistribution || {}).map(([grade, count]) => {
+                  const isF = grade === "F";
+                  const isA = grade === "A";
+                  return (
+                    <div
+                      key={grade}
+                      className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-mono ${
+                        isF
+                          ? "border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400"
+                          : isA
+                          ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400"
+                          : "border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300"
+                      }`}
+                    >
+                      <span className="font-semibold">{grade}:</span>
+                      <span
+                        className={
+                          isF
+                            ? "font-medium text-rose-500"
+                            : isA
+                            ? "font-medium text-emerald-500"
+                            : "font-medium text-slate-500 dark:text-slate-400"
+                        }
+                      >
+                        {count} SV
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* Student Grades Table Grid */}
-          <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 backdrop-blur-xl shadow-sm">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/50 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider">
-                    <th className="py-3.5 px-4 w-12 text-center">STT</th>
-                    <th className="py-3.5 px-4">Mã SV</th>
-                    <th className="py-3.5 px-4">Họ và Tên</th>
-                    <th className="py-3.5 px-4 w-28 text-center">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-850/50 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4 w-12 text-center">STT</th>
+                    <th className="py-3 px-4">Mã SV</th>
+                    <th className="py-3 px-4">Họ và Tên</th>
+                    <th className="py-3 px-4 w-24 text-center">
                       CC ({summary.attendanceCoeff})
                     </th>
-                    <th className="py-3.5 px-4 w-28 text-center">
+                    <th className="py-3 px-4 w-24 text-center">
                       GK ({summary.midtermCoeff})
                     </th>
-                    <th className="py-3.5 px-4 w-28 text-center">
+                    <th className="py-3 px-4 w-24 text-center">
                       CK ({summary.finalCoeff})
                     </th>
-                    <th className="py-3.5 px-4 w-28 text-center">Tổng (Hệ 10)</th>
-                    <th className="py-3.5 px-4 w-20 text-center">Điểm chữ</th>
-                    <th className="py-3.5 px-4 w-20 text-center">Hệ 4</th>
-                    <th className="py-3.5 px-4 w-28 text-center">Kết quả</th>
-                    <th className="py-3.5 px-4">Ghi chú</th>
+                    <th className="py-3 px-4 w-24 text-center">Tổng (Hệ 10)</th>
+                    <th className="py-3 px-4 w-16 text-center">Điểm chữ</th>
+                    <th className="py-3 px-4 w-16 text-center">Hệ 4</th>
+                    <th className="py-3 px-4 w-24 text-center">Kết quả</th>
+                    <th className="py-3 px-4">Ghi chú</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
@@ -493,15 +537,15 @@ export default function Grades() {
                       }
 
                       return (
-                        <tr key={g.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="py-3 px-4 text-center font-bold text-slate-500">{idx + 1}</td>
-                          <td className="py-3 px-4 font-mono font-bold text-cyan-700 dark:text-cyan-300">
+                        <tr key={g.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="py-2.5 px-4 text-center font-medium text-slate-400">{idx + 1}</td>
+                          <td className="py-2.5 px-4 font-mono font-semibold text-blue-600 dark:text-blue-400">
                             {g.studentCode}
                           </td>
-                          <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                          <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-white">
                             {g.studentName}
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-2.5 px-4 text-center">
                             <input
                               type="number"
                               step="0.1"
@@ -511,10 +555,10 @@ export default function Grades() {
                               value={inp.att}
                               onChange={(e) => handleInputChange(g.id, "att", e.target.value)}
                               placeholder="0.0"
-                              className="w-20 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-1.5 px-2 text-center font-mono font-bold text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none disabled:opacity-60"
+                              className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 py-1.5 px-2 text-center font-mono font-semibold text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition disabled:opacity-50"
                             />
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-2.5 px-4 text-center">
                             <input
                               type="number"
                               step="0.1"
@@ -524,10 +568,10 @@ export default function Grades() {
                               value={inp.mid}
                               onChange={(e) => handleInputChange(g.id, "mid", e.target.value)}
                               placeholder="0.0"
-                              className="w-20 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-1.5 px-2 text-center font-mono font-bold text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none disabled:opacity-60"
+                              className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 py-1.5 px-2 text-center font-mono font-semibold text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition disabled:opacity-50"
                             />
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-2.5 px-4 text-center">
                             <input
                               type="number"
                               step="0.1"
@@ -537,26 +581,28 @@ export default function Grades() {
                               value={inp.fin}
                               onChange={(e) => handleInputChange(g.id, "fin", e.target.value)}
                               placeholder="0.0"
-                              className="w-20 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-1.5 px-2 text-center font-mono font-bold text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none disabled:opacity-60"
+                              className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 py-1.5 px-2 text-center font-mono font-semibold text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition disabled:opacity-50"
                             />
                           </td>
-                          <td className="py-3 px-4 text-center font-mono font-black text-sm text-slate-900 dark:text-white">
+                          <td className="py-2.5 px-4 text-center font-mono font-bold text-slate-900 dark:text-white">
                             {previewTotal !== null ? previewTotal : "—"}
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-2.5 px-4 text-center">
                             <GradeLetterBadge letter={previewLetter} />
                           </td>
-                          <td className="py-3 px-4 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-4 text-center font-mono font-medium text-slate-600 dark:text-slate-400">
                             {previewPoint4}
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-2.5 px-4 text-center">
                             {previewTotal !== null ? (
                               previewPassed ? (
-                                <span className="inline-block rounded-full bg-emerald-100 dark:bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                  <span className="size-1.5 rounded-full bg-emerald-500" />
                                   Đạt
                                 </span>
                               ) : (
-                                <span className="inline-block rounded-full bg-red-100 dark:bg-red-500/20 px-2.5 py-0.5 text-[11px] font-bold text-red-800 dark:text-red-300">
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                                  <span className="size-1.5 rounded-full bg-rose-500" />
                                   Rớt
                                 </span>
                               )
@@ -564,14 +610,14 @@ export default function Grades() {
                               <span className="text-slate-400">—</span>
                             )}
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-2.5 px-4">
                             <input
                               type="text"
                               disabled={isLocked}
                               value={inp.note}
                               onChange={(e) => handleInputChange(g.id, "note", e.target.value)}
                               placeholder="Ghi chú…"
-                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent py-1 px-2 text-xs text-slate-800 dark:text-slate-200 focus:border-cyan-500 focus:outline-none disabled:opacity-60"
+                              className="w-full rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 bg-transparent py-1 px-2 text-xs text-slate-700 dark:text-slate-300 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition disabled:opacity-50"
                             />
                           </td>
                         </tr>
@@ -602,60 +648,59 @@ export default function Grades() {
   );
 }
 
-function StatusBadge({ status }: { status: GradeStatus }) {
-  const map = {
-    DRAFT: { label: "Bản nháp", class: "bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40" },
-    SUBMITTED: { label: "Đã nộp (Chờ duyệt)", class: "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40" },
-    PUBLISHED: { label: "Đã công bố", class: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40" },
-    LOCKED: { label: "Đã khóa sổ", class: "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600" },
-  };
-
-  const item = map[status] || map.DRAFT;
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wider ${item.class}`}>
-      <span className="size-1.5 rounded-full bg-current" />
-      {item.label}
-    </span>
-  );
-}
-
 function GradeLetterBadge({ letter }: { letter: string }) {
   if (!letter || letter === "—") return <span className="text-slate-400">—</span>;
-
-  let color = "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300";
-  if (letter.startsWith("A")) color = "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-black";
-  else if (letter.startsWith("B")) color = "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 font-bold";
-  else if (letter.startsWith("C")) color = "bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 font-bold";
-  else if (letter.startsWith("D")) color = "bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold";
-  else if (letter === "F") color = "bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-300 font-black";
-
-  return <span className={`inline-block rounded-md px-2 py-0.5 font-mono text-xs ${color}`}>{letter}</span>;
+  const isFail = letter === "F";
+  const isA = letter === "A";
+  return (
+    <span
+      className={`font-mono font-bold text-xs ${
+        isFail
+          ? "text-rose-600 dark:text-rose-400"
+          : isA
+          ? "text-emerald-600 dark:text-emerald-400"
+          : "text-slate-800 dark:text-slate-200"
+      }`}
+    >
+      {letter}
+    </span>
+  );
 }
 
 function KpiCard({
   label,
   value,
   detail,
-  theme,
+  variant = "default",
 }: {
   label: string;
   value: string;
   detail?: string;
-  theme: "cyan" | "violet" | "emerald" | "amber" | "rose";
+  variant?: "default" | "success" | "danger";
 }) {
   const styles = {
-    cyan: "border-cyan-200 dark:border-cyan-500/20 bg-cyan-50/50 dark:bg-cyan-500/5 text-cyan-900 dark:text-cyan-300",
-    violet: "border-purple-200 dark:border-violet-500/20 bg-purple-50/50 dark:bg-violet-500/5 text-purple-900 dark:text-violet-300",
-    emerald: "border-emerald-200 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-500/5 text-emerald-900 dark:text-emerald-300",
-    amber: "border-amber-200 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 text-amber-900 dark:text-amber-300",
-    rose: "border-rose-200 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5 text-rose-900 dark:text-rose-300",
-  };
+    default: {
+      border: "border-slate-200 dark:border-slate-800 hover:border-blue-500/30",
+      bg: "bg-white dark:bg-slate-900/60",
+      valueColor: "text-slate-900 dark:text-white",
+    },
+    success: {
+      border: "border-emerald-200/80 dark:border-emerald-900/40 hover:border-emerald-500/40",
+      bg: "bg-emerald-50/20 dark:bg-emerald-950/10",
+      valueColor: "text-emerald-600 dark:text-emerald-400",
+    },
+    danger: {
+      border: "border-rose-200/80 dark:border-rose-900/40 hover:border-rose-500/40",
+      bg: "bg-rose-50/20 dark:bg-rose-950/10",
+      valueColor: "text-rose-600 dark:text-rose-400",
+    },
+  }[variant];
 
   return (
-    <div className={`rounded-2xl border p-4 ${styles[theme]}`}>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-black tracking-tight">{value}</p>
-      {detail && <p className="mt-1 text-[11px] font-medium text-slate-500">{detail}</p>}
+    <div className={`rounded-xl border ${styles.border} ${styles.bg} p-4 transition shadow-xs`}>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{label}</p>
+      <p className={`mt-1 text-2xl font-bold tracking-tight ${styles.valueColor}`}>{value}</p>
+      {detail && <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">{detail}</p>}
     </div>
   );
 }

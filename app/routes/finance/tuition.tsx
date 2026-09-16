@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { AppShell } from "../../components/app-shell";
 import { EmptyState } from "../../components/empty-state";
@@ -6,14 +6,13 @@ import {
   BanknotesIcon,
   CheckIcon,
   CloseIcon,
-  CreditCardIcon,
   DownloadIcon,
   RefreshIcon,
   SearchIcon,
   StudentIcon,
   TimeIcon,
 } from "../../components/icons";
-import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
+import { apiListRequest, apiRequest } from "../../lib/api";
 import { getCachedUser } from "../../lib/auth";
 import { exportToExcel } from "../../lib/excel";
 import { tuitionService } from "../../services/tuition.service";
@@ -679,16 +678,21 @@ export default function TuitionPage() {
                   </div>
                 </div>
 
-                {studentsTuition.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleExportAdminExcel}
-                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition self-start lg:self-auto"
-                  >
-                    <DownloadIcon size={16} />
-                    Xuất Báo Cáo Công Nợ (Excel)
-                  </button>
-                )}
+                <div className="flex items-center gap-3 self-start lg:self-auto">
+                  <span className="text-xs text-slate-500 font-medium">
+                    Tổng số: <strong className="text-slate-800 dark:text-slate-200">{totalElements || studentsTuition.length}</strong> sinh viên
+                  </span>
+                  {studentsTuition.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleExportAdminExcel}
+                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition"
+                    >
+                      <DownloadIcon size={16} />
+                      Xuất Báo Cáo Công Nợ (Excel)
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Admin Student Tuition Table */}

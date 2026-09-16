@@ -5,6 +5,7 @@ type ConfirmModalProps = {
   title: string;
   message?: string;
   description?: string;
+  error?: string;
   confirmLabel?: string;
   confirmText?: string;
   cancelLabel?: string;
@@ -27,6 +28,7 @@ export function ConfirmModal({
   loading = false,
   isSubmitting = false,
   confirmVariant = "danger",
+  error,
   onConfirm,
   onClose,
   onCancel,
@@ -54,11 +56,17 @@ export function ConfirmModal({
           </div>
         </div>
 
+        {error && (
+          <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-semibold text-red-600 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
         <div className="mt-6 flex justify-end gap-3 border-t border-slate-200 dark:border-white/10 pt-4">
           <button
             type="button"
             disabled={isBusy}
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white disabled:opacity-50 transition-colors cursor-pointer"
           >
             {cancelLabel}

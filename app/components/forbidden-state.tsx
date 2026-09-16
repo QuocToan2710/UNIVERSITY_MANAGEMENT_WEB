@@ -36,10 +36,11 @@ export function ForbiddenState({
         {description}
       </p>
 
-      {requiredEndpoint && (
-        <div className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/60 px-3 py-1 font-mono text-xs text-slate-600 dark:text-slate-400">
-          <span>Yêu cầu quyền:</span>
-          <span className="font-bold text-rose-600 dark:text-rose-400">{requiredEndpoint}</span>
+      {(requiredEndpoint || requiredRole) && (
+        <div className="mt-3 inline-flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/60 px-3 py-1 font-mono text-xs text-slate-600 dark:text-slate-400">
+          <span>Yêu cầu:</span>
+          {requiredEndpoint && <span className="font-bold text-rose-600 dark:text-rose-400">{requiredEndpoint}</span>}
+          {requiredRole && <span className="font-bold text-amber-600 dark:text-amber-400">[{requiredRole}]</span>}
         </div>
       )}
 
