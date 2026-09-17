@@ -11,6 +11,8 @@ import {
   UserXIcon,
 } from "../../components/icons";
 import { apiRequest, ApiError } from "../../lib/api";
+import { formatDate } from "../../lib/formatters";
+import { getCachedUser } from "../../lib/auth";
 import { attendanceService } from "../../services/attendance.service";
 import type {
   AttendanceRecord,
@@ -43,9 +45,15 @@ export default function StudentAttendance() {
       try {
         const user = await apiRequest<User>("/users/myInfo");
         setCurrentUser(user);
-      } catch {
-        navigate("/login", { replace: true });
-        return;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          navigate("/login", { replace: true });
+          return;
+        }
+        const cached = getCachedUser<User>();
+        if (cached) {
+          setCurrentUser(cached);
+        }
       }
       loadAttendance();
     }
@@ -196,9 +204,6 @@ export default function StudentAttendance() {
           <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2 shadow-xs">
             <CalendarIcon size={32} className="text-slate-400 dark:text-slate-600" />
             <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">Không có dữ liệu lớp học phần</div>
-            <p className="text-xs text-slate-500 max-w-sm">
-              Bạn chưa đăng ký lớp học phần nào trong học kỳ này hoặc chưa có buổi học được tạo.
-            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -373,7 +378,7 @@ export default function StudentAttendance() {
                         </span>
                         <div>
                           <div className="font-semibold text-slate-800 dark:text-slate-200">
-                            Buổi {rec.sessionNumber} ({rec.sessionDate || "Lịch định kỳ"})
+                            Buổi {rec.sessionNumber} ({rec.sessionDate ? formatDate(rec.sessionDate) : "Lịch định kỳ"})
                           </div>
                           {rec.note && (
                             <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">

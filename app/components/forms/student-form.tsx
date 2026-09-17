@@ -3,6 +3,7 @@ import { apiListRequest, apiRequest, fetchMasterData } from "../../lib/api";
 import type { ClassGroup, Major } from "../../types/management";
 import { emptyStudent, type Student, type StudentPayload } from "../../types/student";
 import { AddressSelector } from "../address-selector";
+import { DatePicker } from "../date-picker";
 
 type StudentFormProps = {
   student: Student | null;
@@ -176,7 +177,10 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
       >
         <div className="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-4">
           <div>
-            <h2 className="text-lg font-bold">{student ? "Cập nhật thông tin sinh viên" : "Thêm sinh viên mới"}</h2>
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <span>{student ? "Cập nhật thông tin sinh viên" : "Thêm sinh viên mới"}</span>
+              {loadingDetail && <span className="size-3 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />}
+            </h2>
             <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">Nhập trực tiếp các thông tin sinh viên để lưu vào hệ thống.</p>
           </div>
           <button type="button" onClick={onClose} className="text-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer">
@@ -189,7 +193,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
           <Field label="Họ và tên *" value={form.fullName} onChange={(v) => update("fullName", v)} required />
           <Field label="Email *" type="email" value={form.email} onChange={(v) => update("email", v)} required />
           <Field label="Số điện thoại *" value={form.phoneNumber} onChange={(v) => update("phoneNumber", v)} required />
-          <Field label="Ngày sinh *" type="date" value={form.dob} onChange={(v) => update("dob", v)} required />
+          <DatePicker label="Ngày sinh *" value={form.dob} onChange={(v) => update("dob", v)} required />
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
             Giới tính *
@@ -227,7 +231,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
               onChange={(e) => handleClassGroupChange(e.target.value)}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             >
-              <option value=""></option>
+              <option value="">{loadingClassGroups ? "Đang tải danh sách lớp..." : "-- Chọn lớp sinh hoạt --"}</option>
               {classGroups.map((cg) => (
                 <option key={cg.id} value={cg.id}>
                   {cg.name}
@@ -328,5 +332,15 @@ function Field({
 
 function dateValue(value: string) {
   if (!value) return "";
-  return value.slice(0, 10);
+  const clean = String(value).trim();
+  if (clean.includes("T")) {
+    const d = new Date(clean);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return clean.slice(0, 10);
 }

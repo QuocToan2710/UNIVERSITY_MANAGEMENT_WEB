@@ -77,8 +77,8 @@ export function BuildingForm({ building, onClose, onSaved }: BuildingFormProps) 
               min={1}
               max={50}
               required
-              value={form.totalFloors || 5}
-              onChange={(e) => update("totalFloors", Number(e.target.value))}
+              value={form.totalFloors === 0 ? "" : (form.totalFloors ?? 5)}
+              onChange={(e) => update("totalFloors", e.target.value === "" ? 0 : Number(e.target.value))}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </label>

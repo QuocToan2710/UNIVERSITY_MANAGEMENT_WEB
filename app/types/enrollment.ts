@@ -1,4 +1,4 @@
-﻿export interface ScheduleInfo {
+export interface ScheduleInfo {
   id: number;
   dayOfWeek: number;
   shift?: string;
@@ -52,6 +52,7 @@ export interface EnrollmentRecord {
   totalScore?: number;
   letterGrade?: string;
   gradePoint4?: number;
+  gradeStatus?: string;
 }
 
 export interface BatchEnrollmentResult {

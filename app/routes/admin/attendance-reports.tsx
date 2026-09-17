@@ -148,7 +148,6 @@ function ActionDropdown({
 
 export default function AttendanceReports() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(() => getCachedUser<User>());
   const [bannedList, setBannedList] = useState<BannedStudent[]>([]);
   const [classes, setClasses] = useState<SubjectClassOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,23 +161,28 @@ export default function AttendanceReports() {
   // Detail Modal
   const [detailItem, setDetailItem] = useState<BannedStudent | null>(null);
 
-  const rawRoles = (currentUser?.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
-  const isAdmin = rawRoles.some((r) => r.includes("ADMIN"));
-  const isTeacher = rawRoles.some((r) => r.includes("TEACHER"));
-
   useEffect(() => {
     async function init() {
       try {
         const user = await apiRequest<User>("/users/myInfo");
-        setCurrentUser(user);
         const uRoles = (user.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
         if (!uRoles.some((r) => r.includes("ADMIN") || r.includes("TEACHER"))) {
           navigate("/", { replace: true });
           return;
         }
-      } catch {
-        navigate("/login", { replace: true });
-        return;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          navigate("/login", { replace: true });
+          return;
+        }
+        const cached = getCachedUser<User>();
+        if (cached) {
+          const uRoles = (cached.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
+          if (!uRoles.some((r) => r.includes("ADMIN") || r.includes("TEACHER"))) {
+            navigate("/", { replace: true });
+            return;
+          }
+        }
       }
 
       try {
@@ -431,9 +435,6 @@ export default function AttendanceReports() {
             <div className="p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2">
               <CalendarIcon size={32} className="text-slate-400 dark:text-slate-600" />
               <div className="text-sm font-medium text-slate-700 dark:text-slate-300">Không có sinh viên nào bị cấm thi</div>
-              <p className="text-xs text-slate-500 max-w-sm">
-                Tất cả sinh viên đều duy trì tỷ lệ chuyên cần tốt hoặc chưa có buổi học nào vượt ngưỡng 20%.
-              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">

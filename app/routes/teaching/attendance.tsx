@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { AppShell } from "../../components/app-shell";
 import { ConfirmModal } from "../../components/confirm-modal";
+import { DatePicker } from "../../components/date-picker";
 import {
   ClipboardCheckIcon,
   SearchIcon,
@@ -16,6 +17,7 @@ import {
   StudentIcon,
 } from "../../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
+import { formatDate } from "../../lib/formatters";
 import { getCachedUser } from "../../lib/auth";
 import { attendanceService } from "../../services/attendance.service";
 import type {
@@ -256,9 +258,15 @@ export default function TeachingAttendance() {
           navigate("/student/attendance", { replace: true });
           return;
         }
-      } catch {
-        navigate("/login", { replace: true });
-        return;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          navigate("/login", { replace: true });
+          return;
+        }
+        const cached = getCachedUser<User>();
+        if (cached) {
+          setCurrentUser(cached);
+        }
       }
 
       try {
@@ -589,7 +597,7 @@ export default function TeachingAttendance() {
       STT: idx + 1,
       "Mã buổi": s.sessionCode,
       "Tên buổi học": s.name,
-      "Ngày học": s.sessionDate,
+      "Ngày học": formatDate(s.sessionDate),
       "Phòng học": s.room || "-",
       "Chủ đề": s.topic || "-",
       "Trạng thái": s.status === "COMPLETED" ? "Đã chốt điểm danh" : "Chưa điểm danh",
@@ -748,9 +756,6 @@ export default function TeachingAttendance() {
             <div className="p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2">
               <CalendarIcon size={32} className="text-slate-400 dark:text-slate-600" />
               <div className="text-sm font-medium text-slate-700 dark:text-slate-300">Chưa có buổi học nào</div>
-              <p className="text-xs text-slate-500 max-w-sm">
-                Bấm <strong>"Sinh tự động 15 buổi TKB"</strong> hoặc <strong>"Thêm buổi học"</strong> ở phía trên để bắt đầu.
-              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -782,7 +787,7 @@ export default function TeachingAttendance() {
                           <div className="text-[11px] text-slate-400 font-mono">{s.sessionCode}</div>
                         </td>
                         <td className="py-3 px-4 text-xs font-medium text-slate-800 dark:text-slate-200">
-                          {s.sessionDate}
+                          {formatDate(s.sessionDate)}
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-300">
                           {s.room || "-"}
@@ -855,7 +860,7 @@ export default function TeachingAttendance() {
                   {activeSession.name}
                 </h2>
                 <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-3">
-                  <span>Ngày: <strong>{activeSession.sessionDate}</strong></span>
+                  <span>Ngày: <strong>{formatDate(activeSession.sessionDate)}</strong></span>
                   <span>Phòng: <strong>{activeSession.room || "-"}</strong></span>
                   <span>Số tiết: <strong>{activeSession.lessonCount} tiết</strong></span>
                 </div>
@@ -1098,14 +1103,10 @@ export default function TeachingAttendance() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Ngày bắt đầu tuần học 1
-                </label>
-                <input
-                  type="date"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                <DatePicker
+                  label="Ngày bắt đầu tuần học 1"
                   value={autoGenStartDate}
-                  onChange={(e) => setAutoGenStartDate(e.target.value)}
+                  onChange={setAutoGenStartDate}
                 />
               </div>
             </div>
@@ -1156,12 +1157,10 @@ export default function TeachingAttendance() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ngày học</label>
-                  <input
-                    type="date"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  <DatePicker
+                    label="Ngày học"
                     value={formSessionDate}
-                    onChange={(e) => setFormSessionDate(e.target.value)}
+                    onChange={setFormSessionDate}
                   />
                 </div>
               </div>

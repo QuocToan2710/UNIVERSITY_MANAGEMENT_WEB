@@ -4,6 +4,7 @@ import { AppShell } from "../../components/app-shell";
 import { ExamScheduleForm } from "../../components/forms/exam-schedule-form";
 import { ConfirmModal } from "../../components/confirm-modal";
 import { ApiError, apiListRequest, apiRequest } from "../../lib/api";
+import { formatDate } from "../../lib/formatters";
 import type { ExamSchedule, User } from "../../types/management";
 import { ActionDropdown } from "./timetable";
 
@@ -163,7 +164,7 @@ export default function ExamSchedulePage() {
                       <div className="text-xs text-cyan-700 dark:text-cyan-300 font-mono font-medium">Mã: {item.examCode}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">{item.examDate}</div>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200">{formatDate(item.examDate)}</div>
                       <div className="text-xs text-slate-600 dark:text-slate-400 font-mono font-medium">
                         {String(item.startTime).slice(0, 5)} - {String(item.endTime).slice(0, 5)}
                       </div>
