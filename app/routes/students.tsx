@@ -8,6 +8,7 @@ import { Pagination } from "../components/pagination";
 import { SearchExportBar, type FilterField } from "../components/search-export-bar";
 import { ApiError, apiListRequest, apiRequest } from "../lib/api";
 import { exportToExcel } from "../lib/excel";
+import { formatDate } from "../lib/formatters";
 import type { Student } from "../types/student";
 
 export default function Students() {
@@ -90,8 +91,13 @@ export default function Students() {
         exportData = visibleStudents;
       }
 
+      const formattedExportData = exportData.map((s) => ({
+        ...s,
+        dob: s.dob ? formatDate(s.dob) : "",
+      }));
+
       exportToExcel(
-        exportData,
+        formattedExportData,
         "Danh_Sach_Sinh_Vien",
         "SinhVien",
         [
@@ -210,6 +216,11 @@ export default function Students() {
                       <span className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 text-[10px] font-bold text-slate-700 dark:text-slate-300">
                         {student.gender}
                       </span>
+                      {student.dob && (
+                        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                          {formatDate(student.dob)}
+                        </p>
+                      )}
                     </td>
                     <td className="max-w-[280px] px-6 py-4">
                       {student.fullAddress || student.address ? (

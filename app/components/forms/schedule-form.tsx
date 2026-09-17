@@ -296,5 +296,7 @@ function Field({
 function formatTimeInput(str: string) {
   if (!str) return "07:30";
   const parts = str.split(":");
-  return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
+  const h = (parts[0] || "00").padStart(2, "0");
+  const m = (parts[1] || "00").padStart(2, "0");
+  return `${h}:${m}`;
 }

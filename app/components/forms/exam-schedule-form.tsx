@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { apiListRequest, apiRequest, fetchMasterData } from "../../lib/api";
 import { emptyExamSchedule, type ExamSchedule, type ExamSchedulePayload, type Subject, type Teacher } from "../../types/management";
+import { DatePicker } from "../date-picker";
 
 type ExamScheduleFormProps = {
   exam: ExamSchedule | null;
@@ -70,8 +71,8 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
       const payload = {
         ...form,
         subjectId: form.subjectId ? Number(form.subjectId) : null,
-        startTime: form.startTime.length === 5 ? `${form.startTime}:00` : form.startTime,
-        endTime: form.endTime.length === 5 ? `${form.endTime}:00` : form.endTime,
+        startTime: form.startTime ? (form.startTime.length === 5 ? `${form.startTime}:00` : form.startTime) : "08:00:00",
+        endTime: form.endTime ? (form.endTime.length === 5 ? `${form.endTime}:00` : form.endTime) : "10:00:00",
       };
 
       await apiRequest<ExamSchedule>(exam ? `/exam-schedules/${exam.id}` : "/exam-schedules", {
@@ -125,7 +126,7 @@ export function ExamScheduleForm({ exam, onClose, onSaved }: ExamScheduleFormPro
             </label>
           </div>
 
-          <Field label="Ngày thi *" type="date" value={form.examDate} onChange={(v) => update("examDate", v)} required />
+          <DatePicker label="Ngày thi *" value={form.examDate} onChange={(v) => update("examDate", v)} required />
           
           {rooms.length > 0 ? (
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">

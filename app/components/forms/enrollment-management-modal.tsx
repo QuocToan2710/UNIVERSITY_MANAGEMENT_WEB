@@ -13,6 +13,7 @@ import {
 } from "../icons";
 import { apiListRequest } from "../../lib/api";
 import { exportToExcel } from "../../lib/excel";
+import { formatDateTime } from "../../lib/formatters";
 import { enrollmentService } from "../../services/enrollment.service";
 import type { ClassGroup, Student } from "../../types/management";
 import type { BatchEnrollmentResult, EnrollmentRecord } from "../../types/enrollment";
@@ -432,7 +433,7 @@ export function EnrollmentManagementModal({
                               {enr.studentName}
                             </td>
                             <td className="px-4 py-2.5 text-slate-500">
-                              {enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("vi-VN") : "—"}
+                              {enr.enrolledAt ? formatDateTime(enr.enrolledAt) : "—"}
                             </td>
                             <td className="px-4 py-2.5 text-center text-slate-600 dark:text-slate-300">
                               {enr.attendanceScore ?? "—"} / {enr.midtermScore ?? "—"} / {enr.finalScore ?? "—"}

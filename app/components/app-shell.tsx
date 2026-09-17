@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
-import { apiRequest } from "../lib/api";
+import { ApiError, apiRequest } from "../lib/api";
 import { clearToken, getCachedUser, getToken, isAuthenticated, setCachedUser } from "../lib/auth";
 import { canAccessNavItem } from "../lib/permission";
 import { ForbiddenState } from "./forbidden-state";
@@ -197,20 +197,35 @@ export function AppShell({ title, description, children }: AppShellProps) {
       return;
     }
 
+    let isMounted = true;
+
     void apiRequest<User>("/users/myInfo")
       .then((u) => {
+        if (!isMounted) return;
         setUser(u);
         setCachedUser(u);
         void loadNotifications();
       })
-      .catch(() => {
-        clearToken();
-        navigate("/login", { replace: true });
+      .catch((err) => {
+        if (!isMounted) return;
+        // CHỈ xóa token và đá về login khi server THỰC SỰ trả về HTTP 401 Unauthorized
+        if (err instanceof ApiError && err.status === 401) {
+          clearToken();
+          navigate("/login", { replace: true });
+        } else {
+          // Khi bị lỗi mạng, server cold-start, hoặc request bị browser abort khi reload:
+          // Tuyệt đối KHÔNG xóa token! Dùng thông tin user đã lưu trong cache
+          const cached = getCachedUser<User>();
+          if (cached) {
+            setUser(cached);
+          }
+        }
       });
 
     // Real-time WebSocket connection & subscription
     webSocketService.connect();
     const unsubscribeSocket = webSocketService.subscribe((incomingNotif) => {
+      if (!isMounted) return;
       setNotifSummary((prev) => ({
         unreadCount: prev.unreadCount + 1,
         recentNotifications: [
@@ -224,17 +239,20 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
     // Polling backup every 60s
     const timer = setInterval(() => {
-      if (getToken()) {
+      if (getToken() && isMounted) {
         void loadNotifications();
       }
     }, 60000);
 
     const handleNotificationsUpdated = () => {
-      void loadNotifications();
+      if (isMounted) {
+        void loadNotifications();
+      }
     };
     window.addEventListener("notifications-updated", handleNotificationsUpdated);
 
     return () => {
+      isMounted = false;
       clearInterval(timer);
       unsubscribeSocket();
       window.removeEventListener("notifications-updated", handleNotificationsUpdated);

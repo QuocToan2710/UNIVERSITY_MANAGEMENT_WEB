@@ -3,6 +3,7 @@ import { apiListRequest, apiRequest, fetchMasterData } from "../../lib/api";
 import type { ClassGroup, Major } from "../../types/management";
 import { emptyStudent, type Student, type StudentPayload } from "../../types/student";
 import { AddressSelector } from "../address-selector";
+import { DatePicker } from "../date-picker";
 
 type StudentFormProps = {
   student: Student | null;
@@ -192,7 +193,7 @@ export function StudentForm({ student, onClose, onSaved }: StudentFormProps) {
           <Field label="Họ và tên *" value={form.fullName} onChange={(v) => update("fullName", v)} required />
           <Field label="Email *" type="email" value={form.email} onChange={(v) => update("email", v)} required />
           <Field label="Số điện thoại *" value={form.phoneNumber} onChange={(v) => update("phoneNumber", v)} required />
-          <Field label="Ngày sinh *" type="date" value={form.dob} onChange={(v) => update("dob", v)} required />
+          <DatePicker label="Ngày sinh *" value={form.dob} onChange={(v) => update("dob", v)} required />
 
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
             Giới tính *
@@ -331,5 +332,15 @@ function Field({
 
 function dateValue(value: string) {
   if (!value) return "";
-  return value.slice(0, 10);
+  const clean = String(value).trim();
+  if (clean.includes("T")) {
+    const d = new Date(clean);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return clean.slice(0, 10);
 }

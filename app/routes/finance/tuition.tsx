@@ -15,6 +15,7 @@ import {
 import { apiListRequest, apiRequest } from "../../lib/api";
 import { getCachedUser } from "../../lib/auth";
 import { exportToExcel } from "../../lib/excel";
+import { formatDate } from "../../lib/formatters";
 import { tuitionService } from "../../services/tuition.service";
 import type {
   RecordPaymentPayload,
@@ -273,8 +274,12 @@ export default function TuitionPage() {
 
   // Export Excel for Admin
   function handleExportAdminExcel() {
+    const formattedData = studentsTuition.map((s) => ({
+      ...s,
+      dueDate: s.dueDate ? formatDate(s.dueDate) : "-",
+    }));
     exportToExcel(
-      studentsTuition as unknown as Record<string, unknown>[],
+      formattedData as unknown as Record<string, unknown>[],
       `Bao_Cao_Cong_No_Hoc_Phi_HK${selectedSemester}_${selectedAcademicYear}`,
       "CongNoHocPhi",
       [
@@ -483,7 +488,7 @@ export default function TuitionPage() {
                       </div>
                       <div className="text-[11px] text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
                         <TimeIcon size={12} />
-                        Hạn nộp: {mySummary.dueDate || "Đang cập nhật"}
+                        Hạn nộp: {mySummary.dueDate ? formatDate(mySummary.dueDate) : "Đang cập nhật"}
                       </div>
                     </div>
                   </div>

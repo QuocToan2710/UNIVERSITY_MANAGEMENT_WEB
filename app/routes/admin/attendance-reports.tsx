@@ -13,6 +13,7 @@ import {
   BellIcon,
 } from "../../components/icons";
 import { apiListRequest, apiRequest, ApiError } from "../../lib/api";
+import { getCachedUser } from "../../lib/auth";
 import { attendanceService } from "../../services/attendance.service";
 import type { BannedStudent } from "../../types/attendance";
 import type { User } from "../../types/management";
@@ -169,9 +170,19 @@ export default function AttendanceReports() {
           navigate("/", { replace: true });
           return;
         }
-      } catch {
-        navigate("/login", { replace: true });
-        return;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          navigate("/login", { replace: true });
+          return;
+        }
+        const cached = getCachedUser<User>();
+        if (cached) {
+          const uRoles = (cached.roles || []).map((r) => (r.roleCode || r.name || "").toUpperCase());
+          if (!uRoles.some((r) => r.includes("ADMIN") || r.includes("TEACHER"))) {
+            navigate("/", { replace: true });
+            return;
+          }
+        }
       }
 
       try {

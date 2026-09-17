@@ -16,6 +16,7 @@ import {
 import { apiListRequest, apiRequest, ApiError } from "../lib/api";
 import { getCachedUser } from "../lib/auth";
 import { exportToExcel } from "../lib/excel";
+import { formatDateTime } from "../lib/formatters";
 import { enrollmentService } from "../services/enrollment.service";
 import type { AvailableSubjectClass, EnrollmentRecord } from "../types/enrollment";
 import type { Student, User } from "../types/management";
@@ -593,15 +594,7 @@ export default function CourseRegistration() {
                         </td>
                         <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
                           <div className="font-medium text-slate-700 dark:text-slate-300">
-                            {item.enrolledAt
-                              ? new Date(item.enrolledAt).toLocaleDateString("vi-VN", {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "—"}
+                            {item.enrolledAt ? formatDateTime(item.enrolledAt) : "—"}
                           </div>
                           <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
                             <span className="size-1 rounded-full bg-emerald-500" />

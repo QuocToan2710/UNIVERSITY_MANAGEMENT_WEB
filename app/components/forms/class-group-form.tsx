@@ -69,6 +69,7 @@ export function ClassGroupForm({ classGroup, onClose, onSaved }: ClassGroupFormP
         ...form,
         majorId: form.majorId ? Number(form.majorId) : null,
         homeroomTeacherId: form.homeroomTeacherId ? Number(form.homeroomTeacherId) : null,
+        maxStudents: form.maxStudents ? Number(form.maxStudents) : null,
       };
       await apiRequest<ClassGroup>(classGroup ? `/class-groups/${classGroup.id}` : "/class-groups", {
         method: classGroup ? "PUT" : "POST",

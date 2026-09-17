@@ -117,8 +117,8 @@ export function RoomForm({ room, onClose, onSaved }: RoomFormProps) {
               min={1}
               max={500}
               required
-              value={form.capacity || 40}
-              onChange={(e) => update("capacity", Number(e.target.value))}
+              value={form.capacity === 0 ? "" : (form.capacity ?? 40)}
+              onChange={(e) => update("capacity", e.target.value === "" ? 0 : Number(e.target.value))}
               className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-cyan-400"
             />
           </label>
