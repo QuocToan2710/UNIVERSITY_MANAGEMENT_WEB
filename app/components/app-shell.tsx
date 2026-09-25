@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate, type NavLinkRenderProps } from "react-router";
-import { ApiError, apiRequest } from "../lib/api";
+import { ApiError, apiRequest, changePassword } from "../lib/api";
 import { clearToken, getCachedUser, getToken, isAuthenticated, setCachedUser } from "../lib/auth";
 import { canAccessNavItem } from "../lib/permission";
 import { ForbiddenState } from "./forbidden-state";
@@ -1016,6 +1016,10 @@ export function AppShell({ title, description, children }: AppShellProps) {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
+                if (!passwordForm.oldPassword) {
+                  setPasswordMsg({ text: "Vui lòng nhập mật khẩu hiện tại.", type: "error" });
+                  return;
+                }
                 if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
                   setPasswordMsg({ text: "Vui lòng nhập đầy đủ các trường mật khẩu.", type: "error" });
                   return;
@@ -1028,27 +1032,26 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   setPasswordMsg({ text: "Mật khẩu mới phải có ít nhất 6 ký tự.", type: "error" });
                   return;
                 }
+                if (passwordForm.oldPassword === passwordForm.newPassword) {
+                  setPasswordMsg({ text: "Mật khẩu mới không được trùng với mật khẩu hiện tại.", type: "error" });
+                  return;
+                }
                 setChangingPassword(true);
                 setPasswordMsg(null);
                 try {
-                  if (user?.id) {
-                    await apiRequest<User>("/users/update", {
-                      method: "PUT",
-                      body: JSON.stringify({
-                        id: user.id,
-                        username: user.username,
-                        fullName: user.fullName,
-                        email: user.email,
-                        password: passwordForm.newPassword,
-                      }),
-                    });
-                  }
-                  setPasswordMsg({ text: "Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.", type: "success" });
+                  const resultMsg = await changePassword({
+                    oldPassword: passwordForm.oldPassword,
+                    newPassword: passwordForm.newPassword,
+                    confirmPassword: passwordForm.confirmPassword,
+                  });
+                  setPasswordMsg({ text: resultMsg || "Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.", type: "success" });
                   setTimeout(() => {
                     setShowPasswordModal(false);
+                    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                    setPasswordMsg(null);
                   }, 1500);
                 } catch (err) {
-                  setPasswordMsg({ text: err instanceof Error ? err.message : "Không thể cập nhật mật khẩu.", type: "error" });
+                  setPasswordMsg({ text: err instanceof ApiError || err instanceof Error ? err.message : "Không thể cập nhật mật khẩu.", type: "error" });
                 } finally {
                   setChangingPassword(false);
                 }
@@ -1066,6 +1069,18 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   {passwordMsg.text}
                 </div>
               )}
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300">Mật khẩu hiện tại</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Nhập mật khẩu hiện tại của bạn..."
+                  value={passwordForm.oldPassword}
+                  onChange={(e) => setPasswordForm((f) => ({ ...f, oldPassword: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
+                />
+              </div>
 
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 dark:text-slate-300">Mật khẩu mới</label>

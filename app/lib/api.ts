@@ -99,6 +99,13 @@ export async function resetPassword(data: { email: string; otp: string; newPassw
   });
 }
 
+export async function changePassword(data: { oldPassword: string; newPassword: string; confirmPassword?: string }): Promise<string> {
+  return apiRequest<string>("/users/change-password", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function fetchMasterData(
   type: ComboType,
   options?: { cascader?: string; codeSystem?: string; isCodeIsId?: boolean }

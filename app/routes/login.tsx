@@ -25,11 +25,65 @@ export default function Login() {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [otpCode, setOtpCode] = useState("");
+  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState("");
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  function handleOtpChange(index: number, val: string) {
+    const cleanVal = val.replace(/\D/g, "");
+    if (!cleanVal) {
+      const nextDigits = [...otpDigits];
+      nextDigits[index] = "";
+      setOtpDigits(nextDigits);
+      return;
+    }
+
+    const char = cleanVal.slice(-1);
+    const nextDigits = [...otpDigits];
+    nextDigits[index] = char;
+    setOtpDigits(nextDigits);
+
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  }
+
+  function handleOtpKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Backspace") {
+      if (!otpDigits[index] && index > 0) {
+        const nextDigits = [...otpDigits];
+        nextDigits[index - 1] = "";
+        setOtpDigits(nextDigits);
+        otpInputRefs.current[index - 1]?.focus();
+      } else {
+        const nextDigits = [...otpDigits];
+        nextDigits[index] = "";
+        setOtpDigits(nextDigits);
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  }
+
+  function handleOtpPaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+
+    const nextDigits = [...otpDigits];
+    for (let i = 0; i < 6; i++) {
+      nextDigits[i] = pasted[i] || "";
+    }
+    setOtpDigits(nextDigits);
+
+    const focusIdx = Math.min(pasted.length, 5);
+    otpInputRefs.current[focusIdx]?.focus();
+  }
 
   async function handleSendOtp(e: FormEvent) {
     e.preventDefault();
@@ -44,6 +98,10 @@ export default function Login() {
       const msg = await forgotPassword(forgotEmail.trim());
       setForgotSuccess(msg || "Mã OTP đã được gửi đến email của bạn.");
       setForgotStep(2);
+      setOtpDigits(["", "", "", "", "", ""]);
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 100);
     } catch (err: any) {
       setForgotError(err instanceof ApiError || err instanceof Error ? err.message : "Không thể gửi OTP.");
     } finally {
@@ -53,8 +111,17 @@ export default function Login() {
 
   async function handleResetPassword(e: FormEvent) {
     e.preventDefault();
-    if (!otpCode.trim() || !newPassword.trim()) {
-      setForgotError("Vui lòng nhập đầy đủ mã OTP và mật khẩu mới.");
+    const code = otpDigits.join("");
+    if (code.length < 6) {
+      setForgotError("Vui lòng nhập đầy đủ 6 chữ số mã OTP.");
+      return;
+    }
+    if (!newPassword.trim()) {
+      setForgotError("Vui lòng nhập mật khẩu mới.");
+      return;
+    }
+    if (newPassword.trim().length < 6) {
+      setForgotError("Mật khẩu mới phải có ít nhất 6 ký tự.");
       return;
     }
     setForgotError("");
@@ -63,7 +130,7 @@ export default function Login() {
     try {
       const msg = await resetPassword({
         email: forgotEmail.trim(),
-        otp: otpCode.trim(),
+        otp: code,
         newPassword: newPassword.trim(),
       });
       setForgotSuccess(msg || "Đặt lại mật khẩu thành công!");
@@ -71,7 +138,7 @@ export default function Login() {
       setTimeout(() => {
         setShowForgotModal(false);
         setForgotStep(1);
-        setOtpCode("");
+        setOtpDigits(["", "", "", "", "", ""]);
         setNewPassword("");
         setForgotSuccess("");
       }, 2000);
@@ -429,6 +496,7 @@ export default function Login() {
                 setForgotStep(1);
                 setForgotError("");
                 setForgotSuccess("");
+                setOtpDigits(["", "", "", "", "", ""]);
               }}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
             >
@@ -487,14 +555,13 @@ export default function Login() {
               <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
-                    Email hoặc Tên tài khoản / Mã SV
+                    Mã SV
                   </label>
                   <input
                     required
                     type="text"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="ví dụ: sv24001@university.edu.vn hoặc SV24001"
                     className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
                   />
                   <p className="mt-1.5 text-[11px] text-slate-400">
@@ -521,18 +588,44 @@ export default function Login() {
               /* Step 2 Form */
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
-                    Mã OTP (6 chữ số trong Email)
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    maxLength={6}
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                    placeholder="123456"
-                    className="w-full rounded-xl border border-cyan-400/50 bg-black/50 px-4 py-3 text-center text-xl font-mono tracking-widest text-cyan-300 placeholder-slate-500 outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-200">
+                      Mã xác thực OTP
+                    </label>
+                    <span className="text-[11px] font-mono font-semibold text-cyan-400">
+                      {otpDigits.filter(Boolean).length}/6 số
+                    </span>
+                  </div>
+                  
+                  {/* 6 Individual OTP Boxes */}
+                  <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                    {otpDigits.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => {
+                          otpInputRefs.current[idx] = el;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                        onPaste={handleOtpPaste}
+                        onFocus={(e) => e.target.select()}
+                        placeholder="-"
+                        className={`w-11 h-14 sm:w-13 sm:h-16 rounded-xl border text-center font-mono text-xl sm:text-2xl font-extrabold outline-none transition-all shadow-inner select-none ${
+                          digit
+                            ? "border-cyan-400 bg-cyan-950/40 text-cyan-300 ring-1 ring-cyan-400/50"
+                            : "border-white/20 bg-black/60 text-white placeholder-slate-600 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-slate-400 text-center">
+                    Gợi ý: Bạn có thể sao chép và dán trực tiếp mã OTP 6 số vào ô đầu tiên.
+                  </p>
                 </div>
 
                 <div>
@@ -542,10 +635,10 @@ export default function Login() {
                   <input
                     required
                     type="password"
-                    minLength={5}
+                    minLength={6}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu mới (tối thiểu 5 ký tự)"
+                    placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                     className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
                   />
                 </div>
@@ -572,6 +665,7 @@ export default function Login() {
                       setForgotStep(1);
                       setForgotError("");
                       setForgotSuccess("");
+                      setOtpDigits(["", "", "", "", "", ""]);
                     }}
                     className="text-xs text-cyan-300 hover:underline cursor-pointer"
                   >
