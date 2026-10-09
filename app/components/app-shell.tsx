@@ -31,6 +31,8 @@ import {
   UsersIcon,
   CogIcon,
   ClipboardCheckIcon,
+  EyeIcon,
+  EyeOffIcon,
 } from "./icons";
 
 type AppShellProps = {
@@ -146,6 +148,9 @@ export function AppShell({ title, description, children }: AppShellProps) {
   const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
@@ -801,6 +806,9 @@ export function AppShell({ title, description, children }: AppShellProps) {
                         setProfileOpen(false);
                         setPasswordMsg(null);
                         setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                        setShowOldPassword(false);
+                        setShowNewPassword(false);
+                        setShowConfirmPassword(false);
                         setShowPasswordModal(true);
                       }}
                       className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-700 dark:hover:text-cyan-300 transition-all cursor-pointer group"
@@ -1006,7 +1014,12 @@ export function AppShell({ title, description, children }: AppShellProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setShowPasswordModal(false)}
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setShowOldPassword(false);
+                  setShowNewPassword(false);
+                  setShowConfirmPassword(false);
+                }}
                 className="grid size-8 place-items-center rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/20 transition cursor-pointer"
               >
                 ✕
@@ -1048,6 +1061,9 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   setTimeout(() => {
                     setShowPasswordModal(false);
                     setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                    setShowOldPassword(false);
+                    setShowNewPassword(false);
+                    setShowConfirmPassword(false);
                     setPasswordMsg(null);
                   }, 1500);
                 } catch (err) {
@@ -1072,44 +1088,85 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 dark:text-slate-300">Mật khẩu hiện tại</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Nhập mật khẩu hiện tại của bạn..."
-                  value={passwordForm.oldPassword}
-                  onChange={(e) => setPasswordForm((f) => ({ ...f, oldPassword: e.target.value }))}
-                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    placeholder="Nhập mật khẩu hiện tại của bạn..."
+                    value={passwordForm.oldPassword}
+                    onChange={(e) => setPasswordForm((f) => ({ ...f, oldPassword: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 pr-10 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowOldPassword((prev) => !prev)}
+                    className="absolute right-3 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-white focus:outline-none cursor-pointer"
+                    aria-label={showOldPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showOldPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 dark:text-slate-300">Mật khẩu mới</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)..."
-                  value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))}
-                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)..."
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 pr-10 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className="absolute right-3 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-white focus:outline-none cursor-pointer"
+                    aria-label={showNewPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showNewPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 dark:text-slate-300">Xác nhận mật khẩu mới</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Nhập lại mật khẩu mới..."
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))}
-                  className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    placeholder="Nhập lại mật khẩu mới..."
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 pr-10 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 dark:focus:border-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-white focus:outline-none cursor-pointer"
+                    aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showConfirmPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div className="mt-6 flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-white/10">
                 <button
                   type="button"
-                  onClick={() => setShowPasswordModal(false)}
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setShowOldPassword(false);
+                    setShowNewPassword(false);
+                    setShowConfirmPassword(false);
+                  }}
                   className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
                 >
                   Hủy
