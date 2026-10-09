@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { apiRequest } from "../../lib/api";
 import { emptyUser, type User, type UserPayload } from "../../types/management";
+import { EyeIcon, EyeOffIcon } from "../icons";
 
 type UserFormProps = {
   user: User | null;
@@ -130,17 +131,40 @@ function Field({
   required?: boolean;
   placeholder?: string;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+
   return (
     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-bold tracking-wider">
       {label}
-      <input
-        required={required}
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-emerald-400 placeholder:text-slate-600"
-      />
+      <div className="relative mt-1.5 flex items-center">
+        <input
+          required={required}
+          type={isPassword ? (showPassword ? "text" : "password") : type}
+          autoComplete={isPassword ? "new-password" : undefined}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className={`w-full rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-950/80 px-4 py-3 text-xs font-medium text-slate-900 dark:text-white shadow-2xs outline-none focus:border-emerald-400 placeholder:text-slate-600 ${
+            isPassword ? "pr-11" : ""
+          }`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowPassword((prev) => !prev);
+            }}
+            className="absolute right-3.5 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-white focus:outline-none cursor-pointer p-1"
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+          >
+            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+          </button>
+        )}
+      </div>
     </label>
   );
 }

@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ApiError, apiRequest, forgotPassword, login, resetPassword } from "../lib/api";
 import { isAuthenticated, setCachedUser, setToken } from "../lib/auth";
 import type { User } from "../types/management";
+import { EyeIcon, EyeOffIcon } from "../components/icons";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function Login() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState("");
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   function handleOtpChange(index: number, val: string) {
@@ -140,6 +142,7 @@ export default function Login() {
         setForgotStep(1);
         setOtpDigits(["", "", "", "", "", ""]);
         setNewPassword("");
+        setShowForgotNewPassword(false);
         setForgotSuccess("");
       }, 2000);
     } catch (err: any) {
@@ -371,6 +374,9 @@ export default function Login() {
                     setForgotStep(1);
                     setForgotError("");
                     setForgotSuccess("");
+                    setShowForgotNewPassword(false);
+                    setNewPassword("");
+                    setOtpDigits(["", "", "", "", "", ""]);
                     if (username) setForgotEmail(username);
                   }}
                   className="text-xs font-bold text-cyan-300 hover:text-cyan-200 hover:underline cursor-pointer transition"
@@ -395,20 +401,12 @@ export default function Login() {
                 />
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 text-slate-200 hover:text-white focus:outline-none cursor-pointer"
                   aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.2">
-                    {showPassword ? (
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />
-                    ) : (
-                      <>
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </>
-                    )}
-                  </svg>
+                  {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
                 </button>
               </div>
             </div>
@@ -497,6 +495,7 @@ export default function Login() {
                 setForgotError("");
                 setForgotSuccess("");
                 setOtpDigits(["", "", "", "", "", ""]);
+                setShowForgotNewPassword(false);
               }}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
             >
@@ -632,15 +631,27 @@ export default function Login() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
                     Mật khẩu mới
                   </label>
-                  <input
-                    required
-                    type="password"
-                    minLength={6}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
-                    className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      required
+                      type={showForgotNewPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                      className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 pr-11 text-sm text-white placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+                    />
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
+                      className="absolute right-3 text-slate-400 hover:text-white focus:outline-none cursor-pointer p-1 rounded-lg hover:bg-white/10 transition"
+                      aria-label={showForgotNewPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    >
+                      {showForgotNewPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -666,6 +677,8 @@ export default function Login() {
                       setForgotError("");
                       setForgotSuccess("");
                       setOtpDigits(["", "", "", "", "", ""]);
+                      setNewPassword("");
+                      setShowForgotNewPassword(false);
                     }}
                     className="text-xs text-cyan-300 hover:underline cursor-pointer"
                   >
